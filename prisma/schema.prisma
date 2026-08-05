@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Business {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  licenseNumber String
+  address       String
+  district      String
+  lat           Float
+  lng           Float
+  ownerId       String
+  supplier      String?
+  riskScore     Float    @default(50)
+  riskTier      String   @default("B")
+  registeredAt  DateTime @default(now())
+  owner         User     @relation(fields: [ownerId], references: [id])
+  inspections   Inspection[]
+  complaints    Complaint[]
+  documents     Document[]
+}
+
+model Inspection {
+  id           String     @id @default(cuid())
+  businessId   String
+  inspectorId  String
+  scheduledAt  DateTime
+  completedAt  DateTime?
+  checklist    Json
+  notes        String?
+  photos       String @default("[]")
+  violations   Violation[]
+  aiSummary    String?
+  riskDelta    Float?
+  status       String     @default("scheduled")
+  business     Business   @relation(fields: [businessId], references: [id])
+  inspector    User       @relation(fields: [inspectorId], references: [id])
+}
+
+model Violation {
+  id           String     @id @default(cuid())
+  inspectionId String
+  type         String
+  severity     String
+  description  String
+  inspection   Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+}
+
+model Complaint {
+  id                  String    @id @default(cuid())
+  businessId          String?
+  citizenId           String?
+  assignedInspectorId String?
+  anonymous           Boolean   @default(false)
+  description         String
+  photos              String    @default("[]")
+  status              String    @default("submitted")
+  createdAt           DateTime  @default(now())
+  lat                 Float?
+  lng                 Float?
+  business            Business? @relation(fields: [businessId], references: [id])
+  citizen             User?     @relation("CitizenComplaints", fields: [citizenId], references: [id])
+  assignedInspector   User?     @relation("AssignedComplaints", fields: [assignedInspectorId], references: [id])
+}
+
+model Document {
+  id          String    @id @default(cuid())
+  businessId  String
+  type        String
+  fileUrl     String
+  uploadedAt  DateTime  @default(now())
+  expiresAt   DateTime?
+  business    Business  @relation(fields: [businessId], references: [id])
+}
+
+model User {
+  id                 String        @id @default(cuid())
+  name               String
+  email              String        @unique
+  password           String
+  role               String
+  district           String?
+  businesses         Business[]
+  inspections        Inspection[]
+  complaints         Complaint[]   @relation("CitizenComplaints")
+  assignedComplaints Complaint[]   @relation("AssignedComplaints")
+}
