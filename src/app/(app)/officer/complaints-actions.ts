@@ -7,7 +7,7 @@ import { requireRole } from "@/lib/auth";
 const ALLOWED = new Set(["under_review", "resolved"]);
 
 export async function updateComplaintStatusAction(formData: FormData) {
-  const inspector = await requireRole("inspector");
+  const officer = await requireRole("food_officer");
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
   if (!id || !ALLOWED.has(status)) return;
@@ -17,10 +17,10 @@ export async function updateComplaintStatusAction(formData: FormData) {
 
   await db.complaint.update({
     where: { id },
-    data: { status, assignedInspectorId: inspector.id },
+    data: { status, assignedOfficerId: officer.id },
   });
 
-  revalidatePath("/inspector/queue");
+  revalidatePath("/officer/queue");
   revalidatePath("/officer/dashboard");
   revalidatePath("/citizen/my-complaints");
 }

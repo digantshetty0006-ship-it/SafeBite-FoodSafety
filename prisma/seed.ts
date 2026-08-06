@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import path from "path";
 import { calculateRiskScore } from "../src/lib/risk";
 
@@ -13,7 +14,17 @@ function dbUrl(): string {
   return file;
 }
 
-const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: dbUrl() }) });
+function isPostgres(url: string): boolean {
+  return url.startsWith("postgres://") || url.startsWith("postgresql://");
+}
+
+const seedUrl = process.env.DATABASE_URL ?? "file:./dev.db";
+
+const prisma = new PrismaClient({
+  adapter: isPostgres(seedUrl)
+    ? new PrismaPg({ connectionString: seedUrl })
+    : new PrismaBetterSqlite3({ url: dbUrl() }),
+});
 
 const DISTRICTS = [
   { name: "Mumbai", center: [19.076, 72.8777] },
@@ -158,16 +169,16 @@ async function main() {
 
   // ---- Users ----
   const officer = await prisma.user.create({
-    data: { name: "Anita Deshmukh", email: "officer@demo.in", password: "demo1234", role: "fda_officer", district: "Maharashtra" },
+    data: { name: "Anita Deshmukh", email: "officer@demo.in", password: "demo1234", role: "food_officer", district: "Maharashtra" },
   });
-  const inspector1 = await prisma.user.create({
-    data: { name: "Rahul Patil", email: "inspector@demo.in", password: "demo1234", role: "inspector", district: "Mumbai" },
+  const officer1 = await prisma.user.create({
+    data: { name: "Rahul Patil", email: "inspector@demo.in", password: "demo1234", role: "food_officer", district: "Mumbai" },
   });
-  const inspector2 = await prisma.user.create({
-    data: { name: "Sneha Kulkarni", email: "inspector.pune@demo.in", password: "demo1234", role: "inspector", district: "Pune" },
+  const officer2 = await prisma.user.create({
+    data: { name: "Sneha Kulkarni", email: "inspector.pune@demo.in", password: "demo1234", role: "food_officer", district: "Pune" },
   });
-  const inspector3 = await prisma.user.create({
-    data: { name: "Vikram Rao", email: "inspector.nagpur@demo.in", password: "demo1234", role: "inspector", district: "Nagpur" },
+  const officer3 = await prisma.user.create({
+    data: { name: "Vikram Rao", email: "inspector.nagpur@demo.in", password: "demo1234", role: "food_officer", district: "Nagpur" },
   });
   const demoCitizen = await prisma.user.create({
     data: { name: "Meera Joshi", email: "citizen@demo.in", password: "demo1234", role: "citizen", district: "Mumbai" },
@@ -184,7 +195,7 @@ async function main() {
     data: { name: "Rajesh Sharma", email: "owner@demo.in", password: "demo1234", role: "business_owner", district: "Mumbai" },
   });
 
-  const inspectors = [inspector1, inspector2, inspector3];
+  const officers = [officer1, officer2, officer3];
   const owners: any[] = [demoOwner];
   const OWNER_NAMES = [
     "Suresh Iyer", "Farida Khan", "Manish Gupta", "Deepa Nair", "Arjun Singh",
@@ -279,7 +290,7 @@ async function main() {
     ];
 
     for (let idx = 0; idx < nInsp; idx++) {
-      const inspector = inspectors[Math.floor(rng() * inspectors.length)];
+      const officer = officers[Math.floor(rng() * officers.length)];
       const plan = isHotspot ? hotspotPlans[idx] : null;
       const completed = isHotspot ? true : rng() < 0.85;
       const scheduledAt = plan ? daysAgo(plan.age) : daysAgo(range(10, 400));
@@ -319,7 +330,7 @@ async function main() {
       const insp = await prisma.inspection.create({
         data: {
           businessId: biz.id,
-          inspectorId: inspector.id,
+          officerId: officer.id,
           scheduledAt,
           completedAt: completed ? (plan ? daysAgo(plan.age) : daysAgo(range(5, 390))) : null,
           checklist: makeChecklist(violationTypes),

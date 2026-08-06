@@ -26,15 +26,13 @@ import { ActiveNavLink } from "@/components/nav-link";
 import type { NavItem } from "@/components/nav-link";
 
 const NAV: Record<string, NavItem[]> = {
-  fda_officer: [
+  food_officer: [
     { href: "/officer/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: "/officer/queue", label: "My Queue", icon: <ClipboardList className="h-4 w-4" /> },
+    { href: "/officer/history", label: "Inspection History", icon: <History className="h-4 w-4" /> },
     { href: "/officer/map", label: "District Risk Map", icon: <Map className="h-4 w-4" /> },
     { href: "/officer/schedule", label: "Inspection Schedule", icon: <CalendarDays className="h-4 w-4" /> },
     { href: "/officer/analytics", label: "Analytics & Outbreaks", icon: <BarChart3 className="h-4 w-4" /> },
-  ],
-  inspector: [
-    { href: "/inspector/queue", label: "My Queue", icon: <ClipboardList className="h-4 w-4" /> },
-    { href: "/inspector/history", label: "Inspection History", icon: <History className="h-4 w-4" /> },
   ],
   citizen: [
     { href: "/citizen/report", label: "Report Unsafe Food", icon: <Megaphone className="h-4 w-4" /> },
@@ -49,8 +47,7 @@ const NAV: Record<string, NavItem[]> = {
 };
 
 const ROLE_ACCENT: Record<string, string> = {
-  fda_officer: "from-emerald-600 to-teal-600",
-  inspector: "from-sky-600 to-blue-600",
+  food_officer: "from-emerald-600 to-teal-600",
   citizen: "from-violet-600 to-purple-600",
   business_owner: "from-orange-600 to-amber-600",
 };
@@ -146,11 +143,9 @@ async function Header({ user }: { user: { name: string; role: string; email: str
       <div className="ml-10 lg:ml-0">
         <p className="text-sm font-medium text-muted-foreground">{ROLE_LABELS[user.role] ?? user.role}</p>
         <h2 className="text-sm font-semibold leading-tight">
-          {user.role === "fda_officer"
+          {user.role === "food_officer"
             ? "Food Safety Command Center"
-            : user.role === "inspector"
-              ? "Field Inspection Console"
-              : user.role === "citizen"
+            : user.role === "citizen"
                 ? "Citizen Safety Portal"
                 : "Business Compliance Portal"}
         </h2>

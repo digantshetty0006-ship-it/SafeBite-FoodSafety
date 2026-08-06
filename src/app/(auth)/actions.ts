@@ -4,8 +4,7 @@ import { redirect } from "next/navigation";
 import { createSession, destroySession, loginUser } from "@/lib/auth";
 
 const ROLE_HOME: Record<string, string> = {
-  fda_officer: "/officer/dashboard",
-  inspector: "/inspector/queue",
+  food_officer: "/officer/dashboard",
   citizen: "/citizen/report",
   business_owner: "/owner/dashboard",
 };

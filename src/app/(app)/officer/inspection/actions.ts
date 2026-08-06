@@ -15,7 +15,7 @@ export interface UploadResult {
 }
 
 export async function uploadInspectionPhotoAction(formData: FormData): Promise<UploadResult> {
-  await requireRole("inspector");
+  await requireRole("food_officer");
   const file = formData.get("file") as File | null;
   if (!file || file.size === 0) return { ok: false, error: "No file provided." };
   if (!file.type.startsWith("image/")) return { ok: false, error: "Only image files are allowed." };
@@ -31,7 +31,7 @@ export async function uploadInspectionPhotoAction(formData: FormData): Promise<U
 }
 
 export async function completeInspectionAction(formData: FormData) {
-  const inspector = await requireRole("inspector");
+  const officer = await requireRole("food_officer");
   const id = String(formData.get("inspectionId") ?? "");
   if (!id) return;
 
@@ -39,7 +39,7 @@ export async function completeInspectionAction(formData: FormData) {
     where: { id },
     include: { business: true },
   });
-  if (!existing || existing.inspectorId !== inspector.id) return;
+  if (!existing || existing.officerId !== officer.id) return;
 
   const checklist = JSON.parse(String(formData.get("checklist") ?? "[]"));
   const notes = String(formData.get("notes") ?? "");
@@ -83,9 +83,9 @@ export async function completeInspectionAction(formData: FormData) {
     }
   });
 
-  revalidatePath(`/inspector/inspection/${id}`);
+  revalidatePath(`/officer/inspection/${id}`);
   revalidatePath(`/officer/business/${existing.businessId}`);
-  revalidatePath("/inspector/queue");
+  revalidatePath("/officer/queue");
   revalidatePath("/officer/dashboard");
-  redirect(`/inspector/inspection/${id}?done=1`);
+  redirect(`/officer/inspection/${id}?done=1`);
 }

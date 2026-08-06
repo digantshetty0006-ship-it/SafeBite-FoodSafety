@@ -104,7 +104,7 @@ export function generateAiReport(params: {
     )}. Recommended risk delta +${riskDelta} — escalate to a priority re-inspection and log ${suggestedViolations.length} violation(s).`;
   }
 
-  if (notes) summary += ` Inspector notes: "${notes}".`;
+  if (notes) summary += ` Officer notes: "${notes}".`;
 
   return {
     summary,
@@ -146,7 +146,7 @@ export function generateOwnerSuggestions(opts: {
   if (byType.get("pest_control")) {
     suggestions.push({
       title: "Tighten pest control schedule",
-      body: "Pest control was flagged. Book monthly professional pest control, seal gaps around pipes and doors, and keep a written log inspectors can review.",
+      body: "Pest control was flagged. Book monthly professional pest control, seal gaps around pipes and doors, and keep a written log officers can review.",
       impact: "Addresses a repeat high-severity finding.",
       priority: "high",
     });

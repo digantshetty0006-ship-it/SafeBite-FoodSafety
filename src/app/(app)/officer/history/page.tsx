@@ -8,11 +8,11 @@ import { RiskBadge } from "@/components/risk-badge";
 import { formatDate } from "@/lib/format";
 import { KpiCard } from "@/components/kpi-card";
 
-export default async function InspectorHistoryPage() {
-  const inspector = await requireRole("inspector");
+export default async function OfficerHistoryPage() {
+  const officer = await requireRole("food_officer");
 
   const inspections = await db.inspection.findMany({
-    where: { inspectorId: inspector.id, status: { in: ["completed", "missed"] } },
+    where: { officerId: officer.id, status: { in: ["completed", "missed"] } },
     include: { business: true, violations: true },
     orderBy: { completedAt: "desc" },
   });
@@ -48,7 +48,7 @@ export default async function InspectorHistoryPage() {
           {inspections.map((insp) => {
             const photos = insp.photos && insp.photos !== "[]" ? JSON.parse(insp.photos) : [];
             return (
-              <Link key={insp.id} href={`/inspector/inspection/${insp.id}`} className="group block">
+              <Link key={insp.id} href={`/officer/inspection/${insp.id}`} className="group block">
                 <Card className="transition hover:border-primary/40 hover:shadow-sm">
                   <CardContent className="p-5">
                     <div className="flex flex-wrap items-center justify-between gap-3">

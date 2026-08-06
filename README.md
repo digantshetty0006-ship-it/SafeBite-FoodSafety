@@ -4,10 +4,10 @@ AI-powered predictive food safety intelligence platform for FSSAI & Maharashtra 
 
 ## Features
 
-- **Role-based dashboards** — FDA Officer, Food Inspector, Citizen, Business Owner
+- **Role-based dashboards** — Food Safety Officer, Citizen, Business Owner
 - **Predictive risk scoring** — C/D tier business identification from license, inspection, document, and complaint data
 - **District heat map** — Leaflet map with search, risk-tier markers, and business lookup
-- **Citizen complaint portal** — AI-drafted complaints, voice input, photo evidence, auto-assignment to inspectors, SLA countdown with auto-escalation
+- **Citizen complaint portal** — AI-drafted complaints, voice input, photo evidence, auto-assignment to officers, SLA countdown with auto-escalation
 - **Inspection workflow** — queue with risk prioritisation, AI inspection summaries, violation logging
 - **Analytics** — risk-tier distribution, district heat metrics, complaint trends, inspection outcomes
 
@@ -15,10 +15,9 @@ AI-powered predictive food safety intelligence platform for FSSAI & Maharashtra 
 
 | Role            | Email             | Password  |
 | --------------- | ----------------- | --------- |
-| FDA Officer     | officer@demo.in   | demo1234  |
-| Food Inspector  | inspector@demo.in | demo1234  |
-| Citizen         | citizen@demo.in   | demo1234  |
-| Business Owner  | owner@demo.in     | demo1234  |
+| Food Safety Officer | officer@demo.in   | demo1234  |
+| Citizen             | citizen@demo.in   | demo1234  |
+| Business Owner      | owner@demo.in     | demo1234  |
 
 ## Getting started
 

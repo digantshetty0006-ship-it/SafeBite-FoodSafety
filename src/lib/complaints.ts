@@ -10,17 +10,17 @@ export function reference(id: string): string {
   return `MH-FDA-${id.slice(-7).toUpperCase()}`;
 }
 
-export async function assignInspector(complaintId: string): Promise<string | null> {
-  const inspectors = await db.user.findMany({
-    where: { role: "inspector" },
+export async function assignOfficer(complaintId: string): Promise<string | null> {
+  const officers = await db.user.findMany({
+    where: { role: "food_officer" },
     select: { id: true },
     orderBy: { id: "asc" },
   });
-  if (inspectors.length === 0) return null;
-  const inspectorId = inspectors[hashId(complaintId) % inspectors.length].id;
+  if (officers.length === 0) return null;
+  const officerId = officers[hashId(complaintId) % officers.length].id;
   await db.complaint.update({
     where: { id: complaintId },
-    data: { assignedInspectorId: inspectorId },
+    data: { assignedOfficerId: officerId },
   });
-  return inspectorId;
+  return officerId;
 }

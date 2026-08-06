@@ -5,7 +5,7 @@ import { detectNetworks } from "@/lib/network";
 import { categoryLabel } from "@/lib/format";
 
 export default async function OfficerAnalyticsPage() {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
 
   const [businesses, complaints, inspections] = await Promise.all([
     db.business.findMany({

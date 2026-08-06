@@ -10,19 +10,19 @@ import { categoryLabel, formatDateTime, COMPLAINT_STATUS_LABELS } from "@/lib/fo
 import { KpiCard } from "@/components/kpi-card";
 import { AlertTriangle, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { updateComplaintStatusAction } from "@/app/(app)/inspector/actions";
+import { updateComplaintStatusAction } from "@/app/(app)/officer/complaints-actions";
 
-export default async function InspectorQueuePage() {
-  const inspector = await requireRole("inspector");
+export default async function OfficerQueuePage() {
+  const officer = await requireRole("food_officer");
 
   const [inspections, assignedComplaints, allComplaints] = await Promise.all([
     db.inspection.findMany({
-      where: { inspectorId: inspector.id },
+      where: { officerId: officer.id },
       include: { business: true },
       orderBy: { scheduledAt: "desc" },
     }),
     db.complaint.findMany({
-      where: { assignedInspectorId: inspector.id, status: { not: "resolved" } },
+      where: { assignedOfficerId: officer.id, status: { not: "resolved" } },
       include: { business: { select: { name: true, district: true } } },
       orderBy: { createdAt: "asc" },
     }),
@@ -30,7 +30,7 @@ export default async function InspectorQueuePage() {
       where: { status: { not: "resolved" } },
       include: {
         business: { select: { name: true, district: true } },
-        assignedInspector: { select: { name: true } },
+        assignedOfficer: { select: { name: true } },
       },
       orderBy: { createdAt: "desc" },
       take: 15,
@@ -146,7 +146,7 @@ export default async function InspectorQueuePage() {
                         <Clock className="h-3 w-3" /> filed {formatDateTime(c.createdAt)}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" /> {c.assignedInspector?.name ?? "unassigned"}
+                        <Users className="h-3 w-3" /> {c.assignedOfficer?.name ?? "unassigned"}
                       </span>
                     </p>
                   </div>
@@ -217,7 +217,7 @@ export default async function InspectorQueuePage() {
                       <RiskScoreBar score={insp.business.riskScore} />
                     </div>
                     <Button asChild>
-                      <Link href={`/inspector/inspection/${insp.id}`}>Start inspection</Link>
+                      <Link href={`/officer/inspection/${insp.id}`}>Start inspection</Link>
                     </Button>
                   </div>
                 </CardContent>

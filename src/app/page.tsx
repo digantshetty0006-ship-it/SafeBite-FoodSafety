@@ -36,7 +36,7 @@ const FEATURES = [
   {
     icon: ClipboardCheck,
     title: "Checklist-Based Inspections",
-    body: "Food inspectors complete FSSAI-style checklists, attach photos, and generate structured AI reports with recommended risk deltas.",
+    body: "Food Safety Officers complete FSSAI-style checklists, attach photos, and generate structured AI reports with recommended risk deltas.",
   },
   {
     icon: Megaphone,
@@ -53,17 +53,10 @@ const FEATURES = [
 const ROLES = [
   {
     icon: Landmark,
-    title: "FDA / FSSAI Officer",
-    desc: "Command center with risk-ranked businesses, heat maps, scheduling, and analytics.",
+    title: "Food Safety Officer",
+    desc: "Command center with risk-ranked businesses, heat maps, scheduling and analytics, plus your prioritised inspection queue, checklists, photo evidence and AI reports.",
     href: "/login",
     demo: "officer@demo.in",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Food Inspector",
-    desc: "Prioritised inspection queue, checklist forms, photo evidence, AI report generation.",
-    href: "/login",
-    demo: "inspector@demo.in",
   },
   {
     icon: Megaphone,
@@ -119,7 +112,7 @@ export default function LandingPage() {
             </Button>
           </div>
           <p className="mt-4 text-xs text-emerald-50/70">
-            Demo credentials: officer@demo.in · inspector@demo.in · citizen@demo.in · owner@demo.in — password{" "}
+            Demo credentials: officer@demo.in · citizen@demo.in · owner@demo.in — password{" "}
             <code className="rounded bg-white/10 px-1 py-0.5">demo1234</code>
           </p>
         </div>
@@ -212,8 +205,8 @@ export default function LandingPage() {
       {/* Roles */}
       <section id="roles" className="py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <h2 className="text-center text-2xl font-bold sm:text-3xl">One platform, four roles</h2>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <h2 className="text-center text-2xl font-bold sm:text-3xl">One platform, three roles</h2>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {ROLES.map((r) => (
               <div
                 key={r.title}

@@ -1,20 +1,18 @@
 import Link from "next/link";
-import { ShieldCheck, ArrowLeft, Landmark, ClipboardCheck, Megaphone, Building2 } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Landmark, Megaphone, Building2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { demoLoginAction, loginAction } from "../(auth)/actions";
 import { DEMO_USERS } from "@/lib/auth";
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
-  fda_officer: Landmark,
-  inspector: ClipboardCheck,
+  food_officer: Landmark,
   citizen: Megaphone,
   business_owner: Building2,
 };
 
 const ROLE_NAMES: Record<string, string> = {
-  fda_officer: "FDA / FSSAI Officer",
-  inspector: "Food Inspector",
+  food_officer: "Food Safety Officer",
   citizen: "Citizen",
   business_owner: "Business Owner",
 };

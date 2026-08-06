@@ -24,7 +24,7 @@ export default async function CitizenComplaintsPage({
       where: { citizenId: citizen.id },
       include: {
         business: { select: { name: true, district: true } },
-        assignedInspector: { select: { name: true, district: true } },
+        assignedOfficer: { select: { name: true, district: true } },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -75,7 +75,7 @@ export default async function CitizenComplaintsPage({
             const overdue = !resolved && now > slaDeadline;
             const daysLeft = Math.max(0, Math.ceil((slaDeadline.getTime() - now.getTime()) / 86400000));
             const officer =
-              c.assignedInspector ?? { name: "Food Safety Officer", district: null };
+              c.assignedOfficer ?? { name: "Food Safety Officer", district: null };
 
             return (
               <Card key={c.id}>

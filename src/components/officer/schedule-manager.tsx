@@ -28,7 +28,7 @@ import { RiskBadge } from "@/components/risk-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-interface Inspector {
+interface Officer {
   id: string;
   name: string;
   district: string | null;
@@ -47,7 +47,7 @@ interface ScheduledInspection {
   businessName: string;
   district: string;
   riskScore: number;
-  inspectorName: string;
+  officerName: string;
   scheduledAt: Date | string;
   status: string;
 }
@@ -59,17 +59,17 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export function ScheduleManager({
-  inspectors,
+  officers,
   businesses,
   inspections,
 }: {
-  inspectors: Inspector[];
+  officers: Officer[];
   businesses: BusinessOption[];
   inspections: ScheduledInspection[];
 }) {
   const [open, setOpen] = useState(false);
   const [businessId, setBusinessId] = useState("");
-  const [inspectorId, setInspectorId] = useState("");
+  const [officerId, setOfficerId] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -83,7 +83,7 @@ export function ScheduleManager({
   const submit = () => {
     const fd = new FormData();
     fd.set("businessId", businessId);
-    fd.set("inspectorId", inspectorId);
+    fd.set("officerId", officerId);
     fd.set("scheduledAt", scheduledAt);
     scheduleInspectionAction(fd);
   };
@@ -124,7 +124,7 @@ export function ScheduleManager({
             <DialogHeader>
               <DialogTitle>Schedule an inspection</DialogTitle>
               <DialogDescription>
-                Assign an inspector to a business based on risk priority.
+                Assign an officer to a business based on risk priority.
               </DialogDescription>
             </DialogHeader>
             <form
@@ -148,13 +148,13 @@ export function ScheduleManager({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Inspector</Label>
-                <Select value={inspectorId} onValueChange={setInspectorId} name="inspectorId">
+                <Label>Officer</Label>
+                <Select value={officerId} onValueChange={setOfficerId} name="officerId">
                   <SelectTrigger>
-                    <SelectValue placeholder="Select inspector" />
+                    <SelectValue placeholder="Select officer" />
                   </SelectTrigger>
                   <SelectContent>
-                    {inspectors.map((i) => (
+                    {officers.map((i) => (
                       <SelectItem key={i.id} value={i.id}>
                         {i.name} {i.district ? `· ${i.district}` : ""}
                       </SelectItem>
@@ -173,7 +173,7 @@ export function ScheduleManager({
                 />
               </div>
               <DialogFooter>
-                <Button type="submit" disabled={!businessId || !inspectorId || !scheduledAt}>
+                <Button type="submit" disabled={!businessId || !officerId || !scheduledAt}>
                   Schedule
                 </Button>
               </DialogFooter>
@@ -216,7 +216,7 @@ export function ScheduleManager({
                         <div>
                           <p className="font-medium group-hover:text-primary">{i.businessName}</p>
                           <p className="text-xs text-muted-foreground">
-                            {i.district} · Inspector {i.inspectorName} · {formatDateTime(i.scheduledAt)}
+                            {i.district} · Officer {i.officerName} · {formatDateTime(i.scheduledAt)}
                           </p>
                         </div>
                       </div>

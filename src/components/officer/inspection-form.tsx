@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { DEFAULT_CHECKLIST, generateAiReport, type ChecklistItem, type AiReport } from "@/lib/ai-report";
-import { uploadInspectionPhotoAction, completeInspectionAction } from "@/app/(app)/inspector/inspection/actions";
+import { uploadInspectionPhotoAction, completeInspectionAction } from "@/app/(app)/officer/inspection/actions";
 import { SEVERITY_LABELS } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -166,7 +166,7 @@ export function InspectionForm({
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Inspector notes</CardTitle>
+              <CardTitle className="text-base">Officer notes</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea

@@ -5,16 +5,16 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 
 export async function scheduleInspectionAction(formData: FormData) {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
   const businessId = String(formData.get("businessId") ?? "");
-  const inspectorId = String(formData.get("inspectorId") ?? "");
+  const officerId = String(formData.get("officerId") ?? "");
   const scheduledAt = String(formData.get("scheduledAt") ?? "");
-  if (!businessId || !inspectorId || !scheduledAt) return;
+  if (!businessId || !officerId || !scheduledAt) return;
 
   await db.inspection.create({
     data: {
       businessId,
-      inspectorId,
+      officerId,
       scheduledAt: new Date(scheduledAt),
       checklist: [],
       status: "scheduled",
@@ -24,7 +24,7 @@ export async function scheduleInspectionAction(formData: FormData) {
 }
 
 export async function rescheduleInspectionAction(formData: FormData) {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
   const id = String(formData.get("id") ?? "");
   const scheduledAt = String(formData.get("scheduledAt") ?? "");
   if (!id || !scheduledAt) return;

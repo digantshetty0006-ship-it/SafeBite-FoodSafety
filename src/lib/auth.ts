@@ -14,15 +14,13 @@ export interface DemoUser {
 }
 
 export const DEMO_USERS: DemoUser[] = [
-  { email: "officer@demo.in", password: "demo1234", role: "fda_officer" },
-  { email: "inspector@demo.in", password: "demo1234", role: "inspector" },
+  { email: "officer@demo.in", password: "demo1234", role: "food_officer" },
   { email: "citizen@demo.in", password: "demo1234", role: "citizen" },
   { email: "owner@demo.in", password: "demo1234", role: "business_owner" },
 ];
 
 export const ROLE_LABELS: Record<string, string> = {
-  fda_officer: "FDA / FSSAI Officer",
-  inspector: "Food Inspector",
+  food_officer: "Food Safety Officer",
   citizen: "Citizen",
   business_owner: "Business Owner",
 };

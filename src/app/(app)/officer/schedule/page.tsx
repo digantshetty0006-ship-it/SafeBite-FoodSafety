@@ -5,13 +5,13 @@ import { KpiCard } from "@/components/kpi-card";
 import { CalendarClock, ClipboardCheck, AlertTriangle } from "lucide-react";
 
 export default async function OfficerSchedulePage() {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
 
-  const [inspectors, businesses, inspections] = await Promise.all([
-    db.user.findMany({ where: { role: "inspector" } }),
+  const [officers, businesses, inspections] = await Promise.all([
+    db.user.findMany({ where: { role: "food_officer" } }),
     db.business.findMany({ orderBy: { riskScore: "desc" } }),
     db.inspection.findMany({
-      include: { business: true, inspector: true },
+      include: { business: true, officer: true },
       orderBy: { scheduledAt: "desc" },
     }),
   ]);
@@ -27,7 +27,7 @@ export default async function OfficerSchedulePage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Inspection Scheduling</h1>
         <p className="text-sm text-muted-foreground">
-          Assign inspectors to businesses. Queue is sorted by live risk score.
+          Assign officers to businesses. Queue is sorted by live risk score.
         </p>
       </div>
 
@@ -38,7 +38,7 @@ export default async function OfficerSchedulePage() {
       </div>
 
       <ScheduleManager
-        inspectors={inspectors.map((i) => ({ id: i.id, name: i.name, district: i.district }))}
+        officers={officers.map((i) => ({ id: i.id, name: i.name, district: i.district }))}
         businesses={businesses.map((b) => ({ id: b.id, name: b.name, district: b.district, riskScore: b.riskScore }))}
         inspections={inspections.map((i) => ({
           id: i.id,
@@ -46,7 +46,7 @@ export default async function OfficerSchedulePage() {
           businessName: i.business.name,
           district: i.business.district,
           riskScore: i.business.riskScore,
-          inspectorName: i.inspector.name,
+          officerName: i.officer.name,
           scheduledAt: i.scheduledAt,
           status: i.status,
         }))}

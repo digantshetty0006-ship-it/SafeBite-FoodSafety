@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function OfficerDashboardPage() {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
 
   const [
     total,

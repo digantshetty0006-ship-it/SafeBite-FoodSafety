@@ -48,3 +48,5 @@ dev.db
 cookie-*.txt
 public/uploads/
 
+.vercel
+.env*

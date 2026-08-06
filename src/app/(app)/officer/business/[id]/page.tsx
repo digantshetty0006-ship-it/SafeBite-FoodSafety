@@ -19,12 +19,12 @@ const SEVERITY_STYLES: Record<string, string> = {
 };
 
 export default async function BusinessProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
   const { id } = await params;
   const business = await db.business.findUnique({
     where: { id },
     include: {
-      inspections: { include: { violations: true, inspector: true }, orderBy: { scheduledAt: "desc" } },
+      inspections: { include: { violations: true, officer: true }, orderBy: { scheduledAt: "desc" } },
       complaints: { orderBy: { createdAt: "desc" } },
       documents: { orderBy: { uploadedAt: "desc" } },
       owner: true,
@@ -192,7 +192,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-medium">
-                      Inspection by {insp.inspector.name}
+                      Inspection by {insp.officer.name}
                       <span className="ml-2 text-xs font-normal text-muted-foreground">
                         {formatDateTime(insp.scheduledAt)}
                       </span>

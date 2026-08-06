@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin, Building2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
-import { InspectionForm } from "@/components/inspector/inspection-form";
+import { InspectionForm } from "@/components/officer/inspection-form";
 import { RiskBadge } from "@/components/risk-badge";
 import { categoryLabel, formatDateTime } from "@/lib/format";
 
@@ -14,7 +14,7 @@ export default async function InspectionPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ done?: string }>;
 }) {
-  const inspector = await requireRole("inspector");
+  const officer = await requireRole("food_officer");
   const { id } = await params;
   const { done } = await searchParams;
 
@@ -22,7 +22,7 @@ export default async function InspectionPage({
     where: { id },
     include: { business: true, violations: true },
   });
-  if (!inspection || inspection.inspectorId !== inspector.id) notFound();
+  if (!inspection || inspection.officerId !== officer.id) notFound();
 
   const completed = inspection.status === "completed" || done === "1";
 
@@ -35,7 +35,7 @@ export default async function InspectionPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
-          href="/inspector/queue"
+          href="/officer/queue"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" /> Back to queue

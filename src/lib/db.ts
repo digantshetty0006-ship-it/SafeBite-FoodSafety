@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import path from "path";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
@@ -18,7 +19,15 @@ export function resolveDatabaseUrl(url: string): string {
   return file;
 }
 
-const adapter = new PrismaBetterSqlite3({ url: resolveDatabaseUrl(process.env.DATABASE_URL ?? "file:./dev.db") });
+export function isPostgres(url: string): boolean {
+  return url.startsWith("postgres://") || url.startsWith("postgresql://");
+}
+
+const url = process.env.DATABASE_URL ?? "file:./dev.db";
+
+const adapter = isPostgres(url)
+  ? new PrismaPg({ connectionString: url })
+  : new PrismaBetterSqlite3({ url: resolveDatabaseUrl(url) });
 
 export const db =
   globalForPrisma.prisma ??

@@ -5,7 +5,7 @@ import { AlertTriangle, Map as MapIcon } from "lucide-react";
 import MapView from "@/components/map/map-view";
 
 export default async function OfficerMapPage() {
-  await requireRole("fda_officer");
+  await requireRole("food_officer");
 
   const businesses = await db.business.findMany({
     include: { inspections: { orderBy: { completedAt: "desc" }, take: 1 } },

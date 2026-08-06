@@ -108,7 +108,7 @@ export default async function OwnerDashboardPage() {
                   <p className="text-xs text-muted-foreground">Next inspection</p>
                   <p className="mt-1 font-medium">{nextInspection ? formatDate(nextInspection.scheduledAt) : "Not scheduled"}</p>
                   {nextInspection && (
-                    <p className="text-xs text-muted-foreground">Inspector will visit on this date.</p>
+                    <p className="text-xs text-muted-foreground">Officer will visit on this date.</p>
                   )}
                 </div>
                 <div className="rounded-lg border p-3">
