@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { ShieldCheck, ArrowLeft, Landmark, Megaphone, Building2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { demoLoginAction, loginAction } from "../(auth)/actions";
 import { DEMO_USERS } from "@/lib/auth";
+import LoginForm from "./login-form";
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
   food_officer: Landmark,
@@ -17,12 +18,7 @@ const ROLE_NAMES: Record<string, string> = {
   business_owner: "Business Owner",
 };
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
+export default async function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950 px-4 py-12">
       <div className="mb-6 flex items-center gap-2 text-white">
@@ -72,7 +68,9 @@ export default async function LoginPage({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <LoginForm hasError={!!error} />
+            <Suspense fallback={null}>
+              <LoginForm />
+            </Suspense>
           </CardContent>
         </Card>
       </div>
@@ -82,48 +80,5 @@ export default async function LoginPage({
         Back to home
       </Link>
     </div>
-  );
-}
-
-function LoginForm({ hasError }: { hasError: boolean }) {
-  return (
-    <>
-      {hasError && (
-        <p className="mb-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
-          Invalid credentials. Use a demo account with password <code className="font-mono">demo1234</code>.
-        </p>
-      )}
-      <form action={loginAction} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="officer@demo.in"
-          required
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
-      <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="demo1234"
-          required
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </div>
-      <Button type="submit" className="w-full">
-        Sign in
-      </Button>
-      </form>
-    </>
   );
 }

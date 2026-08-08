@@ -8,6 +8,8 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+export const preferredRegion = "sin1";
+
 export const metadata: Metadata = {
   title: "SafeDine — Prevent unsafe food before it reaches people",
   description:
