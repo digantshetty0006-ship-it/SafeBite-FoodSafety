@@ -27,7 +27,7 @@ export default async function LoginPage({
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950 px-4 py-12">
       <div className="mb-6 flex items-center gap-2 text-white">
         <ShieldCheck className="h-6 w-6" />
-        <span className="text-xl font-semibold">BiteSafe</span>
+        <span className="text-xl font-semibold">SafeDine</span>
       </div>
 
       <div className="grid w-full max-w-4xl gap-6 lg:grid-cols-2">

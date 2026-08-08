@@ -103,7 +103,7 @@ function SidebarNav({
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold">BiteSafe</p>
+            <p className="text-sm font-semibold">SafeDine</p>
             <p className="text-[11px] text-white/80">{ROLE_LABELS[role]}</p>
           </div>
         </div>

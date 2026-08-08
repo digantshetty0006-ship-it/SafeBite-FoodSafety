@@ -1,4 +1,4 @@
-# BiteSafe (FoodShield AI)
+# SafeDine
 
 AI-powered predictive food safety intelligence platform for FSSAI & Maharashtra FDA. Built for Smart India Hackathon 2026.
 

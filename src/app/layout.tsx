@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BiteSafe — Prevent unsafe food before it reaches people",
+  title: "SafeDine — Prevent unsafe food before it reaches people",
   description:
     "AI-assisted food safety inspection management for FSSAI and Maharashtra FDA. Predictive risk scoring, district heat maps, and outbreak detection.",
 };

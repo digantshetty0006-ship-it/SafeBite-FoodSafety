@@ -92,7 +92,7 @@ export default function LandingPage() {
             Prevent unsafe food before it reaches people.
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-emerald-50/90">
-            BiteSafe replaces the reactive <em>Complaint → Inspection → Action</em> pipeline with a predictive{" "}
+            SafeDine replaces the reactive <em>Complaint → Inspection → Action</em> pipeline with a predictive{" "}
             <em>Predict Risk → Prioritize → Detect Networks → Prevent Outbreaks</em> model — surfacing the highest-risk
             businesses first, with every score explained.
           </p>
@@ -258,7 +258,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:px-6">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            <span className="font-medium text-foreground">BiteSafe</span>
+            <span className="font-medium text-foreground">SafeDine</span>
             <span>· Hackathon prototype</span>
           </div>
           <p>Demo data is mocked. Not a government system.</p>
