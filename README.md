@@ -2,6 +2,10 @@
 
 AI-powered predictive food safety intelligence platform for FSSAI & Maharashtra FDA. Built for Smart India Hackathon 2026.
 
+## Live demo
+
+**https://foodshield-ai.vercel.app**
+
 ## Features
 
 - **Role-based dashboards** — Food Safety Officer, Citizen, Business Owner
