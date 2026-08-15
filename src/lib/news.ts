@@ -88,6 +88,21 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     items.push({ title, link, source, pubDate, snippet });
   }
 
+  for (const it of items) {
+    const t0 = it.title.toLowerCase();
+    if (it.snippet.toLowerCase().startsWith(t0)) {
+      it.snippet = it.snippet.slice(it.title.length).replace(/^[\s–—-]+/, "").trim();
+    }
+  }
+
+  items.sort((a, b) => {
+    const ta = Date.parse(a.pubDate);
+    const tb = Date.parse(b.pubDate);
+    const A = Number.isNaN(ta) ? 0 : ta;
+    const B = Number.isNaN(tb) ? 0 : tb;
+    return B - A;
+  });
+
   cache.set(key, { at: Date.now(), items });
   return items;
 }

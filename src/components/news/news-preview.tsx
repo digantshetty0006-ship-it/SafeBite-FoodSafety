@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Newspaper, ArrowRight, ExternalLink } from "lucide-react";
+import { Newspaper, ArrowRight } from "lucide-react";
 import { useLocale } from "@/components/locale-provider";
 import type { NewsItem } from "@/lib/news";
 
@@ -43,29 +43,24 @@ export function NewsPreview({ state }: { state: string }) {
         </Link>
       </div>
 
-      <div className="mt-4 space-y-2.5">
+      <div className="mt-4 divide-y">
         {items === null
           ? [0, 1, 2, 3].map((i) => <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />)
-          : items.slice(0, 4).map((n, i) => (
+          : items.slice(0, 5).map((n, i) => (
               <a
                 key={`${n.link}-${i}`}
                 href={n.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block rounded-xl border p-3.5 transition hover:border-primary/40 hover:bg-muted/40"
+                className="group flex items-center gap-3 py-3 transition hover:bg-muted/40"
               >
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                    {relativeTime(n.pubDate)}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold leading-snug group-hover:text-primary">{n.title}</p>
-                    {n.snippet && (
-                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{n.snippet}</p>
-                    )}
-                  </div>
-                  <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                </div>
+                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                  {relativeTime(n.pubDate)}
+                </span>
+                <p className="min-w-0 flex-1 truncate text-sm font-medium leading-snug group-hover:text-primary">
+                  {n.title}
+                </p>
+                <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
               </a>
             ))}
         {items !== null && items.length === 0 && (

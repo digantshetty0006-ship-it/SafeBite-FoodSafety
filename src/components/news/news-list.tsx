@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { ExternalLink, Newspaper, RefreshCw, ArrowUpRight } from "lucide-react";
+import { Newspaper, RefreshCw, ArrowUpRight } from "lucide-react";
 import { useLocale } from "@/components/locale-provider";
 import type { NewsItem } from "@/lib/news";
 
@@ -13,19 +13,6 @@ function relativeTime(pubDate: string): string {
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
   return `${Math.floor(s / 86400)}d`;
-}
-
-function keyPoints(snippet: string, max = 3): string[] {
-  const clean = snippet.trim().replace(/[.,;:!?]+$/, "");
-  if (!clean) return [];
-  const sentences = clean
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter((s) => s.length > 20);
-  if (sentences.length < 2) {
-    return [clean.length > 160 ? `${clean.slice(0, 160)}…` : clean];
-  }
-  return sentences.slice(0, max).map((s) => (s.length > 140 ? `${s.slice(0, 140)}…` : s));
 }
 
 export function NewsList({ state, initial }: { state: string; initial: NewsItem[] | null }) {
@@ -80,47 +67,28 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
 
   return (
     <div className="space-y-4">
-      {items.map((n, i) => {
-        const points = keyPoints(n.snippet);
-        return (
-          <article key={`${n.link}-${i}`} className="group overflow-hidden rounded-2xl border bg-card transition hover:border-primary/40 hover:shadow-md">
-            <a href={n.link} target="_blank" rel="noopener noreferrer" className="block p-5">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
-                  {relativeTime(n.pubDate)} ago
-                </span>
-                <span>{n.source || "News"}</span>
-              </div>
-              <h3 className="mt-2.5 text-lg font-bold leading-snug tracking-tight group-hover:text-primary">{n.title}</h3>
-
-              {n.snippet && (
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{n.snippet}</p>
-              )}
-
-              {points.length > 0 && (
-                <div className="mt-4 rounded-xl bg-muted/50 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    {t("news.points")}
-                  </p>
-                  <ul className="mt-2 space-y-1.5">
-                    {points.map((p, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm leading-relaxed">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                        <span>{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                {t("news.readMore")}
-                <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      {items.map((n, i) => (
+        <article key={`${n.link}-${i}`} className="group overflow-hidden rounded-2xl border bg-card transition hover:border-primary/40 hover:shadow-md">
+          <a href={n.link} target="_blank" rel="noopener noreferrer" className="block p-5">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                {relativeTime(n.pubDate)} ago
               </span>
-            </a>
-          </article>
-        );
-      })}
+              <span>{n.source || "News"}</span>
+            </div>
+            <h3 className="mt-2.5 text-lg font-bold leading-snug tracking-tight group-hover:text-primary">{n.title}</h3>
+
+            {n.snippet && (
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{n.snippet}</p>
+            )}
+
+            <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+              {t("news.readMore")}
+              <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </span>
+          </a>
+        </article>
+      ))}
     </div>
   );
 }
