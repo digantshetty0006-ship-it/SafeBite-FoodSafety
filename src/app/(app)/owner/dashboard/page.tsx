@@ -79,7 +79,7 @@ export default async function OwnerDashboardPage() {
                     <TierBadge tier={b.riskTier} />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {b.district} Â· Lic. {b.licenseNumber}
+                    {b.district} · Lic. {b.licenseNumber}
                   </p>
                 </div>
                 <div className="w-full max-w-xs">
@@ -98,7 +98,7 @@ export default async function OwnerDashboardPage() {
                     <span className="text-3xl font-bold">{b.riskTier}</span>
                     <span className="text-xs text-muted-foreground">
                       {b.riskTier === "A"
-                        ? "Great â€” keep it up"
+                        ? "Great — keep it up"
                         : b.riskTier === "B"
                           ? "Generally good"
                           : b.riskTier === "C"

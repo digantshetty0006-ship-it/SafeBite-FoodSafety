@@ -65,7 +65,7 @@ export default async function OfficerMapPage() {
         />
         <KpiCard
           label="Highest average risk"
-          value={highestDistrict?.name ?? "â€”"}
+          value={highestDistrict?.name ?? "—"}
           icon={AlertTriangle}
           hint={`avg ${highestDistrict ? Math.round(highestDistrict.avgScore) : 0}`}
           tone="danger"

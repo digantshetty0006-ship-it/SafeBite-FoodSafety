@@ -58,7 +58,7 @@ export default async function OfficerHistoryPage() {
                       <div>
                         <p className="font-medium group-hover:text-primary">{insp.business.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {insp.business.district} Â· {formatDate(insp.completedAt ?? insp.scheduledAt)}
+                          {insp.business.district} · {formatDate(insp.completedAt ?? insp.scheduledAt)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">

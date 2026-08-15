@@ -30,7 +30,7 @@ export default async function CitizenLookupPage() {
         <h1 className="text-2xl font-bold tracking-tight">{t("lookup.title")}</h1>
         <p className="text-sm text-muted-foreground">
           Search registered food businesses and view their public safety grade. Grades hide the exact score to keep the
-          system fair â€” A is best, D needs attention.
+          system fair — A is best, D needs attention.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default async function CitizenLookupPage() {
         <CardContent>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search by name, district, or categoryâ€¦" className="pl-8" />
+            <Input placeholder="Search by name, district, or category…" className="pl-8" />
           </div>
         </CardContent>
       </Card>

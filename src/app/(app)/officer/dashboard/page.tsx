@@ -52,7 +52,7 @@ export default async function OfficerDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("dash.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {t("dash.sub")} â€” highest-risk businesses first.
+            {t("dash.sub")} — highest-risk businesses first.
           </p>
         </div>
         <Link href="/officer/map" className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
