@@ -95,9 +95,16 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
   }
 
   for (const it of items) {
-    const t0 = it.title.toLowerCase();
-    if (it.snippet.toLowerCase().startsWith(t0)) {
-      it.snippet = it.snippet.slice(it.title.length).replace(/^[\s–—-]+/, "").trim();
+    const a = it.title.toLowerCase();
+    const b = it.snippet.toLowerCase();
+    let i = 0;
+    while (i < a.length && i < b.length && a[i] === b[i]) i++;
+    if (i >= 15) {
+      if (it.snippet.length - i < 40) {
+        it.snippet = "";
+      } else {
+        it.snippet = it.snippet.slice(i).replace(/^[\s:…–—-]+/, "").trim();
+      }
     }
   }
 
