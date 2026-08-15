@@ -27,6 +27,68 @@ export const STATES: Record<string, string> = {
 const CACHE_TTL = 15 * 60 * 1000;
 const cache = new Map<string, { at: number; items: NewsItem[] }>();
 
+const BROWSER_UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
+
+const PUBLISHER_FEEDS: { name: string; url: string }[] = [
+  { name: "Indian Express", url: "https://indianexpress.com/feed/" },
+  { name: "Times of India", url: "https://timesofindia.indiatimes.com/rssfeeds/1221656.cms" },
+  { name: "Hindustan Times", url: "https://www.hindustantimes.com/feeds/rss/top-news/rssfeed.xml" },
+  { name: "The Hindu", url: "https://www.thehindu.com/news/national/?service=rss" },
+  { name: "BBC News India", url: "https://feeds.bbci.co.uk/news/world/asia/india/rss.xml" },
+];
+
+const FOOD_KEYWORDS =
+  /food|fssai|poison|adulterat|contamin|hygiene|restaurant|hotel|eatery|eateries|swiggy|zomato|milk|paneer|ghee|spice|meat|poultry|fish|vegetable|fruit|snack|beverage|bakery|sweet|street food|canteen|mid[- ]day meal|labelling|licen[cs]e|recall|expiry|expired|stale/i;
+
+function normalizeTitle(title: string): string {
+  return title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+}
+
+function mergeItems(...lists: NewsItem[][]): NewsItem[] {
+  const byTitle = new Map<string, NewsItem>();
+  for (const it of lists.flat()) {
+    const norm = normalizeTitle(it.title);
+    if (!norm) continue;
+    const cur = byTitle.get(norm);
+    if (!cur || Date.parse(it.pubDate) > Date.parse(cur.pubDate)) byTitle.set(norm, it);
+  }
+  return [...byTitle.values()].sort((a, b) => Date.parse(b.pubDate) - Date.parse(a.pubDate));
+}
+
+async function fetchPublisherItems(state: string, limit: number): Promise<NewsItem[]> {
+  const results = await Promise.all(
+    PUBLISHER_FEEDS.map(async (f) => {
+      try {
+        const res = await fetch(f.url, {
+          headers: { "user-agent": BROWSER_UA, accept: "application/rss+xml, text/xml, */*" },
+          signal: AbortSignal.timeout(3000),
+          cache: "no-store",
+        });
+        if (!res.ok) return [];
+        const items = parseRss(await res.text(), 30);
+        return items.map((it) => (it.source ? it : { ...it, source: f.name }));
+      } catch {
+        return [];
+      }
+    })
+  );
+  const stateLower = state === "All India" ? "" : state.toLowerCase();
+  const seen = new Set<string>();
+  const out: NewsItem[] = [];
+  for (const it of results.flat()) {
+    const hay = `${it.title} ${it.snippet}`.toLowerCase();
+    if (!FOOD_KEYWORDS.test(hay)) continue;
+    if (stateLower && !hay.includes(stateLower)) continue;
+    const norm = normalizeTitle(it.title);
+    if (seen.has(norm)) continue;
+    seen.add(norm);
+    out.push(it);
+  }
+  out.sort((a, b) => Date.parse(b.pubDate) - Date.parse(a.pubDate));
+  return out.slice(0, limit);
+}
+
 function decodeXml(s: string) {
   return s
     .replace(/&amp;/g, "&")
@@ -184,7 +246,7 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<{ items:
 
   const bingQ = key === "All India" ? "food safety FSSAI India" : `${key} food safety`;
 
-  let items = await fetchBing(bingQ, limit);
+  let items = mergeItems(await fetchBing(bingQ, limit), await fetchPublisherItems(key, limit));
   if (items.length === 0) {
     const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
     try {
@@ -194,6 +256,7 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<{ items:
       items = [];
     }
   }
+  items = items.slice(0, limit);
   if (items.length === 0) throw new Error("news upstream unreachable");
 
   for (const it of items) {
