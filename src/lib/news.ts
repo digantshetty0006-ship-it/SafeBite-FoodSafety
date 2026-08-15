@@ -39,7 +39,7 @@ const PUBLISHER_FEEDS: { name: string; url: string }[] = [
 ];
 
 const FOOD_KEYWORDS =
-  /fssai|food safety|food poisoning|food adulterat|adulterat|contaminat|hygiene|unhygienic|food recall|recall|expiry|expired|stale|pesticide|insect|rodent|labelling|labeling|licen[cs]e|suspended|sealed|raided|food business|restaurant|hotel|eatery|eateries|swiggy|zomato|street food|mid[- ]day meal|canteen|bakery|confectionery|ghee|paneer|milk|dairy|spice|masala|meat|poultry|seafood|food inspection|food regulator/i;
+  /fssai|food safety|food poisoning|food adulterat|adulterat|contaminat|hygiene|unhygienic|food recall|recalled|expiry|expired|stale|pesticide|insect|rodent|labelling|labeling|licen[cs]e|suspended|sealed|raided|food business|restaurant|hotel|eatery|eateries|swiggy|zomato|street food|mid[- ]day meal|canteen|bakery|confectionery|ghee|paneer|milk|dairy|spice|masala|meat|poultry|seafood|food inspection|food regulator|fda|crackdown|food safety officer/i;
 
 function normalizeTitle(title: string): string {
   return title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
@@ -77,9 +77,9 @@ async function fetchPublisherItems(state: string, limit: number): Promise<NewsIt
   const seen = new Set<string>();
   const out: NewsItem[] = [];
   for (const it of results.flat()) {
-    const hay = `${it.title} ${it.snippet}`.toLowerCase();
-    if (!FOOD_KEYWORDS.test(hay)) continue;
-    if (stateLower && !hay.includes(stateLower)) continue;
+    const titleLower = it.title.toLowerCase();
+    if (!FOOD_KEYWORDS.test(titleLower)) continue;
+    if (stateLower && !`${titleLower} ${it.snippet.toLowerCase()}`.includes(stateLower)) continue;
     const norm = normalizeTitle(it.title);
     if (seen.has(norm)) continue;
     seen.add(norm);
