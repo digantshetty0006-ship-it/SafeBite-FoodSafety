@@ -100,15 +100,23 @@ async function callGemini(images: string[], model: string): Promise<VisionResult
       }),
     }
   );
-  if (!res.ok) return null;
+  if (!res.ok) {
+    lastGeminiError = { status: res.status, model, detail: (await res.text()).slice(0, 300) };
+    return null;
+  }
   const body = await res.json();
   const text = body?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (typeof text !== "string") return null;
+  if (typeof text !== "string") {
+    lastGeminiError = { status: res.status, model, detail: "no text in response" };
+    return null;
+  }
   const parsed = extractJson(text);
   const result = sanitize(parsed);
   if (result) result.model = model;
   return result;
 }
+
+let lastGeminiError: { status: number; model: string; detail: string } | null = null;
 
 async function callOpenAI(images: string[]): Promise<VisionResult | null> {
   const key = process.env.OPENAI_API_KEY;
@@ -166,7 +174,12 @@ export async function POST(req: NextRequest) {
     }
     result = result ?? (await callOpenAI(images));
     if (result) return NextResponse.json(result);
-    return NextResponse.json({ engine: "on-device", error: "vision_unavailable" });
+    return NextResponse.json({
+      engine: "on-device",
+      error: "vision_unavailable",
+      gemini: lastGeminiError ? `${lastGeminiError.status} ${lastGeminiError.model}: ${lastGeminiError.detail}` : null,
+      hasKey: Boolean(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY),
+    });
   } catch {
     return NextResponse.json({ engine: "on-device", error: "vision_failed" });
   }
