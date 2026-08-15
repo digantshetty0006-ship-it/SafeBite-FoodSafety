@@ -50,6 +50,14 @@ function repairUtf8(s: string): string {
     .replace(/â€¦/g, "…")
     .replace(/â€¢/g, "•")
     .replace(/â€/g, "”")
+    .replace(/\u00E2\u0080\u0099/g, "’")
+    .replace(/\u00E2\u0080\u009C/g, "“")
+    .replace(/\u00E2\u0080\u009D/g, "”")
+    .replace(/\u00E2\u0080\u0094/g, "—")
+    .replace(/\u00E2\u0080\u0093/g, "–")
+    .replace(/\u00E2\u0080\u00A6/g, "…")
+    .replace(/\u00E2\u0080\u00A2/g, "•")
+    .replace(/\u00E2[\u0080-\u00BF]{2}/g, "")
     .replace(/\uFFFD\?{1,3}/g, "’")
     .replace(/\uFFFD/g, "’");
 }
