@@ -18,10 +18,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { getLang, tr } from "@/lib/lang";
 import { LocaleProvider } from "@/components/locale-provider";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { NewsPreview } from "@/components/news/news-preview";
 import { RecentActions } from "@/components/news/recent-actions";
 import { UnsafeSpots } from "@/components/news/unsafe-spots";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 import { db } from "@/lib/db";
 
 const FEATURES = [
@@ -53,18 +54,17 @@ export default async function LandingPage() {
   return (
     <LocaleProvider lang={lang}>
       <div className="flex-1">
+        <PublicHeader lang={lang} />
         {/* Hero */}
         <section className="relative overflow-hidden border-b">
           <div className="absolute inset-0 -z-10 bg-gradient-to-br from-emerald-700 via-emerald-800 to-teal-900" />
+          <div className="pointer-events-none absolute inset-0 -z-10 opacity-20 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.4)_1px,transparent_0)] [background-size:26px_26px]" />
           <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-teal-400/10 blur-3xl" />
           <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-emerald-50">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                {t("home.badge")}
-              </div>
-              <LanguageSwitcher current={lang} className="border-white/20 bg-white/10 text-white" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-emerald-50">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {t("home.badge")}
             </div>
             <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
               {t("home.title")}
@@ -230,27 +230,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer className="border-t bg-muted/30 py-8">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-muted-foreground sm:flex-row sm:px-6">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              <span className="font-medium text-foreground">SafeBite</span>
-              <span>{t("home.footPrototype")}</span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-              <Link href="/news" className="font-medium text-primary hover:underline">
-                {t("home.newsTitle")}
-              </Link>
-              <Link href="/leadership" className="font-medium text-primary hover:underline">
-                {t("home.leadership")}
-              </Link>
-              <Link href="/judges-guide" className="font-medium text-primary hover:underline">
-                {t("home.footGuide")}
-              </Link>
-            </div>
-          </div>
-          <p className="mt-3 text-center text-xs text-muted-foreground">{t("home.footMocked")}</p>
-        </footer>
+        <PublicFooter lang={lang} />
       </div>
     </LocaleProvider>
   );

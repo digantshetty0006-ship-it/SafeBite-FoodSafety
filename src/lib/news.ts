@@ -3,6 +3,7 @@ export interface NewsItem {
   link: string;
   source: string;
   pubDate: string;
+  snippet: string;
 }
 
 export const STATES: Record<string, string> = {
@@ -40,6 +41,18 @@ function stripHtml(s: string) {
   return s.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&");
 }
 
+function cleanSnippet(raw: string): string {
+  let s = stripHtml(raw)
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^\s*(\d+\s*min(ute)?s?\s*(read)?\s*)/i, "")
+    .trim();
+  if (!s) return "";
+  const srcIdx = s.search(/—\s*[A-Z][^—]{2,40}$|·\s*[A-Z][^·]{2,40}$/);
+  if (srcIdx > 20) s = s.slice(0, srcIdx).trim();
+  return s;
+}
+
 export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem[]> {
   const key = state || "All India";
   const hit = cache.get(key);
@@ -68,10 +81,11 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     const link = grab("link");
     const source = stripHtml(grab("source"));
     const pubDate = grab("pubDate");
+    const snippet = cleanSnippet(grab("description"));
     if (!title || !link) continue;
     const sep = title.lastIndexOf(" - ");
     if (sep > 10 && title.slice(sep + 3) === source) title = title.slice(0, sep);
-    items.push({ title, link, source, pubDate });
+    items.push({ title, link, source, pubDate, snippet });
   }
 
   cache.set(key, { at: Date.now(), items });

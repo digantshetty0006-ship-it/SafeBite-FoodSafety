@@ -1,8 +1,8 @@
 ﻿import Image from "next/image";
-import Link from "next/link";
-import { ShieldCheck, ArrowLeft, Landmark, Building2, BadgeCheck } from "lucide-react";
+import { ShieldCheck, Landmark, Building2, BadgeCheck } from "lucide-react";
 import { getLang, tr } from "@/lib/lang";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 import { LocaleProvider } from "@/components/locale-provider";
 
 const PEOPLE = [
@@ -42,19 +42,17 @@ export default async function LeadershipPage() {
   return (
     <LocaleProvider lang={lang}>
       <div className="flex-1">
+        <PublicHeader lang={lang} />
         <section className="border-b bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900">
           <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-white">
-                  <Landmark className="h-5 w-5" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-white">{t("lead.title")}</h1>
-                  <p className="text-sm text-emerald-50/80">{t("lead.sub")}</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-white">
+                <Landmark className="h-5 w-5" />
               </div>
-              <LanguageSwitcher current={lang} className="border-white/20 bg-white/10 text-white" />
+              <div>
+                <h1 className="text-2xl font-bold text-white">{t("lead.title")}</h1>
+                <p className="text-sm text-emerald-50/80">{t("lead.sub")}</p>
+              </div>
             </div>
           </div>
         </section>
@@ -92,16 +90,7 @@ export default async function LeadershipPage() {
           </div>
         </section>
 
-        <footer className="border-t bg-muted/30 py-6">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 text-sm text-muted-foreground sm:px-6">
-            <Link href="/" className="flex items-center gap-1.5 font-medium text-foreground hover:text-primary">
-              <ArrowLeft className="h-4 w-4" /> {t("common.backHome")}
-            </Link>
-            <Link href="/news" className="font-medium text-primary hover:underline">
-              {t("home.newsTitle")}
-            </Link>
-          </div>
-        </footer>
+        <PublicFooter lang={lang} />
       </div>
     </LocaleProvider>
   );

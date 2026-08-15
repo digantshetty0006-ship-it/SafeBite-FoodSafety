@@ -43,7 +43,7 @@ export function NewsPreview({ state }: { state: string }) {
         </Link>
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-4 space-y-2.5">
         {items === null
           ? [0, 1, 2, 3].map((i) => <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />)
           : items.slice(0, 4).map((n, i) => (
@@ -52,13 +52,20 @@ export function NewsPreview({ state }: { state: string }) {
                 href={n.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-start gap-3 rounded-xl border p-3 transition hover:border-primary/40 hover:bg-muted/40"
+                className="group block rounded-xl border p-3.5 transition hover:border-primary/40 hover:bg-muted/40"
               >
-                <span className="mt-0.5 shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                  {relativeTime(n.pubDate)}
-                </span>
-                <span className="min-w-0 flex-1 text-sm font-medium leading-snug group-hover:text-primary">{n.title}</span>
-                <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                    {relativeTime(n.pubDate)}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold leading-snug group-hover:text-primary">{n.title}</p>
+                    {n.snippet && (
+                      <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{n.snippet}</p>
+                    )}
+                  </div>
+                  <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                </div>
               </a>
             ))}
         {items !== null && items.length === 0 && (

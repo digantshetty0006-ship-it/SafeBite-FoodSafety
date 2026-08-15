@@ -19,6 +19,23 @@ const dict: Record<string, [string, string, string]> = {
   "common.viewAll": ["View all", "सभी देखें", "सर्व पहा"],
   "common.tryDemo": ["Try demo", "डेमो आज़माएँ", "डेमो वापरून पहा"],
 
+  // ---- public header / footer ----
+  "nav.home": ["Home", "होम", "मुख्यपृष्ठ"],
+  "nav.news": ["News", "समाचार", "बातम्या"],
+  "nav.leadership": ["Leadership", "नेतृत्व", "नेतृत्व"],
+  "nav.guide": ["Judges' Guide", "निर्णायक मार्गदर्शिका", "निर्णायक मार्गदर्शक"],
+  "header.tagline": ["Food Safety Risk Platform", "खाद्य सुरक्षा जोखिम प्लेटफ़ॉर्म", "अन्न सुरक्षा जोखीम व्यासपीठ"],
+  "header.signIn": ["Sign in", "साइन इन", "साइन इन"],
+  "footer.quickLinks": ["Quick links", "त्वरित लिंक", "त्वरित दुवे"],
+  "footer.helpline": ["Food safety helpline", "खाद्य सुरक्षा हेल्पलाइन", "अन्न सुरक्षा हेल्पलाइन"],
+  "footer.copyright": [
+    "© 2026 SafeBite · Hackathon prototype built for FSSAI & Maharashtra FDA",
+    "© 2026 SafeBite · FSSAI और महाराष्ट्र FDA के लिए हैकाथॉन प्रोटोटाइप",
+    "© 2026 SafeBite · FSSAI आणि महाराष्ट्र FDA साठी हैकाथॉन प्रोटोटाइप",
+  ],
+  "news.points": ["Key points", "मुख्य बिंदु", "मुख्य मुद्दे"],
+  "news.readMore": ["Read full article", "पूरा लेख पढ़ें", "संपूर्ण लेख वाचा"],
+
   // ---- roles ----
   "role.officer": ["Food Safety Officer", "खाद्य सुरक्षा अधिकारी", "अन्न सुरक्षा अधिकारी"],
   "role.citizen": ["Citizen", "नागरिक", "नागरिक"],
