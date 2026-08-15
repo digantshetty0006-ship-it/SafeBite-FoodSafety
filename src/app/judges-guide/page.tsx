@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ShieldCheck,
-  ArrowLeft,
   Gauge,
   BarChart3,
   PieChart,
@@ -15,6 +14,10 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getLang } from "@/lib/lang";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
+import { LocaleProvider } from "@/components/locale-provider";
 
 const TIER_COLORS: Record<string, string> = {
   A: "#10b981",
@@ -135,26 +138,25 @@ const DEMO_SCRIPT = [
   },
 ];
 
-export default function JudgesGuidePage() {
+export default async function JudgesGuidePage() {
+  const lang = await getLang();
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-          <ArrowLeft className="h-4 w-4" /> Back to home
-        </Link>
-
-        <div className="mt-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-            <ShieldCheck className="h-7 w-7" />
+    <LocaleProvider lang={lang}>
+      <div className="min-h-screen bg-muted/30">
+        <PublicHeader lang={lang} />
+        <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+              <ShieldCheck className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">SafeBite — guide to every chart</h1>
+              <p className="text-sm text-muted-foreground">
+                A plain-language walkthrough of the demo, written for judges. Every chart, what it shows, how to read it,
+                and why it matters.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">SafeBite — guide to every chart</h1>
-            <p className="text-sm text-muted-foreground">
-              A plain-language walkthrough of the demo, written for judges. Every chart, what it shows, how to read it,
-              and why it matters.
-            </p>
-          </div>
-        </div>
 
         <div className="mt-10 space-y-6">
           <Card>
@@ -249,7 +251,9 @@ export default function JudgesGuidePage() {
             </Link>
           </div>
         </div>
+        <PublicFooter lang={lang} />
       </div>
     </div>
+    </LocaleProvider>
   );
 }
