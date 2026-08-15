@@ -39,7 +39,7 @@ const PUBLISHER_FEEDS: { name: string; url: string }[] = [
 ];
 
 const FOOD_KEYWORDS =
-  /food|fssai|poison|adulterat|contamin|hygiene|restaurant|hotel|eatery|eateries|swiggy|zomato|milk|paneer|ghee|spice|meat|poultry|fish|vegetable|fruit|snack|beverage|bakery|sweet|street food|canteen|mid[- ]day meal|labelling|licen[cs]e|recall|expiry|expired|stale/i;
+  /fssai|food safety|food poisoning|food adulterat|adulterat|contaminat|hygiene|unhygienic|food recall|recall|expiry|expired|stale|pesticide|insect|rodent|labelling|labeling|licen[cs]e|suspended|sealed|raided|food business|restaurant|hotel|eatery|eateries|swiggy|zomato|street food|mid[- ]day meal|canteen|bakery|confectionery|ghee|paneer|milk|dairy|spice|masala|meat|poultry|seafood|food inspection|food regulator/i;
 
 function normalizeTitle(title: string): string {
   return title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
