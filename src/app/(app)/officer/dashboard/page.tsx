@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { db } from "@/lib/db";
 import { BusinessTable } from "@/components/officer/business-table";
 import { KpiCard } from "@/components/kpi-card";
@@ -7,9 +7,12 @@ import { requireRole } from "@/lib/auth";
 import { COMPLAINT_STATUS_LABELS, formatDateTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OfficerDashboardPage() {
   await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const [
     total,
@@ -47,44 +50,44 @@ export default async function OfficerDashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Regulatory Dashboard</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("dash.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Live risk picture across Maharashtra — highest-risk businesses first.
+            {t("dash.sub")} â€” highest-risk businesses first.
           </p>
         </div>
         <Link href="/officer/map" className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-          Open district heat map
+          {t("map.title")}
         </Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          label="Registered businesses"
+          label={t("kpi.registered")}
           value={total.toLocaleString("en-IN")}
           icon={Building2}
           hint={`${districts.length} districts`}
         />
         <KpiCard
-          label="High-risk (C/D tier)"
+          label={t("kpi.highRisk")}
           value={highRisk}
           icon={AlertTriangle}
-          hint={`${avgScore._avg.riskScore ? Math.round(avgScore._avg.riskScore) : 0} avg score`}
+          hint={`${avgScore._avg.riskScore ? Math.round(avgScore._avg.riskScore) : 0} ${t("kpi.avg")}`}
           tone="danger"
           href="/officer/map"
         />
         <KpiCard
-          label="Open complaints"
+          label={t("kpi.open")}
           value={openComplaints}
           icon={Megaphone}
-          hint="awaiting action"
+          hint={t("kpi.awaiting")}
           tone="warning"
           href="/officer/map"
         />
         <KpiCard
-          label="Upcoming inspections"
+          label={t("kpi.scheduled")}
           value={scheduled}
           icon={ClipboardCheck}
-          hint="scheduled"
+          hint={t("kpi.scheduled")}
           href="/officer/schedule"
         />
       </div>
@@ -94,9 +97,9 @@ export default async function OfficerDashboardPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
               <MessageSquareWarning className="h-4 w-4 text-amber-500" />
-              Latest open complaints
+              {t("dash.latest")}
             </CardTitle>
-            <span className="text-xs text-muted-foreground">awaiting action</span>
+            <span className="text-xs text-muted-foreground">{t("kpi.awaiting")}</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-2">

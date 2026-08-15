@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, FileSearch, ClipboardCheck, Megaphone, UserCheck, AlertOctagon, PhoneCall, MapPin } from "lucide-react";
+﻿import { CheckCircle2, Clock, FileSearch, ClipboardCheck, Megaphone, UserCheck, AlertOctagon, PhoneCall, MapPin } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateTime, COMPLAINT_STATUS_LABELS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { reference } from "@/lib/complaints";
+import { getLang, tr } from "@/lib/lang";
 
 const STEPS = ["submitted", "under_review", "inspection_scheduled", "resolved"];
 const STEP_ICONS = [Megaphone, FileSearch, ClipboardCheck, CheckCircle2];
@@ -17,6 +18,8 @@ export default async function CitizenComplaintsPage({
   searchParams: Promise<{ submitted?: string }>;
 }) {
   const citizen = await requireRole("citizen");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
   const { submitted } = await searchParams;
 
   const [complaints] = await Promise.all([
@@ -44,9 +47,9 @@ export default async function CitizenComplaintsPage({
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Track My Complaints</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("my.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Follow each report from submission through resolution — with the officer assigned and SLA clock running.
+            Follow each report from submission through resolution â€” with the officer assigned and SLA clock running.
           </p>
         </div>
         <a
@@ -117,7 +120,7 @@ export default async function CitizenComplaintsPage({
                         <p className="text-muted-foreground">Assigned officer</p>
                         <p className="font-medium">
                           {officer.name}
-                          {officer.district ? ` · ${officer.district}` : ""}
+                          {officer.district ? ` Â· ${officer.district}` : ""}
                         </p>
                       </div>
                     </div>
@@ -127,7 +130,7 @@ export default async function CitizenComplaintsPage({
                         <p className="text-muted-foreground">SLA deadline</p>
                         <p className={cn("font-medium", overdue && "text-red-600")}>
                           {formatDateTime(slaDeadline)}
-                          {!resolved && (overdue ? " · overdue" : ` · ${daysLeft}d left`)}
+                          {!resolved && (overdue ? " Â· overdue" : ` Â· ${daysLeft}d left`)}
                         </p>
                       </div>
                     </div>
@@ -137,7 +140,7 @@ export default async function CitizenComplaintsPage({
                     <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:bg-red-950 dark:text-red-300">
                       <p className="font-medium">Auto-escalated to the Deputy Commissioner</p>
                       <p className="mt-0.5">
-                        The SLA for this complaint was exceeded. It has been escalated automatically for accountability —
+                        The SLA for this complaint was exceeded. It has been escalated automatically for accountability â€”
                         this mirrors the FDA&apos;s auto-escalation policy.
                       </p>
                     </div>

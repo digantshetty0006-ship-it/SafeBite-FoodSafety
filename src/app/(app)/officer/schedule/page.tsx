@@ -1,11 +1,14 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { ScheduleManager } from "@/components/officer/schedule-manager";
 import { KpiCard } from "@/components/kpi-card";
 import { CalendarClock, ClipboardCheck, AlertTriangle } from "lucide-react";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OfficerSchedulePage() {
   await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const [officers, businesses, inspections] = await Promise.all([
     db.user.findMany({ where: { role: "food_officer" } }),
@@ -25,7 +28,7 @@ export default async function OfficerSchedulePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Inspection Scheduling</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("schedule.title")}</h1>
         <p className="text-sm text-muted-foreground">
           Assign officers to businesses. Queue is sorted by live risk score.
         </p>

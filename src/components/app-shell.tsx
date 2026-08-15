@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import {
   LayoutDashboard,
@@ -19,31 +19,38 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/auth";
+import { getLang, tr } from "@/lib/lang";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { logoutAction } from "@/app/(auth)/actions";
 import { ActiveNavLink } from "@/components/nav-link";
 import type { NavItem } from "@/components/nav-link";
 
-const NAV: Record<string, NavItem[]> = {
+const NAV: Record<string, { href: string; labelKey: string; icon: React.ReactNode }[]> = {
   food_officer: [
-    { href: "/officer/dashboard", label: "Dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
-    { href: "/officer/queue", label: "My Queue", icon: <ClipboardList className="h-4 w-4" /> },
-    { href: "/officer/history", label: "Inspection History", icon: <History className="h-4 w-4" /> },
-    { href: "/officer/map", label: "District Risk Map", icon: <Map className="h-4 w-4" /> },
-    { href: "/officer/schedule", label: "Inspection Schedule", icon: <CalendarDays className="h-4 w-4" /> },
-    { href: "/officer/analytics", label: "Analytics & Outbreaks", icon: <BarChart3 className="h-4 w-4" /> },
+    { href: "/officer/dashboard", labelKey: "nav.dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
+    { href: "/officer/queue", labelKey: "nav.queue", icon: <ClipboardList className="h-4 w-4" /> },
+    { href: "/officer/history", labelKey: "nav.history", icon: <History className="h-4 w-4" /> },
+    { href: "/officer/map", labelKey: "nav.map", icon: <Map className="h-4 w-4" /> },
+    { href: "/officer/schedule", labelKey: "nav.schedule", icon: <CalendarDays className="h-4 w-4" /> },
+    { href: "/officer/analytics", labelKey: "nav.analytics", icon: <BarChart3 className="h-4 w-4" /> },
   ],
   citizen: [
-    { href: "/citizen/report", label: "Report Unsafe Food", icon: <Megaphone className="h-4 w-4" /> },
-    { href: "/citizen/my-complaints", label: "Track Complaints", icon: <History className="h-4 w-4" /> },
-    { href: "/citizen/lookup", label: "Business Lookup", icon: <Search className="h-4 w-4" /> },
+    { href: "/citizen/report", labelKey: "nav.report", icon: <Megaphone className="h-4 w-4" /> },
+    { href: "/citizen/my-complaints", labelKey: "nav.track", icon: <History className="h-4 w-4" /> },
+    { href: "/citizen/lookup", labelKey: "nav.lookup", icon: <Search className="h-4 w-4" /> },
   ],
   business_owner: [
-    { href: "/owner/dashboard", label: "My Business", icon: <Building2 className="h-4 w-4" /> },
-    { href: "/owner/documents", label: "Compliance Documents", icon: <FolderOpen className="h-4 w-4" /> },
-    { href: "/owner/suggestions", label: "Improvement Tips", icon: <Lightbulb className="h-4 w-4" /> },
+    { href: "/owner/dashboard", labelKey: "nav.myBusiness", icon: <Building2 className="h-4 w-4" /> },
+    { href: "/owner/documents", labelKey: "nav.documents", icon: <FolderOpen className="h-4 w-4" /> },
+    { href: "/owner/suggestions", labelKey: "nav.tips", icon: <Lightbulb className="h-4 w-4" /> },
   ],
+};
+
+const ROLE_HEADER: Record<string, string> = {
+  food_officer: "shell.hOfficer",
+  citizen: "shell.hCitizen",
+  business_owner: "shell.hOwner",
 };
 
 const ROLE_ACCENT: Record<string, string> = {
@@ -55,7 +62,12 @@ const ROLE_ACCENT: Record<string, string> = {
 export default async function AppShell({ children }: { children: React.ReactNode }) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
-  const items = NAV[user.role] ?? [];
+  const lang = await getLang();
+  const items: NavItem[] = (NAV[user.role] ?? []).map((i) => ({
+    href: i.href,
+    label: tr(lang, i.labelKey),
+    icon: i.icon,
+  }));
   const initials = user.name
     .split(" ")
     .map((p) => p[0])
@@ -64,9 +76,9 @@ export default async function AppShell({ children }: { children: React.ReactNode
 
   return (
     <div className="flex min-h-screen bg-muted/30">
-      <SidebarNav role={user.role} name={user.name} initials={initials} items={items} />
+      <SidebarNav role={user.role} name={user.name} initials={initials} items={items} lang={lang} />
       <div className="flex flex-1 flex-col lg:pl-64">
-        <Header user={user} />
+        <Header user={user} lang={lang} />
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
@@ -78,11 +90,13 @@ function SidebarNav({
   name,
   initials,
   items,
+  lang,
 }: {
   role: string;
   name: string;
   initials: string;
   items: NavItem[];
+  lang: "en" | "hi" | "mr";
 }) {
   return (
     <>
@@ -109,7 +123,9 @@ function SidebarNav({
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          <p className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Menu</p>
+          <p className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {tr(lang, "common.menu")}
+          </p>
           {items.map((item) => (
             <ActiveNavLink key={item.href} {...item} />
           ))}
@@ -128,7 +144,7 @@ function SidebarNav({
           <form action={logoutAction} className="mt-1">
             <Button type="submit" variant="ghost" size="sm" className="w-full justify-start text-muted-foreground">
               <LogOut className="mr-2 h-4 w-4" />
-              Sign out
+              {tr(lang, "common.signOut")}
             </Button>
           </form>
         </div>
@@ -137,18 +153,12 @@ function SidebarNav({
   );
 }
 
-async function Header({ user }: { user: { name: string; role: string; email: string } }) {
+async function Header({ user, lang }: { user: { name: string; role: string; email: string }; lang: "en" | "hi" | "mr" }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur sm:px-6 lg:pl-8">
       <div className="ml-10 lg:ml-0">
         <p className="text-sm font-medium text-muted-foreground">{ROLE_LABELS[user.role] ?? user.role}</p>
-        <h2 className="text-sm font-semibold leading-tight">
-          {user.role === "food_officer"
-            ? "Food Safety Command Center"
-            : user.role === "citizen"
-                ? "Citizen Safety Portal"
-                : "Business Compliance Portal"}
-        </h2>
+        <h2 className="text-sm font-semibold leading-tight">{tr(lang, ROLE_HEADER[user.role] ?? "shell.hOfficer")}</h2>
       </div>
       <div className="ml-auto flex items-center gap-3">
         <span className="hidden text-xs text-muted-foreground sm:block">{user.email}</span>

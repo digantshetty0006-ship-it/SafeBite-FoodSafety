@@ -1,11 +1,14 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { KpiCard } from "@/components/kpi-card";
 import { AlertTriangle, Map as MapIcon } from "lucide-react";
 import MapView from "@/components/map/map-view";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OfficerMapPage() {
   await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const businesses = await db.business.findMany({
     include: { inspections: { orderBy: { completedAt: "desc" }, take: 1 } },
@@ -47,7 +50,7 @@ export default async function OfficerMapPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">District Risk Heat Map</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("map.title")}</h1>
         <p className="text-sm text-muted-foreground">
           Colour-coded by aggregate risk. Click a district in the list to isolate it on the map.
         </p>
@@ -62,7 +65,7 @@ export default async function OfficerMapPage() {
         />
         <KpiCard
           label="Highest average risk"
-          value={highestDistrict?.name ?? "—"}
+          value={highestDistrict?.name ?? "â€”"}
           icon={AlertTriangle}
           hint={`avg ${highestDistrict ? Math.round(highestDistrict.avgScore) : 0}`}
           tone="danger"

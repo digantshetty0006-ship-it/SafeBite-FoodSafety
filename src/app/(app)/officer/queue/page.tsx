@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ClipboardList, CheckCircle2, MapPin, Megaphone, Clock, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
@@ -11,9 +11,12 @@ import { KpiCard } from "@/components/kpi-card";
 import { AlertTriangle, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { updateComplaintStatusAction } from "@/app/(app)/officer/complaints-actions";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OfficerQueuePage() {
   const officer = await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const [inspections, assignedComplaints, allComplaints] = await Promise.all([
     db.inspection.findMany({
@@ -46,14 +49,14 @@ export default async function OfficerQueuePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Inspection Queue</h1>
-        <p className="text-sm text-muted-foreground">Assigned to you, prioritised by business risk score.</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("queue.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("queue.sub")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiCard label="Awaiting action" value={queue.length} icon={ClipboardList} />
-        <KpiCard label="Overdue" value={overdue.length} icon={AlertTriangle} tone={overdue.length ? "danger" : "default"} />
-        <KpiCard label="Completed" value={completed.length} icon={CheckCircle2} />
+        <KpiCard label={t("kpi.awaiting")} value={queue.length} icon={ClipboardList} />
+        <KpiCard label={t("kpi.overdue")} value={overdue.length} icon={AlertTriangle} tone={overdue.length ? "danger" : "default"} />
+        <KpiCard label={t("kpi.completed")} value={completed.length} icon={CheckCircle2} />
       </div>
 
       {assignedComplaints.length > 0 && (
@@ -131,7 +134,7 @@ export default async function OfficerQueuePage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4 text-sky-500" /> All open complaints · review everything
+              <Users className="h-4 w-4 text-sky-500" /> All open complaints Â· review everything
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">

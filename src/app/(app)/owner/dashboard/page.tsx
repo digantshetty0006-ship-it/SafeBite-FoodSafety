@@ -1,4 +1,4 @@
-import { Building2, ShieldCheck, ClipboardList, AlertTriangle, FolderOpen, Lightbulb, ArrowRight } from "lucide-react";
+﻿import { Building2, ShieldCheck, ClipboardList, AlertTriangle, FolderOpen, Lightbulb, ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,9 +8,12 @@ import { KpiCard } from "@/components/kpi-card";
 import { calculateRiskScore } from "@/lib/risk";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OwnerDashboardPage() {
   const owner = await requireRole("business_owner");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const businesses = await db.business.findMany({
     where: { ownerId: owner.id },
@@ -24,7 +27,7 @@ export default async function OwnerDashboardPage() {
   if (businesses.length === 0) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold tracking-tight">My Business</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("nav.myBusiness")}</h1>
         <Card>
           <CardContent className="flex h-56 flex-col items-center justify-center text-center">
             <Building2 className="h-10 w-10 text-muted-foreground" />
@@ -41,7 +44,7 @@ export default async function OwnerDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Business Compliance</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("owner.title")}</h1>
         <p className="text-sm text-muted-foreground">Your safety grade, inspection history, and documents at a glance.</p>
       </div>
 
@@ -76,7 +79,7 @@ export default async function OwnerDashboardPage() {
                     <TierBadge tier={b.riskTier} />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {b.district} · Lic. {b.licenseNumber}
+                    {b.district} Â· Lic. {b.licenseNumber}
                   </p>
                 </div>
                 <div className="w-full max-w-xs">
@@ -95,7 +98,7 @@ export default async function OwnerDashboardPage() {
                     <span className="text-3xl font-bold">{b.riskTier}</span>
                     <span className="text-xs text-muted-foreground">
                       {b.riskTier === "A"
-                        ? "Great — keep it up"
+                        ? "Great â€” keep it up"
                         : b.riskTier === "B"
                           ? "Generally good"
                           : b.riskTier === "C"

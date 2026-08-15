@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { History, FileText, AlertTriangle, Camera, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { RiskBadge } from "@/components/risk-badge";
 import { formatDate } from "@/lib/format";
 import { KpiCard } from "@/components/kpi-card";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OfficerHistoryPage() {
   const officer = await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const inspections = await db.inspection.findMany({
     where: { officerId: officer.id, status: { in: ["completed", "missed"] } },
@@ -25,7 +28,7 @@ export default async function OfficerHistoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Inspection History</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("history.title")}</h1>
         <p className="text-sm text-muted-foreground">Past inspections you have conducted.</p>
       </div>
 
@@ -55,7 +58,7 @@ export default async function OfficerHistoryPage() {
                       <div>
                         <p className="font-medium group-hover:text-primary">{insp.business.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {insp.business.district} · {formatDate(insp.completedAt ?? insp.scheduledAt)}
+                          {insp.business.district} Â· {formatDate(insp.completedAt ?? insp.scheduledAt)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">

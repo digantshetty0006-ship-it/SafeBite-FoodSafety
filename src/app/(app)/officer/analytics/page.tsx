@@ -1,4 +1,4 @@
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { AnalyticsDashboard } from "@/components/officer/analytics-dashboard";
 import { AnalyticsGuide } from "@/components/officer/analytics-guide";
@@ -6,9 +6,12 @@ import { detectNetworks } from "@/lib/network";
 import { categoryLabel } from "@/lib/format";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function OfficerAnalyticsPage() {
   await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string) => tr(lang, k);
 
   const [businesses, complaints, inspections] = await Promise.all([
     db.business.findMany({
@@ -111,13 +114,11 @@ export default async function OfficerAnalyticsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Analytics & Outbreak Detection</h1>
-          <p className="text-sm text-muted-foreground">
-            Trend charts and rule-based network detection across all registered businesses.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{t("analytics.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("analytics.sub")}</p>
         </div>
         <Link href="/judges-guide" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-          <BookOpen className="h-4 w-4" /> Explain these charts
+          <BookOpen className="h-4 w-4" /> {t("analytics.explain")}
         </Link>
       </div>
       <AnalyticsDashboard
