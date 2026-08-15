@@ -237,6 +237,15 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatDateTime(c.createdAt)} · {c.anonymous ? "Anonymous" : "Identified citizen"}
                     </p>
+                    {c.address && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span>
+                          {c.address}
+                          {c.district ? ` (${c.district})` : ""}
+                        </span>
+                      </p>
+                    )}
                   </div>
                   <Badge variant="outline">{COMPLAINT_STATUS_LABELS[c.status]}</Badge>
                 </div>

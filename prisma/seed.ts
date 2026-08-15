@@ -93,6 +93,35 @@ const SUPPLIERS = [
   "Godavari Poultry",
 ];
 
+// Real, operating food businesses (name, category, district, address, lat, lng)
+// so the demo map and lookup show actual places citizens would recognise.
+const REAL_RESTAURANTS: { name: string; category: string; district: string; address: string; lat: number; lng: number }[] = [
+  { name: "Britannia & Co.", category: "restaurant", district: "Mumbai", address: "16 Wakefield House, Ballard Estate, Fort, Mumbai 400001", lat: 18.9336, lng: 72.8338 },
+  { name: "Bademiya", category: "restaurant", district: "Mumbai", address: "Tulloch Road, Apollo Bandar, Colaba, Mumbai 400039", lat: 18.9139, lng: 72.8311 },
+  { name: "Leopold Cafe", category: "restaurant", district: "Mumbai", address: "Shahid Bhagat Singh Road, Colaba Causeway, Mumbai 400001", lat: 18.9168, lng: 72.8319 },
+  { name: "Kyani & Co.", category: "bakery", district: "Mumbai", address: "Jer Mahal, Dhobi Talao, Mumbai 400002", lat: 18.9495, lng: 72.8298 },
+  { name: "Trishna", category: "restaurant", district: "Mumbai", address: "Rustom Sidhwa Marg, Kalaghoda, Mumbai 400001", lat: 18.9278, lng: 72.8314 },
+  { name: "Mahesh Lunch Home", category: "restaurant", district: "Mumbai", address: "8-B, Cawasji Patel Street, Fort, Mumbai 400001", lat: 18.9341, lng: 72.8335 },
+  { name: "Gajalee", category: "restaurant", district: "Mumbai", address: "Link Road, Vile Parle West, Mumbai 400056", lat: 19.1023, lng: 72.8259 },
+  { name: "K. Rustom Ice Cream", category: "packaged_retail", district: "Mumbai", address: "Jeroo Building, M. G. Road, Churchgate, Mumbai 400020", lat: 18.9281, lng: 72.8273 },
+  { name: "Sardar Pav Bhaji", category: "street_vendor", district: "Mumbai", address: "48-B, Tardeo Road, Mumbai 400007", lat: 18.9712, lng: 72.8152 },
+  { name: "Guru Kripa", category: "restaurant", district: "Mumbai", address: "Subhash Chandra Bose Marg, Sion, Mumbai 400022", lat: 19.0419, lng: 72.8581 },
+  { name: "Cafe Mysore", category: "restaurant", district: "Mumbai", address: "Dr. Ambedkar Road, Matunga East, Mumbai 400019", lat: 19.0262, lng: 72.8512 },
+  { name: "Aaram Vada Pav", category: "street_vendor", district: "Mumbai", address: "Opposite CST Station, Fort, Mumbai 400001", lat: 18.9401, lng: 72.834 },
+  { name: "Louis Burgers", category: "restaurant", district: "Mumbai", address: "Wodehouse Road, Colaba, Mumbai 400005", lat: 18.9123, lng: 72.8298 },
+  { name: "Jimi's Burger", category: "restaurant", district: "Mumbai", address: "Linking Road, Bandra West, Mumbai 400050", lat: 19.0597, lng: 72.8297 },
+  { name: "Elco Popsicle", category: "packaged_retail", district: "Mumbai", address: "Hill Road, Bandra West, Mumbai 400050", lat: 19.0555, lng: 72.828 },
+  { name: "Candies", category: "restaurant", district: "Mumbai", address: "Pali Hill, Bandra West, Mumbai 400050", lat: 19.0605, lng: 72.8253 },
+  { name: "Gulshan-e-Iran", category: "bakery", district: "Mumbai", address: "Linking Road, Bandra West, Mumbai 400050", lat: 19.0603, lng: 72.8306 },
+  { name: "Vaishali", category: "restaurant", district: "Pune", address: "Fergusson College Road, Shivajinagar, Pune 411004", lat: 18.524, lng: 73.8377 },
+  { name: "Marz-O-Rin", category: "bakery", district: "Pune", address: "1A, Moledina Road, Camp, Pune 411001", lat: 18.512, lng: 73.8767 },
+  { name: "Cafe Goodluck", category: "restaurant", district: "Pune", address: "Fergusson College Road, Shivajinagar, Pune 411004", lat: 18.5236, lng: 73.8379 },
+  { name: "Haldiram's", category: "restaurant", district: "Nagpur", address: "Sitabuldi Main Road, Nagpur 440012", lat: 21.1515, lng: 79.0837 },
+  { name: "Tarri Poha Center", category: "street_vendor", district: "Nagpur", address: "Near SFS School, Fetri, Nagpur 440030", lat: 21.0968, lng: 79.0156 },
+  { name: "Hotel Trikal", category: "restaurant", district: "Nashik", address: "College Road, Nashik 422005", lat: 20.007, lng: 73.786 },
+  { name: "Sadhana Misal", category: "street_vendor", district: "Nashik", address: "Sharanpur Road, Nashik 422002", lat: 20.005, lng: 73.79 },
+];
+
 const VIOLATION_TYPES = ["expired_stock", "pest_control", "temperature", "licensing", "hygiene", "food_handling", "water_quality", "labeling", "adulteration"];
 
 // Deterministic PRNG so reseeding gives identical data.
@@ -212,9 +241,32 @@ async function main() {
 
   // ---- Businesses ----
   const businesses: any[] = [];
+
+  // Real restaurants first (real names, addresses, coordinates).
+  let serial = 100001;
+  for (const r of REAL_RESTAURANTS) {
+    const owner = owners[Math.floor(rng() * owners.length)];
+    const biz = await prisma.business.create({
+      data: {
+        name: r.name,
+        category: r.category,
+        licenseNumber: `12724002${String(serial++).padStart(6, "0")}`,
+        address: r.address,
+        district: r.district,
+        lat: r.lat + (rng() - 0.5) * 0.004,
+        lng: r.lng + (rng() - 0.5) * 0.004,
+        supplier: rng() < 0.6 ? pick(SUPPLIERS) : null,
+        ownerId: owner.id,
+        registeredAt: daysAgo(range(120, 2400)),
+      },
+    });
+    businesses.push({ biz, category: r.category, riskProfile: rng() });
+  }
+
+  // Generated businesses round out the remaining districts.
   let templateIdx = 0;
   for (const dist of DISTRICTS) {
-    const count = dist.name === "Mumbai" ? 8 : dist.name === "Pune" ? 8 : dist.name === "Thane" ? 7 : dist.name === "Navi Mumbai" ? 6 : dist.name === "Nashik" ? 5 : 6;
+    const count = dist.name === "Mumbai" ? 6 : dist.name === "Pune" ? 6 : dist.name === "Thane" ? 7 : dist.name === "Navi Mumbai" ? 6 : dist.name === "Nashik" ? 3 : 4;
     for (let i = 0; i < count; i++) {
       const category = pick(CATEGORIES);
       const tpl = NAME_TEMPLATES[templateIdx % NAME_TEMPLATES.length];
@@ -229,7 +281,7 @@ async function main() {
         data: {
           name,
           category,
-          licenseNumber: `1132${pick(["0", "1", "2", "3", "4", "5", "6", "7"])}0${range(1000, 9999)}${pick(["A", "B", "C", "D", "E", "F"])}`,
+          licenseNumber: `12724002${String(serial++).padStart(6, "0")}`,
           address: `${range(1, 400)}, ${pick(["MG Road", "Station Road", "Linking Road", "Market Chowk", "MIDC Area", "Main Bazaar"])}, ${dist.name}`,
           district: dist.name,
           lat,
@@ -389,6 +441,8 @@ async function main() {
         photos: withPhoto ? JSON.stringify([pick(PHOTOS)]) : "[]",
         status: pick(complaintStatuses),
         createdAt: daysAgo(range(0, 120)),
+        address: biz.address,
+        district: biz.district,
         lat: anonymous ? undefined : biz.lat + (rng() - 0.5) * 0.02,
         lng: anonymous ? undefined : biz.lng + (rng() - 0.5) * 0.02,
       },
@@ -409,21 +463,26 @@ async function main() {
           photos: rng() < 0.5 ? JSON.stringify([pick(PHOTOS)]) : "[]",
           status: pick(hotspotStatuses),
           createdAt: daysAgo(range(1, 95)),
+          address: biz.address,
+          district: biz.district,
           lat: biz.lat + (rng() - 0.5) * 0.02,
           lng: biz.lng + (rng() - 0.5) * 0.02,
         },
       });
     }
   }
+  const demoComplaintBusiness = businesses.find(({ riskProfile }) => riskProfile > 0.8)?.biz ?? null;
   await prisma.complaint.create({
     data: {
-      businessId: businesses.find(({ riskProfile }) => riskProfile > 0.8)?.biz.id ?? null,
+      businessId: demoComplaintBusiness?.id ?? null,
       citizenId: demoCitizen.id,
       anonymous: false,
       description: "Reported stale bread from the delivery order — crust was mouldy.",
       photos: JSON.stringify(["/uploads/complaint-food.svg"]),
       status: "under_review",
       createdAt: daysAgo(2),
+      address: demoComplaintBusiness?.address ?? null,
+      district: demoComplaintBusiness?.district ?? null,
     },
   });
   console.log("Complaints created.");

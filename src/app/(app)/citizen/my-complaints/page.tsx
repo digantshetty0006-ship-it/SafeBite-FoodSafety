@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, FileSearch, ClipboardCheck, Megaphone, UserCheck, AlertOctagon, PhoneCall } from "lucide-react";
+import { CheckCircle2, Clock, FileSearch, ClipboardCheck, Megaphone, UserCheck, AlertOctagon, PhoneCall, MapPin } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -97,6 +97,15 @@ export default async function CitizenComplaintsPage({
                   {c.business && (
                     <p className="mt-1 text-xs text-muted-foreground">
                       {c.business.name} ({c.business.district})
+                    </p>
+                  )}
+                  {c.address && (
+                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      <span>
+                        {c.address}
+                        {c.district ? ` (${c.district})` : ""}
+                      </span>
                     </p>
                   )}
 

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Search, MapPin, Loader2 } from "lucide-react";
+import { Search, MapPin, Loader2, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +14,64 @@ const pinIcon = L.divIcon({
   iconSize: [28, 28],
   iconAnchor: [14, 28],
 });
+
+export interface PickedPlace {
+  address: string;
+  district: string;
+}
+
+interface NominatimAddress {
+  road?: string;
+  pedestrian?: string;
+  suburb?: string;
+  neighbourhood?: string;
+  city?: string;
+  town?: string;
+  village?: string;
+  state_district?: string;
+  state?: string;
+  postcode?: string;
+}
+
+// Map a Nominatim address onto the districts used by the demo's officers.
+const DISTRICT_HINTS: [string, string][] = [
+  ["navi mumbai", "Navi Mumbai"],
+  ["mumbai", "Mumbai"],
+  ["thane", "Thane"],
+  ["pune", "Pune"],
+  ["nashik", "Nashik"],
+  ["nagpur", "Nagpur"],
+];
+
+function detectDistrict(a: NominatimAddress): string {
+  const haystack = [
+    a.state_district,
+    a.city,
+    a.town,
+    a.village,
+    a.state,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  for (const [key, label] of DISTRICT_HINTS) {
+    if (haystack.includes(key)) return label;
+  }
+  return "Maharashtra";
+}
+
+function shortAddress(a: NominatimAddress): string {
+  return [
+    a.road ?? a.pedestrian,
+    a.suburb ?? a.neighbourhood,
+    a.city ?? a.town ?? a.village,
+    a.state_district,
+    a.state,
+    a.postcode,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
 
 function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }) {
   useMapEvents({
@@ -40,14 +98,43 @@ export function MapPicker({
 }: {
   lat: number;
   lng: number;
-  onPick: (lat: number, lng: number) => void;
+  onPick: (lat: number, lng: number, place?: Partial<PickedPlace>) => void;
   className?: string;
 }) {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [place, setPlace] = useState<PickedPlace | null>(null);
+
+  const resolvePlace = async (a: number, b: number) => {
+    setResolving(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&lat=${a}&lon=${b}`
+      );
+      if (res.ok) {
+        const j = await res.json();
+        const addr: NominatimAddress = j.address ?? {};
+        const resolved: PickedPlace = {
+          address: shortAddress(addr),
+          district: detectDistrict(addr),
+        };
+        setPlace(resolved);
+        onPick(a, b, resolved);
+      } else {
+        setPlace(null);
+        onPick(a, b, {});
+      }
+    } catch {
+      setPlace(null);
+      onPick(a, b, {});
+    } finally {
+      setResolving(false);
+    }
+  };
 
   const searchLocation = async () => {
     const q = search.trim();
@@ -61,8 +148,8 @@ export function MapPicker({
       if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const data = await res.json();
       if (data?.[0]) {
-        onPick(parseFloat(data[0].lat), parseFloat(data[0].lon));
         setSearch(data[0].display_name ?? q);
+        await resolvePlace(parseFloat(data[0].lat), parseFloat(data[0].lon));
       } else {
         setError("No matching place found. Try a different area or landmark.");
       }
@@ -101,15 +188,36 @@ export function MapPicker({
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <ClickHandler onPick={onPick} />
+            <ClickHandler
+              onPick={(a, b) => {
+                setSearch("");
+                void resolvePlace(a, b);
+              }}
+            />
             <FlyToController lat={lat} lng={lng} />
             <Marker position={[lat, lng]} icon={pinIcon} />
           </MapContainer>
         )}
       </div>
-      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-        <MapPin className="h-3 w-3" /> Click the map to pin the location.
-      </p>
+      {resolving ? (
+        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 animate-spin" /> Resolving address for the pin…
+        </p>
+      ) : place ? (
+        <div className="mt-1 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+          <p className="flex items-center gap-1 font-medium">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Address resolved from the pin
+          </p>
+          <p className="mt-0.5">{place.address}</p>
+          <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold dark:bg-emerald-900">
+            <MapPin className="h-2.5 w-2.5" /> District: {place.district} — complaint routes to the officer covering this area
+          </p>
+        </div>
+      ) : (
+        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+          <MapPin className="h-3 w-3" /> Click the map or search to pin the location.
+        </p>
+      )}
     </div>
   );
 }

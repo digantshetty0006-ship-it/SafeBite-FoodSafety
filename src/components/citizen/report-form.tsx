@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { uploadComplaintPhotoAction, submitComplaintAction } from "@/app/(app)/citizen/actions";
 import { categoryLabel } from "@/lib/format";
 import { draftComplaint } from "@/lib/ai-report";
+import type { PickedPlace } from "@/components/citizen/map-picker";
 
 const MapPicker = dynamic(() => import("@/components/citizen/map-picker").then((m) => m.MapPicker), {
   ssr: false,
@@ -59,6 +60,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
   const [submitting, setSubmitting] = useState(false);
   const [lat, setLat] = useState(19.076);
   const [lng, setLng] = useState(72.8777);
+  const [picked, setPicked] = useState<Partial<PickedPlace> | null>(null);
   const [query, setQuery] = useState(initialBusiness);
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
@@ -85,17 +87,32 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    const fd = new FormData();
-    fd.set("file", file);
-    const res = await uploadComplaintPhotoAction(fd);
-    setUploading(false);
-    if (res.ok && res.url) {
-      setPhotos((p) => [...p, res.url!]);
-    } else {
-      toast.error(res.error ?? "Upload failed");
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed.");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
     }
-    if (fileRef.current) fileRef.current.value = "";
+    setUploading(true);
+    try {
+      const dataUrl = await downscaleImage(file, 1280, 0.82);
+      if (dataUrl.length > 1_500_000) {
+        toast.error("Image too large. Try a smaller photo.");
+        return;
+      }
+      const fd = new FormData();
+      fd.set("dataUrl", dataUrl);
+      const res = await uploadComplaintPhotoAction(fd);
+      if (res.ok && res.url) {
+        setPhotos((p) => [...p, res.url!]);
+      } else {
+        toast.error(res.error ?? "Upload failed");
+      }
+    } catch {
+      toast.error("Could not read that image. Try a different photo.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const draftWithAi = () => {
@@ -143,6 +160,8 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
     fd.set("photos", JSON.stringify(photos));
     fd.set("lat", String(lat));
     fd.set("lng", String(lng));
+    if (picked?.address) fd.set("address", picked.address);
+    if (picked?.district) fd.set("district", picked.district);
     if (businessId) fd.set("businessId", businessId);
     setSubmitting(true);
     await submitComplaintAction(fd);
@@ -293,9 +312,10 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
             <CardTitle className="text-base">Location</CardTitle>
           </CardHeader>
           <CardContent>
-            <MapPicker lat={lat} lng={lng} onPick={(a, b) => {
+            <MapPicker lat={lat} lng={lng} onPick={(a, b, place) => {
               setLat(a);
               setLng(b);
+              setPicked(place && place.address ? place : null);
             }} />
           </CardContent>
         </Card>
@@ -329,4 +349,30 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
       </div>
     </form>
   );
+}
+
+function downscaleImage(file: File, maxDim: number, quality: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx = canvas.getContext("2d");
+      URL.revokeObjectURL(url);
+      if (!ctx) {
+        reject(new Error("canvas unavailable"));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("could not decode image"));
+    };
+    img.src = url;
+  });
 }
