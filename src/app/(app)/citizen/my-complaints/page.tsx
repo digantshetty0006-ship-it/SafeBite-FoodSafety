@@ -94,7 +94,7 @@ export default async function CitizenComplaintsPage({
               slaDeadline: formatDateTime(slaDeadline),
               slaNote: resolved ? "resolved" : overdue ? "overdue" : `${daysLeft}d left`,
               overdue,
-              photoCount: c.photos === "[]" ? 0 : JSON.parse(c.photos).length,
+              photos: c.photos === "[]" ? [] : JSON.parse(c.photos),
               citizenName: citizen.name,
               citizenEmail: citizen.email,
             };

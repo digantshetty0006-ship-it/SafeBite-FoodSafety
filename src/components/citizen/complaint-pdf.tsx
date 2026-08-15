@@ -17,7 +17,7 @@ export interface ComplaintPdfData {
   slaDeadline: string;
   slaNote: string;
   overdue: boolean;
-  photoCount: number;
+  photos: string[];
   citizenName: string;
   citizenEmail: string;
 }
@@ -31,8 +31,17 @@ function wrap(doc: jsPDF, text: string, x: number, y: number, w: number, size: n
   return y + lines.length * lineH;
 }
 
+function loadPhoto(src: string): Promise<{ src: string; w: number; h: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ src, w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => resolve({ src, w: 0, h: 0 });
+    img.src = src;
+  });
+}
+
 export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: string }) {
-  const download = () => {
+  const download = async () => {
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     const W = 210;
 
@@ -101,7 +110,31 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
     y += 5;
     y = wrap(doc, data.description, 14, y, W - 28, 10) + 4;
 
-    if (data.photoCount > 0) field("Evidence", `${data.photoCount} photo${data.photoCount > 1 ? "s" : ""} attached`);
+    if (data.photos.length > 0) {
+      const photos = await Promise.all(data.photos.map(loadPhoto));
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(110, 110, 110);
+      doc.text(`EVIDENCE PHOTOS (${photos.length})`, 14, y);
+      y += 5;
+      for (const p of photos) {
+        if (p.w <= 0 || p.h <= 0) continue;
+        const boxW = 86;
+        const boxH = 64;
+        const scale = Math.min(boxW / p.w, boxH / p.h);
+        const w = p.w * scale;
+        const h = p.h * scale;
+        if (y + h + 6 > 262) {
+          doc.addPage();
+          y = 22;
+        }
+        doc.setDrawColor(200, 200, 200);
+        doc.roundedRect(14, y - 4, w + 4, h + 4, 1, 1, "S");
+        doc.addImage(p.src, "JPEG", 16, y - 2, w, h);
+        y += h + 8;
+      }
+      y += 2;
+    }
 
     doc.setDrawColor(210, 210, 210);
     doc.line(14, y, W - 14, y);
@@ -144,6 +177,10 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
       W - 28,
       9
     ) + 4;
+
+    if (y > 262) {
+      doc.addPage();
+    }
 
     doc.setFillColor(244, 244, 244);
     doc.rect(0, 272, W, 25, "F");

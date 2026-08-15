@@ -19,13 +19,14 @@ export async function submitComplaintAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const businessId = String(formData.get("businessId") ?? "") || null;
   const anonymous = formData.get("anonymous") === "on";
-  const photos = JSON.stringify(JSON.parse(String(formData.get("photos") ?? "[]")));
+  const photos = JSON.parse(String(formData.get("photos") ?? "[]"));
   const lat = String(formData.get("lat") ?? "");
   const lng = String(formData.get("lng") ?? "");
   const address = String(formData.get("address") ?? "").slice(0, 500) || null;
   const district = String(formData.get("district") ?? "").slice(0, 100) || null;
 
   if (!description) return;
+  if (!Array.isArray(photos) || photos.length === 0) return;
 
   const complaint = await db.complaint.create({
     data: {
@@ -33,7 +34,7 @@ export async function submitComplaintAction(formData: FormData) {
       businessId,
       citizenId: anonymous ? null : citizen.id,
       anonymous,
-      photos,
+      photos: JSON.stringify(photos),
       status: "submitted",
       lat: lat ? Number(lat) : null,
       lng: lng ? Number(lng) : null,

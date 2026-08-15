@@ -156,6 +156,10 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (photos.length === 0) {
+      toast.error("Please attach at least one photo — it helps the officer verify your complaint.");
+      return;
+    }
     const fd = new FormData(e.currentTarget);
     fd.set("photos", JSON.stringify(photos));
     fd.set("lat", String(lat));
@@ -273,7 +277,10 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
           </div>
 
           <div className="space-y-2">
-            <Label>Photo evidence</Label>
+            <Label>Photo evidence *</Label>
+            <p className="text-xs text-muted-foreground">
+              At least one photo is required — it helps the officer verify your complaint.
+            </p>
             <div className="flex flex-wrap gap-2">
               {photos.map((p, i) => (
                 <div key={i} className="group relative">
