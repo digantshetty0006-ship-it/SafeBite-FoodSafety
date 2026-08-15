@@ -23,12 +23,21 @@ export interface ComplaintPdfData {
 }
 
 const EMERALD: [number, number, number] = [4, 120, 87];
+const CONTENT_BOTTOM = 262;
 
 function wrap(doc: jsPDF, text: string, x: number, y: number, w: number, size: number, lineH = 4.6): number {
   doc.setFontSize(size);
   const lines = doc.splitTextToSize(text, w);
-  doc.text(lines, x, y);
-  return y + lines.length * lineH;
+  let yy = y;
+  for (const line of lines) {
+    if (yy > CONTENT_BOTTOM) {
+      doc.addPage();
+      yy = 22;
+    }
+    doc.text(line, x, yy);
+    yy += lineH;
+  }
+  return yy;
 }
 
 function loadPhoto(src: string): Promise<{ src: string; w: number; h: number }> {
@@ -79,7 +88,15 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
     doc.line(14, y, W - 14, y);
     y += 8;
 
+    const page = () => {
+      if (y > CONTENT_BOTTOM) {
+        doc.addPage();
+        y = 22;
+      }
+    };
+
     const field = (labelText: string, value: string) => {
+      page();
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
       doc.setTextColor(110, 110, 110);
@@ -87,10 +104,20 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(30, 30, 30);
-      doc.text(value, 62, y);
-      y += 6.4;
+      const lines = doc.splitTextToSize(value, W - 14 - 62);
+      let yy = y;
+      for (const line of lines) {
+        if (yy > CONTENT_BOTTOM) {
+          doc.addPage();
+          yy = 22;
+        }
+        doc.text(line, 62, yy);
+        yy += 5.6;
+      }
+      y = yy + 0.8;
     };
 
+    page();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(30, 30, 30);
@@ -103,6 +130,7 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
     const location = [data.address, data.district].filter(Boolean).join(", ");
     if (location) field("Location", location);
 
+    page();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(110, 110, 110);
@@ -112,6 +140,7 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
 
     if (data.photos.length > 0) {
       const photos = await Promise.all(data.photos.map(loadPhoto));
+      page();
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8.5);
       doc.setTextColor(110, 110, 110);
@@ -140,6 +169,7 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
     doc.line(14, y, W - 14, y);
     y += 8;
 
+    page();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(30, 30, 30);
@@ -164,6 +194,7 @@ export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: s
     doc.line(14, y, W - 14, y);
     y += 8;
 
+    page();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(110, 110, 110);
