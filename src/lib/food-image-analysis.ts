@@ -38,6 +38,8 @@ interface PixelMetrics {
   maxRedCluster: number;
   darkSpotCells: number;
   smallDarkClusters: number;
+  moldSpotCells: number;
+  moldClusters: number;
 }
 
 /**
@@ -158,12 +160,19 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
   const cellRed = new Float32Array(GRID * GRID);
   const cellDark = new Float32Array(GRID * GRID);
   const cellSat = new Float32Array(GRID * GRID);
+  const cellLum = new Float32Array(GRID * GRID);
+  const cellHue = new Float32Array(GRID * GRID);
+  const cellChromaStd = new Float32Array(GRID * GRID);
   const cellCount = new Float32Array(GRID * GRID);
   for (let gy = 0; gy < GRID; gy++) {
     for (let gx = 0; gx < GRID; gx++) {
       let red = 0;
       let dark = 0;
       let satSumCell = 0;
+      let lumSumCell = 0;
+      let hueSumCell = 0;
+      let chromaSum = 0;
+      let chromaSumSq = 0;
       let cnt = 0;
       for (let y = gy * CELL; y < Math.min(H, (gy + 1) * CELL); y++) {
         for (let x = gx * CELL; x < Math.min(W, (gx + 1) * CELL); x++) {
@@ -171,18 +180,39 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
           if (isDeepRed(i)) red++;
           if (isDarkChromatic(i)) dark++;
           satSumCell += sat[i];
+          lumSumCell += lum[i];
+          hueSumCell += hue[i];
+          const chroma = val[i] / 255 - Math.min(data[i * 4], data[i * 4 + 1], data[i * 4 + 2]) / 255;
+          chromaSum += chroma;
+          chromaSumSq += chroma * chroma;
           cnt++;
         }
       }
-      cellRed[gy * GRID + gx] = cnt > 0 ? red / cnt : 0;
-      cellDark[gy * GRID + gx] = cnt > 0 ? dark / cnt : 0;
-      cellSat[gy * GRID + gx] = cnt > 0 ? satSumCell / cnt : 0;
-      cellCount[gy * GRID + gx] = cnt;
+      const ci = gy * GRID + gx;
+      cellRed[ci] = cnt > 0 ? red / cnt : 0;
+      cellDark[ci] = cnt > 0 ? dark / cnt : 0;
+      cellSat[ci] = cnt > 0 ? satSumCell / cnt : 0;
+      cellLum[ci] = cnt > 0 ? lumSumCell / cnt : 0;
+      cellHue[ci] = cnt > 0 ? hueSumCell / cnt : 0;
+      const chMean = cnt > 0 ? chromaSum / cnt : 0;
+      cellChromaStd[ci] = cnt > 0 ? Math.sqrt(Math.max(0, chromaSumSq / cnt - chMean * chMean)) : 0;
+      cellCount[ci] = cnt;
     }
   }
 
   const isRedCell = (i: number) => cellRed[i] > 0.4 && cellSat[i] > 0.3;
   const isDarkCell = (i: number) => cellDark[i] > 0.5;
+  // Mould: green-blue-grey hue, low-ish saturation, mid value, MOTTLED
+  // (high within-cell chroma texture). Smooth cooked greens (palak, parsley)
+  // are uniform -> chromaStd stays low and they are excluded.
+  const isMoldCell = (i: number) =>
+    cellHue[i] >= 70 &&
+    cellHue[i] <= 170 &&
+    cellSat[i] > 0.1 &&
+    cellLum[i] > 40 &&
+    cellLum[i] < 185 &&
+    cellDark[i] < 0.85 &&
+    cellChromaStd[i] > 0.055;
 
   const flood = (pred: (i: number) => boolean, minSize: number, maxSize: number) => {
     const visited = new Uint8Array(GRID * GRID);
@@ -223,6 +253,10 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
 
   const redCells = flood(isRedCell, 0, 1024);
   const darkCells = flood(isDarkCell, 2, 15);
+  // Mould patches are typically LARGE (unlike pest-sized dark spots), so the
+  // window is wide — the chroma-texture gate keeps smooth greens out. Only
+  // giant regions (whole-tablecloths) exceed the cap.
+  const moldCells = flood(isMoldCell, 2, 60);
 
   const metrics: PixelMetrics = {
     mean,
@@ -238,6 +272,8 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
     maxRedCluster: redCells.largest,
     darkSpotCells: darkCells.spotTotal,
     smallDarkClusters: darkCells.small,
+    moldSpotCells: moldCells.spotTotal,
+    moldClusters: moldCells.small,
   };
 
   return verdictFromMetrics(metrics);
@@ -268,18 +304,30 @@ function verdictFromMetrics(m: PixelMetrics): EvidenceAnalysis {
   const redLocalized = finite(m.redCells / m.totalCells) < 0.6;
   const redScore = redLocalized ? clamp(finite(m.maxRedCluster) / 10, 0, 1) : 0;
   const darkScore = clamp(finite(m.darkSpotCells) / 40, 0, 1);
-  const contamScore = finite(clamp(0.6 * redScore + 0.4 * darkScore, 0, 1));
+  const moldScore = clamp(finite(m.moldSpotCells) / 36, 0, 1);
+  let contamScore = finite(clamp(0.5 * redScore + 0.2 * darkScore + 0.3 * moldScore, 0, 1));
   const clutterScore = finite(clamp((m.edgeMean / 40) * 0.6 + (1 - clamp(finite(m.std) / 55, 0, 1)) * 0.4, 0, 1));
-  const hygieneScore = finite(clamp(0.45 * contamScore + 0.25 * clutterScore + 0.3 * (1 - expoScore), 0, 1));
 
   const level = (s: number): AnalysisLevel => (s > 0.55 ? "HIGH" : s > 0.25 ? "MEDIUM" : "LOW");
+
+  // Indicator selection happens BEFORE flooring so indicator-vs-level
+  // coherence rules (below) stay consistent with the visible signals.
+  const moldVisible = m.moldClusters >= 2 || m.moldSpotCells >= 10;
+  const pestVisible = !moldVisible && m.smallDarkClusters >= 2 && m.mean > 60;
+
+  // Coherence: a contamination indicator must not sit on a LOW level.
+  if (moldVisible) contamScore = Math.max(contamScore, moldScore >= 0.6 ? 0.62 : 0.3);
+  if (pestVisible) contamScore = Math.max(contamScore, 0.35);
+
+  const hygieneScore = finite(clamp(0.45 * contamScore + 0.25 * clutterScore + 0.3 * (1 - expoScore), 0, 1));
 
   const contamination = level(contamScore);
   const hygiene = level(hygieneScore);
 
   const indicators: string[] = [];
+  if (moldVisible) indicators.push("visible mold growth");
+  if (pestVisible) indicators.push("pest presence");
   if ((redLocalized && m.maxRedCluster >= 8) || m.darkSpotCells >= 28) indicators.push("visibly contaminated surface");
-  if (m.smallDarkClusters >= 2 && m.mean > 60) indicators.push("pest presence");
   if (m.edgeMean > 40 && m.std > 55) indicators.push("overcrowding");
   if (m.mean < 60) indicators.push("poor lighting — scene too dark to fully assess");
   if (m.lapVar < 6) indicators.push("blurry capture — fine detail not assessable");
