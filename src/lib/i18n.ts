@@ -262,6 +262,7 @@ const dict: Record<string, [string, string, string]> = {
   ],
   "news.shareLoc": ["Share location for exact distance", "सटीक दूरी के लिए स्थान साझा करें", "अचूक अंतरासाठी स्थान शेअर करा"],
   "news.km": ["km away", "किमी दूर", "किमी अंतरावर"],
+  "news.published": ["Published {t} ago", "प्रकाशित {t} पहले", "प्रकाशित {t} आधी"],
 
   // ---- leadership ----
   "lead.title": ["Leadership", "नेतृत्व", "नेतृत्व"],

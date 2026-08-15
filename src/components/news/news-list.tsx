@@ -72,7 +72,7 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
           <a href={n.link} target="_blank" rel="noopener noreferrer" className="block p-5">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
-                {relativeTime(n.pubDate)} ago
+                {t("news.published", { t: relativeTime(n.pubDate) })}
               </span>
               <span>{n.source || "News"}</span>
             </div>

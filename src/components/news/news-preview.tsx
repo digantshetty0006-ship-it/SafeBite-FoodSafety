@@ -55,7 +55,7 @@ export function NewsPreview({ state }: { state: string }) {
                 className="group flex items-center gap-3 py-3 transition hover:bg-muted/40"
               >
                 <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                  {relativeTime(n.pubDate)}
+                  {t("news.published", { t: relativeTime(n.pubDate) })}
                 </span>
                 <p className="min-w-0 flex-1 truncate text-sm font-medium leading-snug group-hover:text-primary">
                   {n.title}
