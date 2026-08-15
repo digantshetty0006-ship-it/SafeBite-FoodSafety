@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Camera,
@@ -15,6 +15,10 @@ import {
   MicOff,
   Phone,
   RefreshCcw,
+  ScanSearch,
+  ShieldAlert,
+  AlertTriangle,
+  Gauge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +30,7 @@ import { toast } from "sonner";
 import { uploadComplaintPhotoAction, submitComplaintAction } from "@/app/(app)/citizen/actions";
 import { categoryLabel } from "@/lib/format";
 import { draftComplaint } from "@/lib/ai-report";
+import { analyzeEvidenceImage, aggregateEvidence, type AnalysisLevel, type EvidenceAnalysis } from "@/lib/food-image-analysis";
 import type { PickedPlace } from "@/components/citizen/map-picker";
 
 const MapPicker = dynamic(() => import("@/components/citizen/map-picker").then((m) => m.MapPicker), {
@@ -53,6 +58,10 @@ interface BusinessHit {
   category: string;
 }
 
+interface AnalysisState extends EvidenceAnalysis {
+  rationale?: string;
+}
+
 export function ReportForm({ businesses, initialBusiness = "" }: { businesses: BusinessHit[]; initialBusiness?: string }) {
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -65,6 +74,8 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [draft, setDraft] = useState<{ type: string; severity: string } | null>(null);
+  const [analysis, setAnalysis] = useState<AnalysisState | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
   const [listening, setListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
@@ -75,6 +86,45 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
     return !!(w.SpeechRecognition ?? w.webkitSpeechRecognition);
   });
   const fileRef = useRef<HTMLInputElement>(null);
+  const analysisToken = useRef(0);
+
+  const runAnalysis = useCallback(async (urls: string[]) => {
+    const token = ++analysisToken.current;
+    if (urls.length === 0) {
+      setAnalysis(null);
+      setAnalyzing(false);
+      return;
+    }
+    setAnalyzing(true);
+    try {
+      const results = await Promise.all(urls.map((u) => analyzeEvidenceImage(u).catch(() => null)));
+      const valid = results.filter((r): r is EvidenceAnalysis => r !== null);
+      if (token !== analysisToken.current) return;
+      const local = aggregateEvidence(valid);
+      setAnalysis({ ...local });
+      try {
+        const res = await fetch("/api/analyze-evidence", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ images: urls.slice(0, 4) }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as AnalysisState;
+          if (token === analysisToken.current && data?.engine === "vision") setAnalysis(data);
+        }
+      } catch {
+        // keep on-device result
+      }
+    } catch {
+      setAnalysis(null);
+    } finally {
+      if (token === analysisToken.current) setAnalyzing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void runAnalysis(photos);
+  }, [photos, runAnalysis]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -302,6 +352,94 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
             </Button>
           </div>
 
+          <div className="space-y-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              onClick={() => void runAnalysis(photos)}
+              disabled={analyzing || photos.length === 0}
+            >
+              {analyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanSearch className="mr-2 h-4 w-4 text-primary" />}
+              {analyzing ? "Analysing evidence…" : "Analyse Evidence"}
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              On-device AI inspects sharpness, lighting, colour and texture to flag possible contamination and hygiene
+              risks before you submit.
+            </p>
+
+            {analysis && !analyzing && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex items-center gap-1.5 text-sm font-semibold">
+                    <Sparkles className="h-4 w-4 text-primary" /> AI preliminary assessment
+                  </p>
+                  <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                    {analysis.engine === "vision" ? "Vision model" : "On-device analysis"}
+                  </span>
+                </div>
+                {analysis.rationale && (
+                  <p className="mt-1 text-xs italic text-muted-foreground">{analysis.rationale}</p>
+                )}
+
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Possible visible contamination</span>
+                    <LevelPill level={analysis.contamination} />
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Possible hygiene violation</span>
+                    <LevelPill level={analysis.hygiene} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-1.5 text-muted-foreground">
+                        <Gauge className="h-3.5 w-3.5" /> Evidence quality
+                      </span>
+                      <span className="font-semibold">{analysis.evidenceQuality}%</span>
+                    </div>
+                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                        style={{ width: `${analysis.evidenceQuality}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 space-y-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Detected indicators
+                  </p>
+                  {analysis.indicators.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No specific indicators detected in the visible scene.</p>
+                  ) : (
+                    <ul className="space-y-1">
+                      {analysis.indicators.map((i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm">
+                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                          <span className="capitalize">{i}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="mt-3 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                  <p className="flex items-center gap-1.5 font-semibold">
+                    <ShieldAlert className="h-3.5 w-3.5 shrink-0" /> AI output is advisory. Final determination requires an
+                    authorised inspection.
+                  </p>
+                  <p className="mt-1 text-amber-700 dark:text-amber-300/70">
+                    Automated image analysis assists triage only. A Food Safety Officer&apos;s on-site inspection under the
+                    Food Safety and Standards Act, 2006 remains the definitive assessment.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
               <p className="text-sm font-medium">Report anonymously</p>
@@ -356,6 +494,15 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
       </div>
     </form>
   );
+}
+
+function LevelPill({ level }: { level: AnalysisLevel }) {
+  const styles: Record<AnalysisLevel, string> = {
+    HIGH: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
+    MEDIUM: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+    LOW: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+  };
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[level]}`}>{level}</span>;
 }
 
 function downscaleImage(file: File, maxDim: number, quality: number): Promise<string> {
