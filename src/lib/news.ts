@@ -86,14 +86,14 @@ function cleanSnippet(raw: string): string {
   return s;
 }
 
-async function fetchSummary(link: string): Promise<string> {
+async function fetchArticleMeta(link: string): Promise<{ snippet: string; date: number }> {
   try {
     const res = await fetch(link, {
       headers: { "user-agent": "Mozilla/5.0 (compatible; FoodShield/1.0)" },
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(3000),
       cache: "no-store",
     });
-    if (!res.ok) return "";
+    if (!res.ok) return { snippet: "", date: 0 };
     const html = await res.text();
     const grab = (re: RegExp) => {
       const m = html.match(re);
@@ -105,9 +105,24 @@ async function fetchSummary(link: string): Promise<string> {
       grab(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) ||
       grab(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
     const clean = desc.replace(/\s+/g, " ").replace(/&amp;/g, "&").trim();
-    return clean.length > 120 ? clean : "";
+    let date = 0;
+    const dateProbes = [
+      /<meta[^>]+property=["']article:modified_time["'][^>]+content=["']([^"']+)["']/i,
+      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']article:modified_time["']/i,
+      /<meta[^>]+property=["']article:published_time["'][^>]+content=["']([^"']+)["']/i,
+      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']article:published_time["']/i,
+      /"dateModified"\s*:\s*"([^"]+)"/i,
+      /"datePublished"\s*:\s*"([^"]+)"/i,
+    ];
+    for (const re of dateProbes) {
+      const raw = grab(re);
+      if (!raw) continue;
+      const t = Date.parse(raw);
+      if (!Number.isNaN(t) && t > date) date = t;
+    }
+    return { snippet: clean.length > 120 ? clean : "", date };
   } catch {
-    return "";
+    return { snippet: "", date: 0 };
   }
 }
 
@@ -205,9 +220,22 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
 
   await Promise.all(
     items.map(async (it) => {
-      if (!it.snippet) it.snippet = await fetchSummary(it.link);
+      const probe = await fetchArticleMeta(it.link);
+      if (!it.snippet && probe.snippet) it.snippet = probe.snippet;
+      if (probe.date > 0) {
+        const cur = Date.parse(it.pubDate);
+        if (Number.isNaN(cur) || probe.date > cur) it.pubDate = new Date(probe.date).toISOString();
+      }
     })
   );
+
+  items.sort((a, b) => {
+    const ta = Date.parse(a.pubDate);
+    const tb = Date.parse(b.pubDate);
+    const A = Number.isNaN(ta) ? 0 : ta;
+    const B = Number.isNaN(tb) ? 0 : tb;
+    return B - A;
+  });
 
   for (const it of items) {
     it.title = repairUtf8(it.title);
