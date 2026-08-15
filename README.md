@@ -4,7 +4,7 @@ AI-powered predictive food safety intelligence platform for FSSAI & Maharashtra 
 
 ## Live demo
 
-**https://foodshield-ai.vercel.app**
+**https://safebite-demo.vercel.app**
 
 ## Features
 
