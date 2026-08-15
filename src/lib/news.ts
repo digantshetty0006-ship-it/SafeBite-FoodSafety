@@ -1,3 +1,5 @@
+export const PIPELINE_VERSION = "v9-debug";
+
 export interface NewsItem {
   title: string;
   link: string;
@@ -205,6 +207,9 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     }
     it.title = repairedTitle;
     it.snippet = repairedSnippet;
+    if (!it.title.includes("\u00E2") && !it.snippet.includes("\u00E2")) {
+      it.source = repairUtf8(it.source);
+    }
   }
 
   cache.set(key, { at: Date.now(), items });
