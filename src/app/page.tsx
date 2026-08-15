@@ -19,11 +19,8 @@ import { Button } from "@/components/ui/button";
 import { getLang, tr } from "@/lib/lang";
 import { LocaleProvider } from "@/components/locale-provider";
 import { NewsPreview } from "@/components/news/news-preview";
-import { RecentActions } from "@/components/news/recent-actions";
-import { UnsafeSpots } from "@/components/news/unsafe-spots";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
-import { db } from "@/lib/db";
 
 const FEATURES = [
   { icon: Radar, k: "home.f1" },
@@ -45,11 +42,6 @@ export const dynamic = "force-dynamic";
 export default async function LandingPage() {
   const lang = await getLang();
   const t = (k: string) => tr(lang, k);
-  const businesses = await db.business.findMany({
-    orderBy: { riskScore: "desc" },
-    take: 30,
-    select: { id: true, name: true, riskScore: true, district: true, lat: true, lng: true },
-  });
 
   return (
     <LocaleProvider lang={lang}>
@@ -61,7 +53,7 @@ export default async function LandingPage() {
           <div className="pointer-events-none absolute inset-0 -z-10 opacity-20 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.4)_1px,transparent_0)] [background-size:26px_26px]" />
           <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-emerald-400/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-teal-400/10 blur-3xl" />
-          <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-emerald-50">
               <ShieldCheck className="h-3.5 w-3.5" />
               {t("home.badge")}
@@ -70,7 +62,7 @@ export default async function LandingPage() {
               {t("home.title")}
             </h1>
             <p className="mt-4 max-w-2xl text-lg text-emerald-50/90">{t("home.sub")}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-white text-emerald-900 hover:bg-emerald-50">
                 <Link href="/login">
                   {t("home.ctaCommand")} <ArrowRight className="ml-2 h-4 w-4" />
@@ -84,28 +76,30 @@ export default async function LandingPage() {
               >
                 <Link href="/login">{t("home.ctaReport")}</Link>
               </Button>
+              <span className="ml-1 inline-flex items-center gap-1.5 text-xs text-emerald-50/70">
+                {t("home.demoCreds")}
+                <code className="rounded bg-white/10 px-1.5 py-0.5">demo1234</code>
+              </span>
             </div>
-            <p className="mt-4 text-xs text-emerald-50/70">
-              {t("home.demoCreds")}{" "}
-              <code className="rounded bg-white/10 px-1 py-0.5">demo1234</code>
-            </p>
           </div>
         </section>
 
         {/* Tagline strip */}
         <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <div className="grid gap-6 sm:grid-cols-4">
-            {[
-              ["2,400+", t("home.s1l")],
-              ["40", t("home.s2l")],
-              ["< 24h", t("home.s3l")],
-              ["100%", t("home.s4l")],
-            ].map(([n, l]) => (
-              <div key={l} className="rounded-xl border bg-card p-5 text-center">
-                <p className="text-3xl font-bold text-primary">{n}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{l}</p>
-              </div>
-            ))}
+          <div className="rounded-2xl border bg-card px-6 py-8">
+            <div className="grid gap-6 text-center sm:grid-cols-4 sm:divide-x sm:divide-border">
+              {[
+                ["2,400+", t("home.s1l")],
+                ["40", t("home.s2l")],
+                ["< 24h", t("home.s3l")],
+                ["100%", t("home.s4l")],
+              ].map(([n, l]) => (
+                <div key={l}>
+                  <p className="text-3xl font-bold text-primary">{n}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{l}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -181,29 +175,10 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* News, recent actions, unsafe spots */}
+        {/* News */}
         <section className="border-t bg-background py-16">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <NewsPreview state="Maharashtra" />
-              </div>
-              <div className="space-y-8">
-                <div>
-                  <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    <ShieldCheck className="h-4 w-4 text-emerald-600" /> {t("home.recentActions")}
-                  </h2>
-                  <RecentActions limit={4} />
-                </div>
-                <div>
-                  <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    <MapPinned className="h-4 w-4 text-red-600" /> {t("home.unsafeNear")}
-                  </h2>
-                  <p className="mb-3 text-xs text-muted-foreground">{t("news.unsafeSub")}</p>
-                  <UnsafeSpots businesses={businesses} limit={4} />
-                </div>
-              </div>
-            </div>
+          <div className="mx-auto max-w-4xl px-4 sm:px-6">
+            <NewsPreview state="Maharashtra" />
           </div>
         </section>
 
