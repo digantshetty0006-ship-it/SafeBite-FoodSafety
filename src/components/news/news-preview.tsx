@@ -26,6 +26,16 @@ export function NewsPreview({ state }: { state: string }) {
       .catch(() => setItems([]));
   }, [state]);
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetch(`/api/news?state=${encodeURIComponent(state)}`, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : { items: [] }))
+        .then((d) => setItems(d.items ?? []))
+        .catch(() => {});
+    }, 15.5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [state]);
+
   return (
     <div className="rounded-2xl border bg-card p-6">
       <div className="flex items-center justify-between gap-3">

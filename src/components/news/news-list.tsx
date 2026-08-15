@@ -18,16 +18,17 @@ function relativeTime(pubDate: string): string {
 export function NewsList({ state, initial }: { state: string; initial: NewsItem[] | null }) {
   const { t } = useLocale();
   const [items, setItems] = useState<NewsItem[] | null>(initial);
+  const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
     setError(false);
-    setItems(null);
     try {
       const res = await fetch(`/api/news?state=${encodeURIComponent(state)}`, { cache: "no-store" });
       if (!res.ok) throw new Error("bad status");
       const data = await res.json();
       setItems(data.items ?? []);
+      if (typeof data.updatedAt === "number") setUpdatedAt(data.updatedAt);
     } catch {
       setError(true);
     }
@@ -35,6 +36,11 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  useEffect(() => {
+    const id = setInterval(load, 15.5 * 60 * 1000);
+    return () => clearInterval(id);
   }, [load]);
 
   if (error) {
@@ -67,6 +73,17 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
 
   return (
     <div className="space-y-4">
+      {updatedAt && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">{t("news.updated", { t: relativeTime(new Date(updatedAt).toISOString()) })}</p>
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+          >
+            <RefreshCw className="h-3.5 w-3.5" /> {t("news.refresh")}
+          </button>
+        </div>
+      )}
       {items.map((n, i) => (
         <article key={`${n.link}-${i}`} className="group overflow-hidden rounded-2xl border bg-card transition hover:border-primary/40 hover:shadow-md">
           <a href={n.link} target="_blank" rel="noopener noreferrer" className="block p-5">

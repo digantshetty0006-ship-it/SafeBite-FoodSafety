@@ -7,8 +7,8 @@ export async function GET(req: NextRequest) {
   const state = req.nextUrl.searchParams.get("state") ?? "All India";
   const key = STATES[state] !== undefined ? state : "All India";
   try {
-    const items = await fetchFoodNews(key, 12);
-    return NextResponse.json({ state: key, items, fetchedAt: Date.now() });
+    const { items, updatedAt } = await fetchFoodNews(key, 12);
+    return NextResponse.json({ state: key, items, updatedAt });
   } catch {
     return NextResponse.json({ state: key, items: [], error: "upstream_failed" }, { status: 502 });
   }
