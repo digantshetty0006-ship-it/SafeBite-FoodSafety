@@ -7,6 +7,8 @@ export interface EvidenceAnalysis {
   hygiene: AnalysisLevel;
   indicators: string[];
   confidence: number;
+  rationale?: string;
+  model?: string;
 }
 
 export const ALLOWED_INDICATORS = [

@@ -376,7 +376,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
                     <Sparkles className="h-4 w-4 text-primary" /> AI preliminary assessment
                   </p>
                   <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                    {analysis.engine === "vision" ? "Vision model" : "On-device analysis"}
+                    {analysis.engine === "vision" ? (analysis.model ? analysis.model : "Vision model") : "On-device analysis"}
                   </span>
                 </div>
                 {analysis.rationale && (

@@ -3,12 +3,22 @@ import { ALLOWED_INDICATORS, type AnalysisLevel } from "@/lib/food-image-analysi
 
 export const dynamic = "force-dynamic";
 
-const PROMPT = `You are an AI assistant supporting Food Safety Officers in India (FSS Act, 2006 context). A citizen has uploaded complaint photos of a food business. Analyse the scene in the photo(s) and respond ONLY with JSON of this exact shape:
+const PROMPT = `You are an experienced Food Safety Officer under the Food Safety and Standards Act, 2006 (India). A citizen has uploaded complaint photos of a food business. Inspect the scene like a trained inspector: identify ONLY what is actually VISIBLE in the photos, never speculate about what is outside the frame, and never overclaim.
+
+Guidance:
+- Spoilage: mold (fuzzy green/blue/grey/black growth), rot, slime, off-colour flesh, insects/pests (live or dead), rodent droppings, fly eggs, webbing.
+- Foreign matter: hair, plastic, glass shards, insects in food, dirt, unidentified objects in food.
+- Hygiene: unclean surfaces, grease/filth build-up, open garbage near food, bare-hand handling of ready-to-eat food, lack of gloves/hairnets where visible, soiled equipment, raw meat near ready-to-eat food.
+- Be a good inspector: a busy kitchen, a dirty chopping board, or a rustic dining scene is NOT contamination. Red chutney is not blood; brown dal is not rot; a green garnish is not mold; rice grains are not maggots. Judge like an expert who has seen thousands of kitchens.
+- Camera artifacts (blur, darkness, glare, colour cast, motion blur) reduce evidenceQuality but are NOT contamination.
+- If no food-handling scene is visible, say so in the rationale and use LOW/LOW.
+
+Respond ONLY with JSON of this exact shape:
 {"contamination":"HIGH|MEDIUM|LOW","hygiene":"HIGH|MEDIUM|LOW","evidenceQuality":<integer 0-100>,"indicators":["..."],"rationale":"one short sentence"}
-- "contamination": visible contamination (spoiled/rotting food, foreign objects, stains, pests, dirt) in the frame.
-- "hygiene": overall hygiene / sanitation of the visible area.
-- "evidenceQuality": how useful the photo is as evidence (sharpness, focus, lighting, framing, legibility).
-- "indicators": choose ONLY from these exact strings: ${ALLOWED_INDICATORS.join(", ")}. List only what is actually visible or clearly inferable. Empty array is valid.
+- "contamination": visible contamination in the frame (spoilage, pests, foreign matter, stains, dirt on food).
+- "hygiene": overall sanitation of the visible area and food-handling practice.
+- "evidenceQuality": usefulness as evidence (sharpness, focus, lighting, framing, legibility).
+- "indicators": ONLY from these exact strings: ${ALLOWED_INDICATORS.join(", ")}. List only what is actually visible or clearly inferable; empty array is valid. A HIGH or MEDIUM level must correspond to at least one listed indicator.
 - If the photo does not show a food-handling scene, use LOW/LOW and say so in the rationale. Do not speculate.`;
 
 interface VisionResult {
@@ -19,6 +29,7 @@ interface VisionResult {
   indicators: string[];
   rationale: string;
   confidence: number;
+  model: string;
 }
 
 function sanitize(raw: unknown): VisionResult | null {
@@ -45,6 +56,7 @@ function sanitize(raw: unknown): VisionResult | null {
     indicators,
     rationale,
     confidence: 0.92,
+    model: o.model && typeof o.model === "string" ? o.model.slice(0, 40) : "",
   };
 }
 
@@ -66,7 +78,7 @@ function extractJson(text: string): unknown {
   }
 }
 
-async function callGemini(images: string[]): Promise<VisionResult | null> {
+async function callGemini(images: string[], model: string): Promise<VisionResult | null> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
   const parts = [
@@ -78,7 +90,7 @@ async function callGemini(images: string[]): Promise<VisionResult | null> {
     }),
   ];
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -92,12 +104,16 @@ async function callGemini(images: string[]): Promise<VisionResult | null> {
   const body = await res.json();
   const text = body?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof text !== "string") return null;
-  return sanitize(extractJson(text));
+  const parsed = extractJson(text);
+  const result = sanitize(parsed);
+  if (result) result.model = model;
+  return result;
 }
 
 async function callOpenAI(images: string[]): Promise<VisionResult | null> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   const content = [
     { type: "text" as const, text: PROMPT },
     ...images.slice(0, 4).map((dataUrl) => ({ type: "image_url" as const, image_url: { url: dataUrl } })),
@@ -106,7 +122,7 @@ async function callOpenAI(images: string[]): Promise<VisionResult | null> {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model,
       messages: [{ role: "user", content }],
       response_format: { type: "json_object" },
       max_tokens: 400,
@@ -116,7 +132,9 @@ async function callOpenAI(images: string[]): Promise<VisionResult | null> {
   const body = await res.json();
   const text = body?.choices?.[0]?.message?.content;
   if (typeof text !== "string") return null;
-  return sanitize(extractJson(text));
+  const result = sanitize(extractJson(text));
+  if (result) result.model = model;
+  return result;
 }
 
 export async function POST(req: NextRequest) {
@@ -136,7 +154,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = (await callGemini(images)) ?? (await callOpenAI(images));
+    // Best available first, cheaper/faster as fallback. All configurable via env.
+    const geminiChain = [
+      process.env.GEMINI_MODEL || "gemini-2.5-pro",
+      "gemini-2.5-flash",
+    ];
+    let result: VisionResult | null = null;
+    for (const model of geminiChain) {
+      result = await callGemini(images, model);
+      if (result) break;
+    }
+    result = result ?? (await callOpenAI(images));
     if (result) return NextResponse.json(result);
     return NextResponse.json({ engine: "on-device", error: "vision_unavailable" });
   } catch {
