@@ -81,33 +81,39 @@ function extractJson(text: string): unknown {
 async function callGemini(images: string[], model: string): Promise<VisionResult | null> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  const parts = [
-    { text: PROMPT },
+  const input = [
+    { type: "text", text: PROMPT },
     ...images.slice(0, 4).map((dataUrl) => {
       const mime = dataUrl.slice(5, dataUrl.indexOf(";"));
       const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
-      return { inline_data: { mime_type: mime || "image/jpeg", data: base64 } };
+      return { type: "image", data: base64, mime_type: mime || "image/jpeg" };
     }),
   ];
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: { temperature: 0.1, responseMimeType: "application/json" },
-      }),
-    }
-  );
+  // Interactions API (v1beta) — generateContent + gemini-2.5 models are
+  // deprecated for new API keys.
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify({
+      model,
+      input,
+      generation_config: { temperature: 0.1 },
+    }),
+  });
   if (!res.ok) {
     lastGeminiError = { status: res.status, model, detail: (await res.text()).slice(0, 300) };
     return null;
   }
   const body = await res.json();
-  const text = body?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const modelOutput = Array.isArray(body?.steps) ? body.steps.find((s: { type?: string }) => s?.type === "model_output") : null;
+  const text = Array.isArray(modelOutput?.content)
+    ? modelOutput.content
+        .filter((p: { type?: string; text?: string }) => p?.type === "text" && typeof p.text === "string")
+        .map((p: { text: string }) => p.text)
+        .join("")
+    : null;
   if (typeof text !== "string") {
-    lastGeminiError = { status: res.status, model, detail: "no text in response" };
+    lastGeminiError = { status: res.status, model, detail: "no model_output text in response" };
     return null;
   }
   const parsed = extractJson(text);
@@ -164,8 +170,9 @@ export async function POST(req: NextRequest) {
   try {
     // Best available first, cheaper/faster as fallback. All configurable via env.
     const geminiChain = [
-      process.env.GEMINI_MODEL || "gemini-2.5-pro",
-      "gemini-2.5-flash",
+      process.env.GEMINI_MODEL || "gemini-3.6-flash",
+      "gemini-3.1-pro-preview",
+      "gemini-3.5-flash",
     ];
     let result: VisionResult | null = null;
     for (const model of geminiChain) {
