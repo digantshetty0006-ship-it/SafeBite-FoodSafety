@@ -2,7 +2,7 @@
 import { db } from "@/lib/db";
 import { BusinessTable } from "@/components/officer/business-table";
 import { KpiCard } from "@/components/kpi-card";
-import { AlertTriangle, Building2, ClipboardCheck, Megaphone, MessageSquareWarning, MapPin } from "lucide-react";
+import { AlertTriangle, Building2, ClipboardCheck, Megaphone, MessageSquareWarning, MapPin, User } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { COMPLAINT_STATUS_LABELS, formatDateTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,10 @@ export default async function OfficerDashboardPage() {
     }),
     db.complaint.findMany({
       where: { status: { not: "resolved" } },
-      include: { business: { select: { id: true, name: true, district: true } } },
+      include: {
+        business: { select: { id: true, name: true, district: true } },
+        citizen: { select: { name: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 6,
     }),
@@ -127,6 +130,9 @@ export default async function OfficerDashboardPage() {
                     ) : (
                       <span className="italic">Not linked to a business</span>
                     )}
+                    <span className="flex items-center gap-1">
+                      <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                    </span>
                     <span>{formatDateTime(c.createdAt)}</span>
                   </p>
                   {c.photos && c.photos !== "[]" && (

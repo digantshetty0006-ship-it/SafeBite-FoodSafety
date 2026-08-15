@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { ClipboardList, CheckCircle2, MapPin, Megaphone, Clock, Users } from "lucide-react";
+import { ClipboardList, CheckCircle2, MapPin, Megaphone, Clock, Users, User } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,13 +26,17 @@ export default async function OfficerQueuePage() {
     }),
     db.complaint.findMany({
       where: { assignedOfficerId: officer.id, status: { not: "resolved" } },
-      include: { business: { select: { name: true, district: true } } },
+      include: {
+        business: { select: { name: true, district: true } },
+        citizen: { select: { name: true } },
+      },
       orderBy: { createdAt: "asc" },
     }),
     db.complaint.findMany({
       where: { status: { not: "resolved" } },
       include: {
         business: { select: { name: true, district: true } },
+        citizen: { select: { name: true } },
         assignedOfficer: { select: { name: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -86,6 +90,9 @@ export default async function OfficerQueuePage() {
                           <MapPin className="h-3 w-3" /> {c.business.district}
                         </span>
                       )}
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                      </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" /> filed {formatDateTime(c.createdAt)}
                       </span>
@@ -157,6 +164,9 @@ export default async function OfficerQueuePage() {
                           <MapPin className="h-3 w-3" /> {c.business.district}
                         </span>
                       )}
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                      </span>
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" /> filed {formatDateTime(c.createdAt)}
                       </span>

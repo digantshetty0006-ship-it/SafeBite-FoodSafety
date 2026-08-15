@@ -25,7 +25,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
     where: { id },
     include: {
       inspections: { include: { violations: true, officer: true }, orderBy: { scheduledAt: "desc" } },
-      complaints: { orderBy: { createdAt: "desc" } },
+      complaints: { include: { citizen: { select: { name: true } } }, orderBy: { createdAt: "desc" } },
       documents: { orderBy: { uploadedAt: "desc" } },
       owner: true,
     },
@@ -235,7 +235,8 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                   <div>
                     <p className="text-sm">{c.description}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {formatDateTime(c.createdAt)} · {c.anonymous ? "Anonymous" : "Identified citizen"}
+                      {formatDateTime(c.createdAt)} ·{" "}
+                      {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
                     </p>
                     {c.address && (
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
