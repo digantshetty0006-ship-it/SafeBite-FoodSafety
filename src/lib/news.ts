@@ -87,7 +87,7 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     key === "All India"
       ? "(FSSAI OR food safety India OR food poisoning OR food adulteration)"
       : `(${key}) AND (food safety OR FSSAI OR food poisoning OR adulteration OR hygiene)`;
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en&oc=5`;
 
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`news upstream ${res.status}`);
