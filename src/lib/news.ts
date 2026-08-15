@@ -78,28 +78,14 @@ async function fetchSummary(link: string): Promise<string> {
   }
 }
 
-export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem[]> {
-  const key = state || "All India";
-  const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < CACHE_TTL) return hit.items.slice(0, limit);
-
-  const q =
-    key === "All India"
-      ? "(FSSAI OR food safety India OR food poisoning OR food adulteration)"
-      : `(${key}) AND (food safety OR FSSAI OR food poisoning OR adulteration OR hygiene)`;
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en&oc=5`;
-
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`news upstream ${res.status}`);
-  const xml = await res.text();
-
+function parseRss(xml: string, limit: number): NewsItem[] {
   const items: NewsItem[] = [];
   const re = /<item>([\s\S]*?)<\/item>/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(xml)) !== null && items.length < limit) {
     const b = m[1];
     const grab = (tag: string) => {
-      const mm = b.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${tag}>`, "s"));
+      const mm = b.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${tag}>`, "is"));
       return mm ? decodeXml(mm[1].trim()) : "";
     };
     let title = stripHtml(grab("title"));
@@ -118,6 +104,47 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     }
     items.push({ title, link, source, pubDate, snippet });
   }
+  return items;
+}
+
+async function fetchBing(q: string, limit: number): Promise<NewsItem[]> {
+  try {
+    const res = await fetch(`https://www.bing.com/news/search?q=${encodeURIComponent(q)}&format=rss`, {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+        accept: "application/rss+xml, text/xml, */*",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    return parseRss(await res.text(), limit);
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem[]> {
+  const key = state || "All India";
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_TTL) return hit.items.slice(0, limit);
+
+  const q =
+    key === "All India"
+      ? "(FSSAI OR food safety India OR food poisoning OR food adulteration)"
+      : `(${key}) AND (food safety OR FSSAI OR food poisoning OR adulteration OR hygiene)`;
+
+  let items = await fetchBing(q, limit);
+  if (items.length === 0) {
+    const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (res.ok) items = parseRss(await res.text(), limit);
+    } catch {
+      items = [];
+    }
+  }
+  if (items.length === 0) throw new Error("news upstream unreachable");
 
   for (const it of items) {
     const a = it.title.toLowerCase();
