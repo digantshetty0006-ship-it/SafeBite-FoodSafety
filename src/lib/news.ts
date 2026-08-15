@@ -44,24 +44,36 @@ function stripHtml(s: string) {
 }
 
 function repairUtf8(s: string): string {
-  return s
-    .replace(/â€™/g, "’")
-    .replace(/â€œ/g, "“")
-    .replace(/â€”/g, "—")
-    .replace(/â€“/g, "–")
-    .replace(/â€¦/g, "…")
-    .replace(/â€¢/g, "•")
-    .replace(/â€/g, "”")
-    .replace(/\u00E2\u0080\u0099/g, "’")
-    .replace(/\u00E2\u0080\u009C/g, "“")
-    .replace(/\u00E2\u0080\u009D/g, "”")
-    .replace(/\u00E2\u0080\u0094/g, "—")
-    .replace(/\u00E2\u0080\u0093/g, "–")
-    .replace(/\u00E2\u0080\u00A6/g, "…")
-    .replace(/\u00E2\u0080\u00A2/g, "•")
-    .replace(/\u00E2[\u0080-\u00BF]{2}/g, "")
-    .replace(/\uFFFD\?{1,3}/g, "’")
-    .replace(/\uFFFD/g, "’");
+  let out = "";
+  for (let i = 0; i < s.length; i++) {
+    const c1 = s.charCodeAt(i);
+    if (c1 === 0xe2 && i + 2 < s.length) {
+      const c2 = s.charCodeAt(i + 1);
+      const c3 = s.charCodeAt(i + 2);
+      if (c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) {
+        const pair = c2 * 256 + c3;
+        const map: Record<number, string> = {
+          0x8099: "\u2019",
+          0x809c: "\u201c",
+          0x809d: "\u201d",
+          0x8094: "\u2014",
+          0x8093: "\u2013",
+          0x80a6: "\u2026",
+          0x80a2: "\u2022",
+          0x8098: "\u2018",
+        };
+        out += map[pair] ?? "";
+        i += 2;
+        continue;
+      }
+    }
+    if (c1 === 0xfffd) {
+      out += "\u2019";
+      continue;
+    }
+    out += s[i];
+  }
+  return out;
 }
 
 function cleanSnippet(raw: string): string {
