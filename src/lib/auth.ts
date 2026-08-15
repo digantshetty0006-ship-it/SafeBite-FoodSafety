@@ -25,6 +25,12 @@ export const ROLE_LABELS: Record<string, string> = {
   business_owner: "Business Owner",
 };
 
+export const ROLE_HOME: Record<string, string> = {
+  food_officer: "/officer/dashboard",
+  citizen: "/citizen/report",
+  business_owner: "/owner/dashboard",
+};
+
 function sign(payload: string): string {
   return createHmac("sha256", SECRET).update(payload).digest("hex");
 }

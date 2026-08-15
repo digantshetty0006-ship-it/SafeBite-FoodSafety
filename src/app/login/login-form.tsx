@@ -5,7 +5,10 @@ import { loginAction } from "../(auth)/actions";
 import { Button } from "@/components/ui/button";
 
 export default function LoginForm() {
-  const hasError = useSearchParams().get("error") === "1";
+  const params = useSearchParams();
+  const hasError = params.get("error") === "1";
+  const prefillEmail = params.get("email") ?? "";
+  const prefillPassword = params.get("password") ?? "";
   return (
     <>
       {hasError && (
@@ -23,6 +26,7 @@ export default function LoginForm() {
             name="email"
             type="email"
             placeholder="officer@demo.in"
+            defaultValue={prefillEmail}
             required
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
@@ -36,6 +40,7 @@ export default function LoginForm() {
             name="password"
             type="password"
             placeholder="demo1234"
+            defaultValue={prefillPassword}
             required
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />

@@ -24,7 +24,7 @@ const dict: Record<string, [string, string, string]> = {
   "nav.news": ["News", "समाचार", "बातम्या"],
   "nav.leadership": ["Leadership", "नेतृत्व", "नेतृत्व"],
   "nav.guide": ["Judges' Guide", "निर्णायक मार्गदर्शिका", "निर्णायक मार्गदर्शक"],
-  "header.tagline": ["Food Safety Risk Platform", "खाद्य सुरक्षा जोखिम प्लेटफ़ॉर्म", "अन्न सुरक्षा जोखीम व्यासपीठ"],
+  "header.tagline": ["Know what's safe to eat", "जानिए क्या खाना सुरक्षित है", "काय खाणे सुरक्षित आहे ते जाणून घ्या"],
   "header.signIn": ["Sign in", "साइन इन", "साइन इन"],
   "footer.quickLinks": ["Quick links", "त्वरित लिंक", "त्वरित दुवे"],
   "footer.helpline": ["Food safety helpline", "खाद्य सुरक्षा हेल्पलाइन", "अन्न सुरक्षा हेल्पलाइन"],
@@ -57,14 +57,15 @@ const dict: Record<string, [string, string, string]> = {
   ],
 
   // ---- home: hero ----
-  "home.badge": ["Built for FSSAI & Maharashtra FDA · Prototype", "FSSAI और महाराष्ट्र FDA के लिए · प्रोटोटाइप", "FSSAI आणि महाराष्ट्र FDA साठी · प्रोटोटाइप"],
-  "home.title": ["Prevent unsafe food before it reaches people.", "असुरक्षित भोजन लोगों तक पहुँचने से पहले रोकें।", "असुरक्षित अन्न लोकांपर्यंत पोहोचण्यापूर्वी रोखा."],
+  "home.badge": ["Your food-safety shield · FSSAI & Maharashtra FDA", "आपकी खाद्य-सुरक्षा ढाल · FSSAI और महाराष्ट्र FDA", "तुमची अन्न-सुरक्षा ढाल · FSSAI आणि महाराष्ट्र FDA"],
+  "home.title": ["Know what's safe to eat — before you take a bite.", "खाने से पहले जानिए — क्या सुरक्षित है।", "खाण्यापूर्वी जाणून घ्या — काय सुरक्षित आहे."],
   "home.sub": [
-    "SafeBite replaces the reactive Complaint → Inspection → Action pipeline with a predictive Predict Risk → Prioritize → Detect Networks → Prevent Outbreaks model — surfacing the highest-risk businesses first, with every score explained.",
-    "SafeBite प्रतिक्रियात्मक शिकायत → निरीक्षण → कार्रवाई प्रणाली को भविष्यसूचक जोखिम भविष्यवाणी → प्राथमिकता → नेटवर्क पहचान → प्रकोप रोकथाम मॉडल से बदलता है — सबसे अधिक जोखिम वाले व्यवसायों को पहले उजागर करता है, हर स्कोर की व्याख्या के साथ।",
-    "SafeBite प्रतिक्रियात्मक तक्रार → तपासणी → कारवाई प्रक्रियेऐवजी भविष्यसूचक जोखीम अंदाज → प्राधान्यक्रम → साखळी शोध → प्रादुर्भाव रोखणे हे मॉडेल वापरते — सर्वाधिक जोखीम असलेले व्यवसाय प्रथम दाखवते, प्रत्येक गुणाचे स्पष्टीकरण देऊन.",
+    "SafeBite puts FSSAI and Maharashtra FDA safety grades, live food-safety news and a two-minute complaint channel in your pocket. Check any business, report unsafe food, and follow your complaint to resolution — in English, Hindi or Marathi.",
+    "SafeBite आपकी जेब में FSSAI और महाराष्ट्र FDA के सुरक्षा ग्रेड, लाइव खाद्य-सुरक्षा समाचार और दो मिनट की शिकायत सुविधा पहुँचाता है। किसी भी व्यवसाय की जाँच करें, असुरक्षित भोजन की रिपोर्ट करें और अपनी शिकायत का समाधान ट्रैक करें — हिंदी, मराठी या अंग्रेज़ी में।",
+    "SafeBite तुमच्या खिशात FSSAI आणि महाराष्ट्र FDA चे सुरक्षा ग्रेड, थेट अन्न-सुरक्षा बातम्या आणि दोन मिनिटांची तक्रार सुविधा पोहोचवते. कोणताही व्यवसाय तपासा, असुरक्षित अन्नाची तक्रार नोंदवा आणि तक्रारीचे निराकरण ट्रॅक करा — हिंदी, मराठी किंवा इंग्रजीत.",
   ],
-  "home.ctaCommand": ["Enter the Command Center", "कमांड सेंटर में प्रवेश करें", "कमांड सेंटरमध्ये प्रवेश करा"],
+  "home.ctaCommand": ["Check a business", "व्यवसाय जाँचें", "व्यवसाय तपासा"],
+  "home.ctaReport": ["Report unsafe food", "असुरक्षित भोजन की रिपोर्ट करें", "असुरक्षित अन्न नोंदवा"],
   "home.ctaRoles": ["Explore roles", "भूमिकाएँ देखें", "भूमिका पहा"],
   "home.demoCreds": [
     "Demo credentials: officer@demo.in · citizen@demo.in · owner@demo.in — password",
@@ -73,10 +74,10 @@ const dict: Record<string, [string, string, string]> = {
   ],
 
   // ---- home: stats ----
-  "home.s1l": ["businesses under watch", "निगरानी में व्यवसाय", "निगराणीतील व्यवसाय"],
-  "home.s2l": ["districts mapped for risk", "जोखिम के लिए मैप किए जिले", "जोखिमासाठी नकाशा केलेले जिल्हे"],
-  "home.s3l": ["risk score refresh cycle", "जोखिम स्कोर रीफ्रेश चक्र", "जोखीम गुण रिफ्रेश चक्र"],
-  "home.s4l": ["explainable scoring", "व्याख्या योग्य स्कोरिंग", "स्पष्टीकरण करण्यायोग्य गुणांकन"],
+  "home.s1l": ["businesses safety-checked", "सुरक्षा-जाँचे गए व्यवसाय", "सुरक्षा-तपासलेले व्यवसाय"],
+  "home.s2l": ["districts covered", "कवर किए गए जिले", "कव्हर केलेले जिल्हे"],
+  "home.s3l": ["complaint-to-action window", "शिकायत से कार्रवाई की अवधि", "तक्रार ते कारवाई अवधी"],
+  "home.s4l": ["explainable safety grades", "समझने योग्य सुरक्षा ग्रेड", "स्पष्ट सुरक्षा ग्रेड"],
 
   // ---- home: features ----
   "home.featsTitle": ["From reactive to predictive food safety", "प्रतिक्रियात्मक से भविष्यसूचक खाद्य सुरक्षा तक", "प्रतिक्रियात्मक ते भविष्यसूचक अन्न सुरक्षा"],
@@ -197,12 +198,13 @@ const dict: Record<string, [string, string, string]> = {
   "home.footGuide": ["Judges' guide to the charts", "चार्ट के लिए निर्णायक मार्गदर्शिका", "चार्टसाठी निर्णायक मार्गदर्शक"],
 
   // ---- login ----
-  "login.title": ["Demo login — pick a role", "डेमो लॉगिन — भूमिका चुनें", "डेमो लॉगिन — भूमिका निवडा"],
+  "login.title": ["Official sign-in", "आधिकारिक साइन-इन", "अधिकृत साइन-इन"],
   "login.sub": [
-    "Role-based access for the demo. Credentials are hardcoded and filled in automatically.",
-    "डेमो के लिए भूमिका-आधारित पहुँच। क्रेडेंशियल पहले से भरे हुए हैं।",
-    "डेमोसाठी भूमिका-आधारित प्रवेश. क्रेडेन्शियल आधीच भरलेले आहेत.",
+    "Restricted to food safety officers, officials and demo accounts. Public visitors can browse SafeBite freely.",
+    "केवल खाद्य सुरक्षा अधिकारियों, अधिकारियों और डेमो खातों के लिए। आम आगंतुक SafeBite स्वतंत्र रूप से देख सकते हैं।",
+    "केवळ अन्न सुरक्षा अधिकारी, अधिकारी आणि डेमो खात्यांसाठी. सामान्य अभ्यागत SafeBite मुक्तपणे ब्राउझ करू शकतात.",
   ],
+  "login.demoAccounts": ["Demo accounts — tap to fill", "डेमो खाते — भरने के लिए टैप करें", "डेमो खाती — भरण्यासाठी टॅप करा"],
   "login.manualTitle": ["Sign in with email", "ईमेल से साइन इन करें", "ईमेलने साइन इन करा"],
   "login.manualDesc": [
     "Use any demo account — password is",

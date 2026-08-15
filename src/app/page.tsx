@@ -82,7 +82,7 @@ export default async function LandingPage() {
                 variant="outline"
                 className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
               >
-                <Link href="#roles">{t("home.ctaRoles")}</Link>
+                <Link href="/login">{t("home.ctaReport")}</Link>
               </Button>
             </div>
             <p className="mt-4 text-xs text-emerald-50/70">
