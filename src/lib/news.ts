@@ -41,6 +41,19 @@ function stripHtml(s: string) {
   return s.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&");
 }
 
+function repairUtf8(s: string): string {
+  return s
+    .replace(/â€™/g, "’")
+    .replace(/â€œ/g, "“")
+    .replace(/â€”/g, "—")
+    .replace(/â€“/g, "–")
+    .replace(/â€¦/g, "…")
+    .replace(/â€¢/g, "•")
+    .replace(/â€/g, "”")
+    .replace(/\uFFFD\?{1,3}/g, "’")
+    .replace(/\uFFFD/g, "’");
+}
+
 function cleanSnippet(raw: string): string {
   let s = stripHtml(raw)
     .replace(/&nbsp;/g, " ")
@@ -86,7 +99,7 @@ function parseRss(xml: string, limit: number): NewsItem[] {
     const b = m[1];
     const grab = (tag: string) => {
       const mm = b.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${tag}>`, "is"));
-      return mm ? decodeXml(mm[1].trim()) : "";
+      return mm ? repairUtf8(decodeXml(mm[1].trim())) : "";
     };
     let title = stripHtml(grab("title"));
     const link = grab("link");
