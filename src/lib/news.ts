@@ -74,17 +74,23 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
   while ((m = re.exec(xml)) !== null && items.length < limit) {
     const b = m[1];
     const grab = (tag: string) => {
-      const mm = b.match(new RegExp(`<${tag}>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${tag}>`, "s"));
+      const mm = b.match(new RegExp(`<${tag}[^>]*>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${tag}>`, "s"));
       return mm ? decodeXml(mm[1].trim()) : "";
     };
     let title = stripHtml(grab("title"));
     const link = grab("link");
     const source = stripHtml(grab("source"));
     const pubDate = grab("pubDate");
-    const snippet = cleanSnippet(grab("description"));
+    let snippet = cleanSnippet(grab("description"));
     if (!title || !link) continue;
-    const sep = title.lastIndexOf(" - ");
-    if (sep > 10 && title.slice(sep + 3) === source) title = title.slice(0, sep);
+    const srcLower = source.toLowerCase();
+    const sepMatch = title.match(/\s-\s([^-]{2,60})$/);
+    if (sepMatch && srcLower && sepMatch[1].toLowerCase() === srcLower) {
+      title = title.slice(0, sepMatch.index ?? title.length).trim();
+    }
+    if (srcLower && snippet.toLowerCase().endsWith(srcLower)) {
+      snippet = snippet.slice(0, snippet.length - source.length).replace(/[\s…–—-]+$/, "").trim();
+    }
     items.push({ title, link, source, pubDate, snippet });
   }
 

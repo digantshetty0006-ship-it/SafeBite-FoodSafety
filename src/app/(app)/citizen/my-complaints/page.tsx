@@ -7,6 +7,7 @@ import { formatDateTime, COMPLAINT_STATUS_LABELS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { reference } from "@/lib/complaints";
 import { getLang, tr } from "@/lib/lang";
+import { ComplaintPdf, type ComplaintPdfData } from "@/components/citizen/complaint-pdf";
 
 const STEPS = ["submitted", "under_review", "inspection_scheduled", "resolved"];
 const STEP_ICONS = [Megaphone, FileSearch, ClipboardCheck, CheckCircle2];
@@ -79,6 +80,24 @@ export default async function CitizenComplaintsPage({
             const daysLeft = Math.max(0, Math.ceil((slaDeadline.getTime() - now.getTime()) / 86400000));
             const officer =
               c.assignedOfficer ?? { name: "Food Safety Officer", district: null };
+            const pdfData: ComplaintPdfData = {
+              reference: reference(c.id),
+              statusLabel: COMPLAINT_STATUS_LABELS[c.status] ?? c.status,
+              filedAt: formatDateTime(c.createdAt),
+              description: c.description,
+              businessName: c.business?.name ?? null,
+              businessDistrict: c.business?.district ?? null,
+              address: c.address ?? null,
+              district: c.district ?? null,
+              officerName: officer.name,
+              officerDistrict: officer.district ?? null,
+              slaDeadline: formatDateTime(slaDeadline),
+              slaNote: resolved ? "resolved" : overdue ? "overdue" : `${daysLeft}d left`,
+              overdue,
+              photoCount: c.photos === "[]" ? 0 : JSON.parse(c.photos).length,
+              citizenName: citizen.name,
+              citizenEmail: citizen.email,
+            };
 
             return (
               <Card key={c.id}>
@@ -93,7 +112,10 @@ export default async function CitizenComplaintsPage({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">{formatDateTime(c.createdAt)}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground">{formatDateTime(c.createdAt)}</p>
+                      <ComplaintPdf data={pdfData} label={t("my.pdf")} />
+                    </div>
                   </div>
 
                   <p className="mt-2 text-sm">{c.description}</p>

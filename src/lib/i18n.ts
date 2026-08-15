@@ -295,6 +295,7 @@ const dict: Record<string, [string, string, string]> = {
   "analytics.title": ["Analytics & Outbreak Detection", "एनालिटिक्स और प्रकोप पहचान", "विश्लेषण व प्रादुर्भाव शोध"],
   "analytics.explain": ["Explain these charts", "इन चार्ट को समझाएँ", "हे चार्ट समजावून घ्या"],
   "my.title": ["Track My Complaints", "मेरी शिकायतें ट्रैक करें", "माझ्या तक्रारी ट्रॅक करा"],
+  "my.pdf": ["Download PDF", "पीडीएफ डाउनलोड करें", "PDF डाउनलोड करा"],
   "map.title": ["District Risk Heat Map", "जिला जोखिम हीट मैप", "जिल्हा जोखीम हीट नकाशा"],
   "history.title": ["Inspection History", "निरीक्षण इतिहास", "तपासणी इतिहास"],
   "schedule.title": ["Inspection Scheduling", "निरीक्षण अनुसूची", "तपासणी वेळापत्रक"],

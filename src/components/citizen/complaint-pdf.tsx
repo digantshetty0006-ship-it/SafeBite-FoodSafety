@@ -1,0 +1,171 @@
+"use client";
+
+import { jsPDF } from "jspdf";
+import { FileDown } from "lucide-react";
+
+export interface ComplaintPdfData {
+  reference: string;
+  statusLabel: string;
+  filedAt: string;
+  description: string;
+  businessName?: string | null;
+  businessDistrict?: string | null;
+  address?: string | null;
+  district?: string | null;
+  officerName: string;
+  officerDistrict?: string | null;
+  slaDeadline: string;
+  slaNote: string;
+  overdue: boolean;
+  photoCount: number;
+  citizenName: string;
+  citizenEmail: string;
+}
+
+const EMERALD: [number, number, number] = [4, 120, 87];
+
+function wrap(doc: jsPDF, text: string, x: number, y: number, w: number, size: number, lineH = 4.6): number {
+  doc.setFontSize(size);
+  const lines = doc.splitTextToSize(text, w);
+  doc.text(lines, x, y);
+  return y + lines.length * lineH;
+}
+
+export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: string }) {
+  const download = () => {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const W = 210;
+
+    doc.setFillColor(...EMERALD);
+    doc.rect(0, 0, W, 26, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("SafeBite", 14, 11);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Food Safety Citizen Complaint", 14, 17);
+    doc.text("FSSAI  ·  Maharashtra Food & Drug Administration", 14, 22);
+    doc.setFontSize(8);
+    doc.text(data.filedAt, W - 14, 11, { align: "right" });
+    doc.text("Complaint Receipt", W - 14, 17, { align: "right" });
+
+    let y = 40;
+    doc.setTextColor(20, 20, 20);
+    doc.setFont("courier", "bold");
+    doc.setFontSize(17);
+    doc.text(`Ref: ${data.reference}`, 14, y);
+    y += 6;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(data.overdue ? 220 : 4, data.overdue ? 38 : 120, data.overdue ? 38 : 87);
+    const statusW = doc.getTextWidth(data.statusLabel) + 12;
+    doc.roundedRect(14, y - 4, statusW, 8, 2, 2, "F");
+    doc.text(data.statusLabel, 20, y + 1);
+    y += 12;
+
+    doc.setDrawColor(210, 210, 210);
+    doc.line(14, y, W - 14, y);
+    y += 8;
+
+    const field = (labelText: string, value: string) => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(110, 110, 110);
+      doc.text(labelText.toUpperCase(), 14, y);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 30, 30);
+      doc.text(value, 62, y);
+      y += 6.4;
+    };
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Complaint Details", 14, y);
+    y += 6;
+
+    field("Filed on", data.filedAt);
+    field("Filed by", `${data.citizenName} <${data.citizenEmail}>`);
+    if (data.businessName) field("Business", `${data.businessName}${data.businessDistrict ? ` (${data.businessDistrict})` : ""}`);
+    const location = [data.address, data.district].filter(Boolean).join(", ");
+    if (location) field("Location", location);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(110, 110, 110);
+    doc.text("DESCRIPTION", 14, y);
+    y += 5;
+    y = wrap(doc, data.description, 14, y, W - 28, 10) + 4;
+
+    if (data.photoCount > 0) field("Evidence", `${data.photoCount} photo${data.photoCount > 1 ? "s" : ""} attached`);
+
+    doc.setDrawColor(210, 210, 210);
+    doc.line(14, y, W - 14, y);
+    y += 8;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Accountability", 14, y);
+    y += 6;
+    field("Assigned officer", `${data.officerName}${data.officerDistrict ? ` (${data.officerDistrict})` : ""}`);
+    field("SLA deadline", `${data.slaDeadline}${data.slaNote ? `  ·  ${data.slaNote}` : ""}`);
+    if (data.overdue) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(190, 30, 30);
+      y += 2;
+      doc.text(
+        "Auto-escalated to the Deputy Commissioner — this complaint exceeded its SLA window.",
+        14,
+        y
+      );
+      y += 8;
+    }
+
+    doc.setDrawColor(210, 210, 210);
+    doc.line(14, y, W - 14, y);
+    y += 8;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(110, 110, 110);
+    doc.text("HOW TO TRACK", 14, y);
+    y += 5;
+    y = wrap(
+      doc,
+      `Sign in to SafeBite as ${data.citizenEmail} and open "Track Complaints". Your complaint moves through Submitted → Under Review → Inspection Scheduled → Resolved, and escalates automatically if the SLA is missed.`,
+      14,
+      y,
+      W - 28,
+      9
+    ) + 4;
+
+    doc.setFillColor(244, 244, 244);
+    doc.rect(0, 272, W, 25, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text("Helpline: 1800-222-365", 14, 280);
+    doc.text("Generated by SafeBite", W - 14, 280, { align: "right" });
+    doc.text("This is a system-generated receipt for citizen reference and is not a legal document.", 14, 285);
+    doc.text(`Ref ${data.reference} · ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`, W - 14, 285, { align: "right" });
+
+    doc.save(`${data.reference}-complaint.pdf`);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={download}
+      className="inline-flex items-center gap-1.5 rounded-lg border bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+    >
+      <FileDown className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  );
+}
