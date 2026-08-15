@@ -1,6 +1,6 @@
 # FSSAI & FDA Maharashtra — Reference Notes
 
-Quick reference for SafeDine development decisions. Verified against FSSAI publications (June 2026); exact statutory text should always be checked on fssai.gov.in before claiming compliance.
+Quick reference for SafeBite development decisions. Verified against FSSAI publications (June 2026); exact statutory text should always be checked on fssai.gov.in before claiming compliance.
 
 ## Legal framework
 
@@ -43,14 +43,14 @@ Quick reference for SafeDine development decisions. Verified against FSSAI publi
 - **Food Safety Officer** (S.37): appointed per local area; powers under S.38 — enter & inspect premises, take samples (compensation for samples), seize articles, search records.
 - Improvement Notice (S.32(2)): 15 days to comply; non-compliance → suspension; continued failure → cancellation after show-cause hearing.
 
-## Complaints / citizen flow (as mirrored in SafeDine)
+## Complaints / citizen flow (as mirrored in SafeBite)
 
 - FSSAI Consumer Grievance / complaint module (FoSCoS portal, foscos.fssai.gov.in) — consumer reports are routed to the FBO to respond; unresolved complaints escalate to enforcement.
-- FSSAI toll-free help/consumer numbers commonly cited: **1800-11-2100** (FSSAI helpline) and **1800-222-365** (food safety helpline — the one SafeDine shows).
+- FSSAI toll-free help/consumer numbers commonly cited: **1800-11-2100** (FSSAI helpline) and **1800-222-365** (food safety helpline — the one SafeBite shows).
 - Real-world path: citizen complaint → Designated Officer → Food Safety Officer inspection → report/violations → penalties/adjudication.
 - Lab samples go through FSSAI-notified labs; adulteration matters can go to adjudicating officers (S.68) / special courts for imprisonment offences (S.74).
 
-## SafeDine alignment notes (current demo)
+## SafeBite alignment notes (current demo)
 
 - License numbers generated as `12724002XXXXXX` (14-digit, Maharashtra code 27, license = starts with 1).
 - Officer roles/`district` fields model Food Safety Officers under a state Commissioner; complaint auto-assignment matches officer jurisdiction to the pinned location's district, else round-robin — an approximation of the Designated-Officer routing.

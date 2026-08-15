@@ -126,6 +126,18 @@ export default async function OfficerDashboardPage() {
                     )}
                     <span>{formatDateTime(c.createdAt)}</span>
                   </p>
+                  {c.photos && c.photos !== "[]" && (
+                    <div className="mt-2 flex gap-1.5">
+                      {JSON.parse(c.photos).map((p: string) => (
+                        <img
+                          key={p}
+                          src={p}
+                          alt="complaint photo"
+                          className="h-14 w-20 rounded-md border object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <Badge variant="outline" className="shrink-0">
                   {COMPLAINT_STATUS_LABELS[c.status]}

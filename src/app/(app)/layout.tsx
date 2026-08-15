@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import AppShell from "@/components/app-shell";
 
 export const metadata = {
-  title: "SafeDine",
+  title: "SafeBite",
 };
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

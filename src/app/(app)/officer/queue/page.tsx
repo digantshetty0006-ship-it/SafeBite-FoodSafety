@@ -87,6 +87,18 @@ export default async function OfficerQueuePage() {
                         <Clock className="h-3 w-3" /> filed {formatDateTime(c.createdAt)}
                       </span>
                     </p>
+                    {c.photos && c.photos !== "[]" && (
+                      <div className="mt-2 flex gap-1.5">
+                        {JSON.parse(c.photos).map((p: string) => (
+                          <img
+                            key={p}
+                            src={p}
+                            alt="complaint photo"
+                            className="h-14 w-20 rounded-md border object-cover"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {c.status === "submitted" && (
@@ -149,6 +161,18 @@ export default async function OfficerQueuePage() {
                         <Users className="h-3 w-3" /> {c.assignedOfficer?.name ?? "unassigned"}
                       </span>
                     </p>
+                    {c.photos && c.photos !== "[]" && (
+                      <div className="mt-2 flex gap-1.5">
+                        {JSON.parse(c.photos).map((p: string) => (
+                          <img
+                            key={p}
+                            src={p}
+                            alt="complaint photo"
+                            className="h-14 w-20 rounded-md border object-cover"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {c.status === "submitted" && (

@@ -15,13 +15,15 @@ export default async function OfficerAnalyticsPage() {
     db.inspection.findMany({ include: { violations: true }, orderBy: { completedAt: "desc" } }),
   ]);
 
-  // Monthly activity (last 12 months)
+  // Monthly activity (last 12 months, bucketed in IST)
+  const IST_MS = 5.5 * 3600 * 1000;
   const months: { month: string; key: string; inspections: number; violations: number }[] = [];
   const now = new Date();
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(now.getTime() + IST_MS);
+    d.setMonth(d.getMonth() - i, 1);
     months.push({
-      month: d.toLocaleString("en-IN", { month: "short" }),
+      month: d.toLocaleString("en-IN", { month: "short", timeZone: "Asia/Kolkata" }),
       key: `${d.getFullYear()}-${d.getMonth()}`,
       inspections: 0,
       violations: 0,
@@ -29,7 +31,8 @@ export default async function OfficerAnalyticsPage() {
   }
   for (const insp of inspections) {
     if (!insp.completedAt) continue;
-    const key = `${insp.completedAt.getFullYear()}-${insp.completedAt.getMonth()}`;
+    const ist = new Date(insp.completedAt.getTime() + IST_MS);
+    const key = `${ist.getFullYear()}-${ist.getMonth()}`;
     const bucket = months.find((m) => m.key === key);
     if (!bucket) continue;
     bucket.inspections += 1;
