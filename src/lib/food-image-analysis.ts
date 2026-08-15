@@ -33,24 +33,31 @@ interface PixelMetrics {
   colorfulness: number;
   lapVar: number;
   edgeMean: number;
-  anomalyRatio: number;
-  maxBlobRatio: number;
-  blobCount: number;
+  redCells: number;
+  totalCells: number;
+  maxRedCluster: number;
+  darkSpotCells: number;
+  smallDarkClusters: number;
 }
 
 /**
  * Deterministic on-device food-evidence analyser.
  * Runs entirely in the browser (no network, no keys) and is fully auditable:
- * every score below is derived from pixel statistics — sharpness via Laplacian
+ * every score is derived from pixel statistics — sharpness via Laplacian
  * variance, exposure from the luminance histogram, contamination from
- * hue-anomaly + dark-blob clustering, clutter from edge density.
+ * LOCALISED strongly-saturated colour clusters (a stain or rot spot, not
+ * scattered pixels), clutter from edge density. Deliberately conservative:
+ * a clean scene must not be flagged on ambient colours like signage or
+ * warm lighting.
  */
 export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
   const { width: W, height: H, data } = img;
   const N = W * H;
 
   const lum = new Float32Array(N);
+  const val = new Float32Array(N);
   const sat = new Float32Array(N);
+  const hue = new Float32Array(N);
   for (let i = 0; i < N; i++) {
     const r = data[i * 4];
     const g = data[i * 4 + 1];
@@ -58,7 +65,18 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
     lum[i] = 0.299 * r + 0.587 * g + 0.114 * b;
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
-    sat[i] = max === 0 ? 0 : (max - min) / 255;
+    val[i] = max;
+    const delta = max - min;
+    sat[i] = max === 0 ? 0 : delta / 255;
+    let h = 0;
+    if (delta > 0) {
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    hue[i] = h;
   }
 
   let mean = 0;
@@ -119,76 +137,92 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
   const lapVar = lapSum / Math.max(1, lapN);
   const edgeMean = edgeSum / Math.max(1, lapN) / 2;
 
-  let anomaly = 0;
-  for (let i = 0; i < N; i++) {
-    const r = data[i * 4];
-    const g = data[i * 4 + 1];
-    const b = data[i * 4 + 2];
-    const mx = Math.max(r, g, b);
-    const mn = Math.min(r, g, b);
-    const delta = mx - mn;
-    if (delta < 20) continue;
-    let h = 0;
-    if (mx === r) h = ((g - b) / delta) % 6;
-    else if (mx === g) h = (b - r) / delta + 2;
-    else h = (r - g) / delta + 4;
-    h *= 60;
-    if (h < 0) h += 360;
-    const v = mx;
-    const s = delta / 255;
-    const alert =
-      ((h <= 25 || h >= 330) && s > 0.35 && v >= 60 && v <= 230) ||
-      (h >= 75 && h <= 160 && s > 0.35 && v < 120) ||
-      (v < 35 && s > 0.15) ||
-      (h >= 25 && h <= 60 && s > 0.5 && v > 180);
-    if (alert) anomaly++;
-  }
-  const anomalyRatio = anomaly / N;
+  // Two conservative anomaly bands:
+  //  - DEEP RED  (h in 345..15, sat>0.3, v in 60..180): blood / raw-meat
+  //    juice / deep red rot. Bright signage (v>180) is excluded.
+  //  - DARK CHROMATIC (v<80, sat>0.08): dark mould / rot / dirt spots.
+  //    Neutral shadows and gray-black surfaces (sat ~ 0) are excluded.
+  // Contamination is only claimed from LOCALISED clusters — giant uniform
+  // regions (tables, floors, backdrops) are deliberately excluded.
+  const isDeepRed = (i: number) => {
+    const v = val[i];
+    const s = sat[i];
+    const h = hue[i];
+    return (h <= 15 || h >= 345) && s > 0.3 && v >= 60 && v <= 180;
+  };
+  const isDarkChromatic = (i: number) => val[i] < 80 && sat[i] > 0.08;
 
-  const GRID = 16;
-  const cell = Math.floor(W / GRID);
-  const darkCells = new Uint8Array(GRID * GRID);
+  // 32x32 cell grid (analysis canvas is always 256x256 => 8px cells).
+  const GRID = 32;
+  const CELL = Math.floor(W / GRID);
+  const cellRed = new Float32Array(GRID * GRID);
+  const cellDark = new Float32Array(GRID * GRID);
+  const cellSat = new Float32Array(GRID * GRID);
+  const cellCount = new Float32Array(GRID * GRID);
   for (let gy = 0; gy < GRID; gy++) {
     for (let gx = 0; gx < GRID; gx++) {
-      let sum = 0;
+      let red = 0;
+      let dark = 0;
+      let satSumCell = 0;
       let cnt = 0;
-      for (let y = gy * cell; y < Math.min(H, (gy + 1) * cell); y++) {
-        for (let x = gx * cell; x < Math.min(W, (gx + 1) * cell); x++) {
-          sum += lum[y * W + x];
+      for (let y = gy * CELL; y < Math.min(H, (gy + 1) * CELL); y++) {
+        for (let x = gx * CELL; x < Math.min(W, (gx + 1) * CELL); x++) {
+          const i = y * W + x;
+          if (isDeepRed(i)) red++;
+          if (isDarkChromatic(i)) dark++;
+          satSumCell += sat[i];
           cnt++;
         }
       }
-      if (cnt > 0 && sum / cnt < 70) darkCells[gy * GRID + gx] = 1;
+      cellRed[gy * GRID + gx] = cnt > 0 ? red / cnt : 0;
+      cellDark[gy * GRID + gx] = cnt > 0 ? dark / cnt : 0;
+      cellSat[gy * GRID + gx] = cnt > 0 ? satSumCell / cnt : 0;
+      cellCount[gy * GRID + gx] = cnt;
     }
   }
-  const seen = new Uint8Array(GRID * GRID);
-  let blobCount = 0;
-  let maxBlob = 0;
-  for (let i = 0; i < GRID * GRID; i++) {
-    if (!darkCells[i] || seen[i]) continue;
-    let size = 0;
-    const stack = [i];
-    seen[i] = 1;
-    while (stack.length) {
-      const cur = stack.pop()!;
-      size++;
-      const x = cur % GRID;
-      const y = Math.floor(cur / GRID);
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx < 0 || ny < 0 || nx >= GRID || ny >= GRID) continue;
-        const ni = ny * GRID + nx;
-        if (darkCells[ni] && !seen[ni]) {
-          seen[ni] = 1;
-          stack.push(ni);
+
+  const isRedCell = (i: number) => cellRed[i] > 0.4 && cellSat[i] > 0.3;
+  const isDarkCell = (i: number) => cellDark[i] > 0.5;
+
+  const flood = (pred: (i: number) => boolean, minSize: number, maxSize: number) => {
+    const visited = new Uint8Array(GRID * GRID);
+    let total = 0;
+    let largest = 0;
+    let spotTotal = 0;
+    let small = 0;
+    for (let i = 0; i < GRID * GRID; i++) {
+      if (cellCount[i] === 0 || visited[i] || !pred(i)) continue;
+      let size = 0;
+      const stack = [i];
+      visited[i] = 1;
+      while (stack.length) {
+        const cur = stack.pop()!;
+        size++;
+        const cx = cur % GRID;
+        const cy = Math.floor(cur / GRID);
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (nx < 0 || ny < 0 || nx >= GRID || ny >= GRID) continue;
+          const ni = ny * GRID + nx;
+          if (!visited[ni] && pred(ni)) {
+            visited[ni] = 1;
+            stack.push(ni);
+          }
         }
       }
+      total += size;
+      if (size > largest) largest = size;
+      if (size >= minSize && size <= maxSize) {
+        small++;
+        spotTotal += size;
+      }
     }
-    blobCount++;
-    if (size > maxBlob) maxBlob = size;
-  }
-  const maxBlobRatio = maxBlob / (GRID * GRID);
+    return { total, largest, small, spotTotal };
+  };
+
+  const redCells = flood(isRedCell, 0, 1024);
+  const darkCells = flood(isDarkCell, 2, 15);
 
   const metrics: PixelMetrics = {
     mean,
@@ -199,9 +233,11 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
     colorfulness: colorfulnessFinal,
     lapVar,
     edgeMean,
-    anomalyRatio,
-    maxBlobRatio,
-    blobCount,
+    redCells: redCells.total,
+    totalCells: GRID * GRID,
+    maxRedCluster: redCells.largest,
+    darkSpotCells: darkCells.spotTotal,
+    smallDarkClusters: darkCells.small,
   };
 
   return verdictFromMetrics(metrics);
@@ -226,8 +262,14 @@ function verdictFromMetrics(m: PixelMetrics): EvidenceAnalysis {
     100 * (0.3 * sharpScore + 0.2 * expoScore + 0.15 * contrastScore + 0.1 * colorScore + 0.25 * balanceScore)
   );
 
-  const contamScore = finite(clamp((finite(m.anomalyRatio) / 0.02) * 0.7 + (finite(m.maxBlobRatio) / 0.3) * 0.3, 0, 1));
-  const clutterScore = finite(clamp((finite(m.edgeMean) / 40) * 0.6 + (1 - clamp(finite(m.std) / 55, 0, 1)) * 0.4, 0, 1));
+  // Localised, deep-colour contamination only. If strong cells cover most of
+  // the frame it is a colour cast (or the whole image is one colour), not a
+  // contaminant — demote to 0.
+  const redLocalized = finite(m.redCells / m.totalCells) < 0.6;
+  const redScore = redLocalized ? clamp(finite(m.maxRedCluster) / 10, 0, 1) : 0;
+  const darkScore = clamp(finite(m.darkSpotCells) / 40, 0, 1);
+  const contamScore = finite(clamp(0.6 * redScore + 0.4 * darkScore, 0, 1));
+  const clutterScore = finite(clamp((m.edgeMean / 40) * 0.6 + (1 - clamp(finite(m.std) / 55, 0, 1)) * 0.4, 0, 1));
   const hygieneScore = finite(clamp(0.45 * contamScore + 0.25 * clutterScore + 0.3 * (1 - expoScore), 0, 1));
 
   const level = (s: number): AnalysisLevel => (s > 0.55 ? "HIGH" : s > 0.25 ? "MEDIUM" : "LOW");
@@ -236,9 +278,9 @@ function verdictFromMetrics(m: PixelMetrics): EvidenceAnalysis {
   const hygiene = level(hygieneScore);
 
   const indicators: string[] = [];
-  if (m.anomalyRatio >= 0.008) indicators.push("visibly contaminated surface");
-  if (m.blobCount >= 4 && m.maxBlobRatio >= 0.1) indicators.push("pest presence");
-  if (m.edgeMean > 38 && m.anomalyRatio > 0.003) indicators.push("overcrowding");
+  if ((redLocalized && m.maxRedCluster >= 8) || m.darkSpotCells >= 28) indicators.push("visibly contaminated surface");
+  if (m.smallDarkClusters >= 2 && m.mean > 60) indicators.push("pest presence");
+  if (m.edgeMean > 40 && m.std > 55) indicators.push("overcrowding");
   if (m.mean < 60) indicators.push("poor lighting — scene too dark to fully assess");
   if (m.lapVar < 6) indicators.push("blurry capture — fine detail not assessable");
 
@@ -252,23 +294,20 @@ function verdictFromMetrics(m: PixelMetrics): EvidenceAnalysis {
   };
 }
 
-/** Browser-side entry: decodes a data URL and analyses it. */
+/** Browser-side entry: decodes a data URL and analyses it on a fixed 256x256 grid. */
 export function analyzeEvidenceImage(dataUrl: string): Promise<EvidenceAnalysis> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       try {
-        const scale = Math.min(1, 256 / Math.max(img.width, img.height));
         const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(img.width * scale));
-        canvas.height = Math.max(1, Math.round(img.height * scale));
+        canvas.width = 256;
+        canvas.height = 256;
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
         if (!ctx) throw new Error("canvas unavailable");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        resolve(
-          analyzePixelImage({ width: canvas.width, height: canvas.height, data: imageData.data })
-        );
+        ctx.drawImage(img, 0, 0, 256, 256);
+        const imageData = ctx.getImageData(0, 0, 256, 256);
+        resolve(analyzePixelImage({ width: 256, height: 256, data: imageData.data }));
       } catch (e) {
         reject(e);
       }
