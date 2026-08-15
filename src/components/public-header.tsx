@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ShieldCheck, LogIn } from "lucide-react";
 import { useLocale } from "@/components/locale-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { cn } from "@/lib/utils";
 import type { Lang } from "@/lib/i18n";
 
@@ -53,6 +54,7 @@ export function PublicHeader({ lang }: { lang: Lang }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2.5">
+          <ThemeSwitcher />
           <LanguageSwitcher current={lang} />
           <Link
             href="/login"

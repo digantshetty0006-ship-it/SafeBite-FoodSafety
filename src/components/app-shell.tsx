@@ -22,6 +22,7 @@ import { ROLE_LABELS } from "@/lib/auth";
 import { getLang, tr } from "@/lib/lang";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { logoutAction } from "@/app/(auth)/actions";
 import { ActiveNavLink } from "@/components/nav-link";
 import type { NavItem } from "@/components/nav-link";
@@ -161,6 +162,7 @@ async function Header({ user, lang }: { user: { name: string; role: string; emai
         <h2 className="text-sm font-semibold leading-tight">{tr(lang, ROLE_HEADER[user.role] ?? "shell.hOfficer")}</h2>
       </div>
       <div className="ml-auto flex items-center gap-3">
+        <ThemeSwitcher />
         <span className="hidden text-xs text-muted-foreground sm:block">{user.email}</span>
       </div>
     </header>

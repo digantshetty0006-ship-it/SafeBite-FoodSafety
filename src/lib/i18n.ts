@@ -26,6 +26,10 @@ const dict: Record<string, [string, string, string]> = {
   "nav.guide": ["Judges' Guide", "निर्णायक मार्गदर्शिका", "निर्णायक मार्गदर्शक"],
   "header.tagline": ["Know what's safe to eat", "जानिए क्या खाना सुरक्षित है", "काय खाणे सुरक्षित आहे ते जाणून घ्या"],
   "header.signIn": ["Sign in", "साइन इन", "साइन इन"],
+  "theme.label": ["Display", "डिस्प्ले", "प्रदर्शन"],
+  "theme.light": ["Light", "लाइट", "लाइट"],
+  "theme.dark": ["Dark", "डार्क", "डार्क"],
+  "theme.system": ["System", "सिस्टम", "सिस्टम"],
   "footer.quickLinks": ["Quick links", "त्वरित लिंक", "त्वरित दुवे"],
   "footer.helpline": ["Food safety helpline", "खाद्य सुरक्षा हेल्पलाइन", "अन्न सुरक्षा हेल्पलाइन"],
   "footer.copyright": [
