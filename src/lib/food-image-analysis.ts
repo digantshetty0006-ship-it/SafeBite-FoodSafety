@@ -202,17 +202,19 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
 
   const isRedCell = (i: number) => cellRed[i] > 0.4 && cellSat[i] > 0.3;
   const isDarkCell = (i: number) => cellDark[i] > 0.5;
-  // Mould: green-blue-grey hue, low-ish saturation, mid value, MOTTLED
-  // (high within-cell chroma texture). Smooth cooked greens (palak, parsley)
-  // are uniform -> chromaStd stays low and they are excluded.
+  // Mould: green-blue-grey hue (incl. cyan cast-tinted patches), low
+  // saturation, mid value, MOTTLED (high within-cell chroma texture). Smooth
+  // cooked greens (palak, parsley) are uniform -> chromaStd stays low. Big
+  // green regions (whole dishes, tablecloths) are giant clusters that the
+  // flood window cap excludes; only LOCALISED patches are claimed as mould.
   const isMoldCell = (i: number) =>
-    cellHue[i] >= 70 &&
-    cellHue[i] <= 170 &&
-    cellSat[i] > 0.1 &&
+    cellHue[i] >= 60 &&
+    cellHue[i] <= 200 &&
+    cellSat[i] > 0.05 &&
     cellLum[i] > 40 &&
-    cellLum[i] < 185 &&
+    cellLum[i] < 215 &&
     cellDark[i] < 0.85 &&
-    cellChromaStd[i] > 0.055;
+    cellChromaStd[i] > 0.015;
 
   const flood = (pred: (i: number) => boolean, minSize: number, maxSize: number) => {
     const visited = new Uint8Array(GRID * GRID);
