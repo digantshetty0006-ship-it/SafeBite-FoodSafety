@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { AnalyticsDashboard } from "@/components/officer/analytics-dashboard";
+import { AnalyticsGuide } from "@/components/officer/analytics-guide";
 import { detectNetworks } from "@/lib/network";
 import { categoryLabel } from "@/lib/format";
 import Link from "next/link";
@@ -131,6 +132,9 @@ export default async function OfficerAnalyticsPage() {
           topRisky,
         }}
       />
+      <div className="border-t pt-6">
+        <AnalyticsGuide />
+      </div>
     </div>
   );
 }
