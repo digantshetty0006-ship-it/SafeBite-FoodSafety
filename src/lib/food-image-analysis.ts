@@ -95,8 +95,8 @@ export function analyzePixelImage(img: PixelImage): EvidenceAnalysis {
   const meanSat = satSum / N;
   const rgMean = rgMeanSum / N;
   const ybMean = ybMeanSum / N;
-  const c1 = Math.sqrt(rgMean);
-  const c2 = Math.sqrt(ybMean);
+  const c1 = Math.sqrt(Math.max(0, rgMean));
+  const c2 = Math.sqrt(Math.max(0, ybMean));
   const c3 = Math.sqrt(Math.max(0, rgSum / N - rgMean * rgMean));
   const c4 = Math.sqrt(Math.max(0, ybSum / N - ybMean * ybMean));
   const colorfulnessFinal = c1 + c2 + 0.3 * (c3 + c4);
@@ -211,20 +211,24 @@ function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
 }
 
+function finite(v: number, fallback = 0) {
+  return Number.isFinite(v) ? v : fallback;
+}
+
 function verdictFromMetrics(m: PixelMetrics): EvidenceAnalysis {
-  const sharpScore = clamp((m.lapVar - 2) / 30, 0, 1);
-  const expoScore = 1 - clamp(m.underexposed * 1.2 + m.overexposed * 0.8, 0, 1);
-  const contrastScore = clamp(m.std / 70, 0, 1);
-  const colorScore = clamp(m.colorfulness / 60, 0, 1);
-  const balanceScore = 1 - clamp(Math.abs(m.mean - 128) / 128, 0, 1);
+  const sharpScore = finite(clamp((m.lapVar - 2) / 30, 0, 1));
+  const expoScore = finite(1 - clamp(m.underexposed * 1.2 + m.overexposed * 0.8, 0, 1));
+  const contrastScore = finite(clamp(m.std / 70, 0, 1));
+  const colorScore = finite(clamp(m.colorfulness / 60, 0, 1));
+  const balanceScore = finite(clamp((128 - Math.abs(m.mean - 128)) / 128, 0, 1));
 
   const evidenceQuality = Math.round(
     100 * (0.3 * sharpScore + 0.2 * expoScore + 0.15 * contrastScore + 0.1 * colorScore + 0.25 * balanceScore)
   );
 
-  const contamScore = clamp((m.anomalyRatio / 0.02) * 0.7 + (m.maxBlobRatio / 0.3) * 0.3, 0, 1);
-  const clutterScore = clamp((m.edgeMean / 40) * 0.6 + (1 - clamp(m.std / 55, 0, 1)) * 0.4, 0, 1);
-  const hygieneScore = clamp(0.45 * contamScore + 0.25 * clutterScore + 0.3 * (1 - expoScore), 0, 1);
+  const contamScore = finite(clamp((finite(m.anomalyRatio) / 0.02) * 0.7 + (finite(m.maxBlobRatio) / 0.3) * 0.3, 0, 1));
+  const clutterScore = finite(clamp((finite(m.edgeMean) / 40) * 0.6 + (1 - clamp(finite(m.std) / 55, 0, 1)) * 0.4, 0, 1));
+  const hygieneScore = finite(clamp(0.45 * contamScore + 0.25 * clutterScore + 0.3 * (1 - expoScore), 0, 1));
 
   const level = (s: number): AnalysisLevel => (s > 0.55 ? "HIGH" : s > 0.25 ? "MEDIUM" : "LOW");
 
@@ -240,11 +244,11 @@ function verdictFromMetrics(m: PixelMetrics): EvidenceAnalysis {
 
   return {
     engine: "on-device",
-    evidenceQuality,
+    evidenceQuality: finite(evidenceQuality, 0),
     contamination,
     hygiene,
     indicators: indicators.slice(0, 6),
-    confidence: clamp(0.35 + (evidenceQuality / 100) * 0.55, 0, 1),
+    confidence: finite(clamp(0.35 + (finite(evidenceQuality) / 100) * 0.55, 0, 1), 0),
   };
 }
 
