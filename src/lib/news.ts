@@ -53,6 +53,31 @@ function cleanSnippet(raw: string): string {
   return s;
 }
 
+async function fetchSummary(link: string): Promise<string> {
+  try {
+    const res = await fetch(link, {
+      headers: { "user-agent": "Mozilla/5.0 (compatible; FoodShield/1.0)" },
+      signal: AbortSignal.timeout(4000),
+      cache: "no-store",
+    });
+    if (!res.ok) return "";
+    const html = await res.text();
+    const grab = (re: RegExp) => {
+      const m = html.match(re);
+      return m ? m[1].trim() : "";
+    };
+    const desc =
+      grab(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i) ||
+      grab(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i) ||
+      grab(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) ||
+      grab(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
+    const clean = desc.replace(/\s+/g, " ").replace(/&amp;/g, "&").trim();
+    return clean.length > 120 ? clean : "";
+  } catch {
+    return "";
+  }
+}
+
 export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem[]> {
   const key = state || "All India";
   const hit = cache.get(key);
@@ -115,6 +140,12 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     const B = Number.isNaN(tb) ? 0 : tb;
     return B - A;
   });
+
+  await Promise.all(
+    items.map(async (it) => {
+      if (!it.snippet) it.snippet = await fetchSummary(it.link);
+    })
+  );
 
   cache.set(key, { at: Date.now(), items });
   return items;
