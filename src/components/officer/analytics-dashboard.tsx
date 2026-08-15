@@ -193,8 +193,8 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
               <Link2 className="h-5 w-5 text-primary" /> Suspected outbreak networks
             </h2>
             <p className="text-sm text-muted-foreground">
-              PROTOTYPE HEURISTIC — groups businesses by shared supplier and geographic + temporal clustering of similar
-              violations. Not real ML.
+              The point: when several businesses fail the same way at the same time, the cause is usually upstream — one
+              bad supplier or one local hotspot. Fix the network, and you fix every outlet in it at once.
             </p>
           </div>
           <Tabs value={networkTab} onValueChange={setNetworkTab}>
@@ -204,6 +204,17 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
               <TabsTrigger value="geo_pattern">Geo clusters</TabsTrigger>
             </TabsList>
           </Tabs>
+        </div>
+
+        <div className="mb-4 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">Shared supplier</span> — businesses that buy from the same
+            supplier and log similar violations. Suspect the supplier, not just each outlet.
+          </div>
+          <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
+            <span className="font-semibold text-foreground">Geo cluster</span> — businesses within ~8 km that logged the
+            same violation type in the last 45 days. Suspect a common local cause.
+          </div>
         </div>
 
         {filteredNetworks.length === 0 ? (
