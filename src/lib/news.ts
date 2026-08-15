@@ -134,7 +134,9 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
       ? "(FSSAI OR food safety India OR food poisoning OR food adulteration)"
       : `(${key}) AND (food safety OR FSSAI OR food poisoning OR adulteration OR hygiene)`;
 
-  let items = await fetchBing(q, limit);
+  const bingQ = key === "All India" ? "food safety FSSAI India" : `${key} food safety`;
+
+  let items = await fetchBing(bingQ, limit);
   if (items.length === 0) {
     const url = `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
     try {
