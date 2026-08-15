@@ -24,7 +24,7 @@ export const STATES: Record<string, string> = {
   Bihar: "Bihar",
 };
 
-const CACHE_TTL = 15 * 60 * 1000;
+const CACHE_TTL = 5 * 60 * 1000;
 const cache = new Map<string, { at: number; items: NewsItem[] }>();
 
 const BROWSER_UA =

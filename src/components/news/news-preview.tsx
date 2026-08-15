@@ -32,7 +32,7 @@ export function NewsPreview({ state }: { state: string }) {
         .then((r) => (r.ok ? r.json() : { items: [] }))
         .then((d) => setItems(d.items ?? []))
         .catch(() => {});
-    }, 15.5 * 60 * 1000);
+    }, 5.5 * 60 * 1000);
     return () => clearInterval(id);
   }, [state]);
 

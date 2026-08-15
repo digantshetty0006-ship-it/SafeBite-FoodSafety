@@ -39,7 +39,7 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
   }, [load]);
 
   useEffect(() => {
-    const id = setInterval(load, 15.5 * 60 * 1000);
+    const id = setInterval(load, 5.5 * 60 * 1000);
     return () => clearInterval(id);
   }, [load]);
 
