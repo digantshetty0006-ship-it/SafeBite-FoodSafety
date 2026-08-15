@@ -75,10 +75,15 @@ export default async function LoginPage() {
         </Card>
       </div>
 
-      <Link href="/" className="mt-8 flex items-center gap-2 text-sm text-emerald-50/70 transition hover:text-white">
-        <ArrowLeft className="h-4 w-4" />
-        Back to home
-      </Link>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+        <Link href="/" className="flex items-center gap-2 text-emerald-50/70 transition hover:text-white">
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
+        <Link href="/judges-guide" className="flex items-center gap-2 text-emerald-50/70 transition hover:text-white">
+          Judges' guide to the charts
+        </Link>
+      </div>
     </div>
   );
 }

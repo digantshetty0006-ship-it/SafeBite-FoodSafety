@@ -63,8 +63,12 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
     <div className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="text-base">Inspection activity & violations (12 months)</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Green area = inspections completed · red line = violations found. A widening gap to the right means
+              enforcement is working.
+            </p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
@@ -87,8 +91,11 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="text-base">Complaints by business category</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Where citizens are actually feeling the problem — taller bar = that business type draws the most complaints.
+            </p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
@@ -104,8 +111,12 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="text-base">Average risk by district</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Mean 0–100 risk score per district, coloured red ≥ 75 · orange ≥ 51 · amber ≥ 26 · green below. Red =
+              where officers are needed first.
+            </p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
@@ -125,8 +136,12 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="text-base">Risk tier distribution</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Share of all businesses per tier — A ≤ 25 · B 26–50 · C 51–75 · D 76–100. The C+D slices are the audit
+              priority.
+            </p>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
@@ -146,8 +161,12 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
       {/* Severity by district */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-1">
           <CardTitle className="text-base">Violation severity by district</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Every violation found, stacked by severity — grey Low · amber Medium · orange High · red Critical. Few
+            critical violations beat many low ones for urgency.
+          </p>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>

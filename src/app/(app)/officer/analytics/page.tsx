@@ -3,6 +3,8 @@ import { requireRole } from "@/lib/auth";
 import { AnalyticsDashboard } from "@/components/officer/analytics-dashboard";
 import { detectNetworks } from "@/lib/network";
 import { categoryLabel } from "@/lib/format";
+import Link from "next/link";
+import { BookOpen } from "lucide-react";
 
 export default async function OfficerAnalyticsPage() {
   await requireRole("food_officer");
@@ -106,11 +108,16 @@ export default async function OfficerAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Analytics & Outbreak Detection</h1>
-        <p className="text-sm text-muted-foreground">
-          Trend charts and rule-based network detection across all registered businesses.
-        </p>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Analytics & Outbreak Detection</h1>
+          <p className="text-sm text-muted-foreground">
+            Trend charts and rule-based network detection across all registered businesses.
+          </p>
+        </div>
+        <Link href="/judges-guide" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+          <BookOpen className="h-4 w-4" /> Explain these charts
+        </Link>
       </div>
       <AnalyticsDashboard
         data={{

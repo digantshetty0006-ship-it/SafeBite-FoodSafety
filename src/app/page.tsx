@@ -262,6 +262,9 @@ export default function LandingPage() {
             <span>· Hackathon prototype</span>
           </div>
           <p>Demo data is mocked. Not a government system.</p>
+          <Link href="/judges-guide" className="font-medium text-primary hover:underline">
+            Judges' guide to the charts
+          </Link>
         </div>
       </footer>
     </div>
