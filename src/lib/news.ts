@@ -197,6 +197,16 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     })
   );
 
+  for (const it of items) {
+    const repairedTitle = repairUtf8(it.title);
+    const repairedSnippet = repairUtf8(it.snippet);
+    if (repairedTitle.includes("\u00E2") || repairedSnippet.includes("\u00E2")) {
+      it.title = "[MOJIBAKE-LEFT] " + it.title;
+    }
+    it.title = repairedTitle;
+    it.snippet = repairedSnippet;
+  }
+
   cache.set(key, { at: Date.now(), items });
   return items;
 }
