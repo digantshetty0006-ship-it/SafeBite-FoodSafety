@@ -197,12 +197,6 @@ export async function fetchFoodNews(state: string, limit = 12): Promise<NewsItem
     })
   );
 
-  for (const it of items) {
-    if (it.title.includes("\u00E2") || it.snippet.includes("\u00E2") || it.title.includes("\uFFFD")) {
-      it.title = "[MOJIBAKE-DETECTED] " + it.title;
-    }
-  }
-
   cache.set(key, { at: Date.now(), items });
   return items;
 }
