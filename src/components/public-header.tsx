@@ -25,15 +25,9 @@ export function PublicHeader({ lang }: { lang: Lang }) {
   return (
     <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5">
-            <Image src="/logo-mark.png" alt="SafeBite" width={256} height={256} className="h-full w-full object-cover" />
-          </span>
-          <span className="hidden leading-tight sm:block">
-            <span className="block text-[15px] font-bold tracking-tight">SafeBite</span>
-            <span className="block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {t("header.tagline")}
-            </span>
+        <Link href="/" className="flex shrink-0 items-center">
+          <span className="flex items-center overflow-hidden rounded-xl bg-white p-1 shadow-sm ring-1 ring-black/5">
+            <Image src="/logo.png" alt="SafeBite" width={760} height={281} className="h-8 w-auto sm:h-9" />
           </span>
         </Link>
 
