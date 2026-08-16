@@ -268,32 +268,33 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
       ctx().font = `800 50px 'Consolas', 'Courier New', monospace`;
       ctx().fillStyle = "#171717";
       const refText = `${dlT("pdf.refLabel")}: ${data.reference}`;
-      ctx().font = `700 32px ${FONT}`;
-      const statusText = data.statusLabel;
-      const sw = ctx().measureText(statusText).width + 80;
-      const pillX = W - PAD - sw;
       const refW = ctx().measureText(refText).width;
-      ctx().font = `800 50px 'Consolas', 'Courier New', monospace`;
+      ctx().font = `700 34px ${FONT}`;
+      const statusText = data.statusLabel;
+      const sw = ctx().measureText(statusText).width + 84;
+      const pillX = W - PAD - sw;
       if (refW > pillX - PAD - 60) {
         // status pill would collide with the ref — move it to its own line
+        ctx().font = `800 50px 'Consolas', 'Courier New', monospace`;
         ctx().fillText(refText, PAD, y);
-        ctx().font = `700 32px ${FONT}`;
+        ctx().font = `700 34px ${FONT}`;
         ctx().fillStyle = data.overdue ? "#dc2626" : EMERALD;
-        roundRect(ctx(), W - PAD - sw, y + 100, sw, 72, 36);
+        roundRect(ctx(), W - PAD - sw, y + 100, sw, 74, 37);
         ctx().fill();
         ctx().fillStyle = "#ffffff";
         ctx().textBaseline = "middle";
-        ctx().fillText(statusText, W - PAD - sw + 40, y + 100 + 36);
+        ctx().fillText(statusText, W - PAD - sw + 42, y + 100 + 37);
         ctx().textBaseline = "top";
         y += 190;
       } else {
+        ctx().font = `800 50px 'Consolas', 'Courier New', monospace`;
         ctx().fillText(refText, PAD, y);
         ctx().fillStyle = data.overdue ? "#dc2626" : EMERALD;
-        roundRect(ctx(), pillX, y, sw, 72, 36);
+        roundRect(ctx(), pillX, y, sw, 74, 37);
         ctx().fill();
         ctx().fillStyle = "#ffffff";
         ctx().textBaseline = "middle";
-        ctx().fillText(statusText, pillX + 40, y + 36);
+        ctx().fillText(statusText, pillX + 42, y + 37);
         ctx().textBaseline = "top";
         y += 110;
       }
@@ -317,6 +318,7 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         fields.push([dlT("pdf.business"), data.businessName + (data.businessDistrict ? ` (${data.businessDistrict})` : "")]);
       const location = [data.address, data.district].filter(Boolean).join(", ");
       if (location) fields.push([dlT("pdf.location"), location]);
+      ctx().font = `400 30px ${FONT}`;
       for (const [labelText, value] of fields) {
         const lines = wrapLines(ctx(), value, fieldWidth);
         fit(Math.max(60, lines.length * 46));
@@ -327,6 +329,7 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
       // Description (boxed)
       fit(80);
       y = drawSection(ctx(), y, dlT("pdf.description")) - 16;
+      ctx().font = `400 30px ${FONT}`;
       const descLines = wrapLines(ctx(), data.description, fieldWidth - 100);
       const boxH = descLines.length * 52 + 80;
       fit(boxH);
@@ -469,7 +472,7 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
       const pageH = doc.internal.pageSize.getHeight();
       pages.forEach((c, i) => {
         if (i > 0) doc.addPage("a4", "portrait");
-        doc.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, pageW, pageH, undefined, "FAST");
+        doc.addImage(c.toDataURL("image/png"), "PNG", 0, 0, pageW, pageH, undefined, "SLOW");
       });
       doc.save(`${data.reference}-complaint-${dl}.pdf`);
     } finally {
