@@ -143,3 +143,20 @@
 .dark .leaflet-control-attribution a {
   color: oklch(0.778 0 0);
 }
+
+/* recharts — keep chart text adaptive to the theme */
+.recharts-cartesian-axis-tick-value {
+  fill: var(--muted-foreground);
+}
+
+.recharts-cartesian-axis-line {
+  stroke: var(--border);
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--border);
+}
+
+.recharts-legend-item-text {
+  color: var(--muted-foreground) !important;
+}

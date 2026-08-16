@@ -1,8 +1,5 @@
-﻿import { Search } from "lucide-react";
-import { db } from "@/lib/db";
+﻿import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { LookupResults } from "@/components/citizen/lookup-results";
 import { getLang, tr } from "@/lib/lang";
 
@@ -32,18 +29,6 @@ export default async function CitizenLookupPage() {
           {t("lookup.sub")}
         </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("lookup.findBusiness")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder={t("lookup.searchPlaceholder")} className="pl-8" />
-          </div>
-        </CardContent>
-      </Card>
 
       <LookupResults businesses={businesses} lang={lang} />
     </div>

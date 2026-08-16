@@ -41,6 +41,14 @@ const SEVERITY_COLOR: Record<string, string> = {
   critical: "#ef4444",
 };
 
+const TOOLTIP_STYLE = {
+  background: "var(--popover)",
+  border: "1px solid var(--border)",
+  borderRadius: 8,
+  color: "var(--popover-foreground)",
+} as const;
+const CATEGORY_AXIS = { angle: -25, textAnchor: "end", height: 64 } as const;
+
 export interface AnalyticsData {
   monthlyActivity: { month: string; inspections: number; violations: number }[];
   complaintsByCategory: { category: string; count: number }[];
@@ -80,10 +88,10 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" fontSize={11} interval={0} />
                 <YAxis fontSize={11} allowDecimals={false} />
-                <Tooltip />
+                <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_STYLE} />
                 <Area type="monotone" dataKey="inspections" name={t("an.seriesInspections")} stroke="#10b981" fill="url(#insp)" />
                 <Line type="monotone" dataKey="violations" name={t("an.seriesViolations")} stroke="#ef4444" strokeWidth={2} dot={false} />
               </AreaChart>
@@ -101,10 +109,10 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={data.complaintsByCategory}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="category" fontSize={10} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="category" fontSize={10} {...CATEGORY_AXIS} interval={0} />
                 <YAxis fontSize={11} allowDecimals={false} />
-                <Tooltip />
+                <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_STYLE} />
                 <Bar dataKey="count" name={t("an.seriesComplaints")} fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -121,10 +129,10 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={data.riskByDistrict}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="district" fontSize={10} />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="district" fontSize={10} {...CATEGORY_AXIS} interval={0} />
                 <YAxis fontSize={11} domain={[0, 100]} />
-                <Tooltip />
+                <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_STYLE} />
                 <Bar dataKey="avg" name={t("an.seriesAvgRisk")} radius={[4, 4, 0, 0]}>
                   {data.riskByDistrict.map((d) => (
                     <Cell key={d.district} fill={d.avg >= 75 ? "#ef4444" : d.avg >= 51 ? "#f97316" : d.avg >= 26 ? "#f59e0b" : "#10b981"} />
@@ -150,7 +158,7 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
                     <Cell key={entry.name} fill={TIER_COLORS[entry.name]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_STYLE} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
@@ -169,10 +177,10 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data.severityByDistrict}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="district" fontSize={11} />
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="district" fontSize={11} {...CATEGORY_AXIS} interval={0} />
               <YAxis fontSize={11} allowDecimals={false} />
-              <Tooltip />
+              <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={TOOLTIP_STYLE} itemStyle={TOOLTIP_STYLE} />
               <Legend />
               <Bar dataKey="low" stackId="a" name={t("sev.low")} fill={SEVERITY_COLOR.low} />
               <Bar dataKey="medium" stackId="a" name={t("sev.medium")} fill={SEVERITY_COLOR.medium} />

@@ -329,22 +329,33 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         y += 20;
       }
 
-      // Description (boxed)
+      // Description (boxed — solid emerald panel, white label + divider + text)
       fit(80);
       y = drawSection(ctx(), y, dlT("pdf.description")) - 16;
       ctx().font = `400 30px ${FONT}`;
       const descLines = wrapLines(ctx(), data.description, fieldWidth - 100);
-      const boxH = descLines.length * 52 + 80;
+      const boxH = descLines.length * 52 + 116;
       fit(boxH);
+      const descGrad = ctx().createLinearGradient(0, y, 0, y + boxH);
+      descGrad.addColorStop(0, "#059669");
+      descGrad.addColorStop(1, "#047857");
       roundRect(ctx(), PAD, y, fieldWidth, boxH, 16);
-      ctx().fillStyle = "#fafafa";
+      ctx().fillStyle = descGrad;
       ctx().fill();
-      ctx().strokeStyle = "#f0f0f0";
+      ctx().font = `700 24px ${FONT}`;
+      ctx().fillStyle = "#ffffff";
+      ctx().fillText(dlT("pdf.description").toUpperCase(), PAD + 40, y + 42);
+      ctx().globalAlpha = 0.35;
+      ctx().strokeStyle = "#ffffff";
       ctx().lineWidth = 2;
+      ctx().beginPath();
+      ctx().moveTo(PAD + 40, y + 74);
+      ctx().lineTo(W - PAD - 40, y + 74);
       ctx().stroke();
+      ctx().globalAlpha = 1;
       ctx().font = `400 30px ${FONT}`;
-      ctx().fillStyle = "#374151";
-      descLines.forEach((ln, i) => ctx().fillText(ln, PAD + 50, y + 40 + i * 52));
+      ctx().fillStyle = "#ffffff";
+      descLines.forEach((ln, i) => ctx().fillText(ln, PAD + 40, y + 102 + i * 52));
       y += boxH + 36;
 
       // Photos (rounded, aspect-preserving, captioned)
