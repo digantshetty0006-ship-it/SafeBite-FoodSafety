@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { jsPDF } from "jspdf";
-import { FileDown } from "lucide-react";
+import { FileDown, Loader2 } from "lucide-react";
+import { tr, type Lang } from "@/lib/i18n";
 
 export interface ComplaintPdfData {
   reference: string;
@@ -22,218 +24,294 @@ export interface ComplaintPdfData {
   citizenEmail: string;
 }
 
-const EMERALD: [number, number, number] = [4, 120, 87];
-const CONTENT_BOTTOM = 262;
+// A4 @ 150 dpi. Drawing directly on canvas means the browser text engine
+// shapes Devanagari (conjuncts, matras) accurately — jsPDF's built-in fonts
+// cannot render it at all.
+const W = 1240;
+const H = 1754;
+const PAD = 60;
+const CONTENT_TOP = 200;
+const FOOTER_H = 120;
+const EMERALD = "#047857";
+const FONT = "'Noto Sans Devanagari', 'Nirmala UI', 'Segoe UI', system-ui, sans-serif";
 
-function wrap(doc: jsPDF, text: string, x: number, y: number, w: number, size: number, lineH = 4.6): number {
-  doc.setFontSize(size);
-  const lines = doc.splitTextToSize(text, w);
-  let yy = y;
-  for (const line of lines) {
-    if (yy > CONTENT_BOTTOM) {
-      doc.addPage();
-      yy = 22;
+function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const lines: string[] = [];
+  for (const raw of text.split("\n")) {
+    const words = raw.split(" ");
+    let cur = "";
+    for (const w of words) {
+      const candidate = cur ? cur + " " + w : w;
+      if (ctx.measureText(candidate).width > maxWidth && cur) {
+        lines.push(cur);
+        cur = w;
+      } else {
+        cur = candidate;
+      }
     }
-    doc.text(line, x, yy);
-    yy += lineH;
+    lines.push(cur);
   }
-  return yy;
+  return lines;
 }
 
-function loadPhoto(src: string): Promise<{ src: string; w: number; h: number }> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve({ src, w: img.naturalWidth, h: img.naturalHeight });
-    img.onerror = () => resolve({ src, w: 0, h: 0 });
-    img.src = src;
-  });
+function drawField(
+  ctx: CanvasRenderingContext2D,
+  y: number,
+  label: string,
+  value: string,
+  maxWidth: number
+): number {
+  ctx.font = `700 13px ${FONT}`;
+  ctx.fillStyle = "#a3a3a3";
+  const lw = Math.min(ctx.measureText(label).width, 300);
+  ctx.fillText(label, PAD, y);
+  ctx.font = `400 16px ${FONT}`;
+  ctx.fillStyle = "#262626";
+  const lines = wrapLines(ctx, value, maxWidth - lw - 16);
+  lines.forEach((ln, i) => ctx.fillText(ln, PAD + lw + 16, y + i * 24));
+  return y + lines.length * 24;
 }
 
-export function ComplaintPdf({ data, label }: { data: ComplaintPdfData; label: string }) {
+function drawSection(ctx: CanvasRenderingContext2D, y: number, text: string): number {
+  ctx.font = `700 12px ${FONT}`;
+  ctx.fillStyle = "#a3a3a3";
+  ctx.fillText(text.toUpperCase(), PAD, y);
+  ctx.strokeStyle = "#e5e5e5";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(PAD, y + 22);
+  ctx.lineTo(W - PAD, y + 22);
+  ctx.stroke();
+  return y + 36;
+}
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; label: string; lang: Lang }) {
+  const [busy, setBusy] = useState(false);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
+
   const download = async () => {
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const W = 210;
-
-    doc.setFillColor(...EMERALD);
-    doc.rect(0, 0, W, 26, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.text("SafeBite", 14, 11);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text("Food Safety Citizen Complaint", 14, 17);
-    doc.text("FSSAI  ·  Maharashtra Food & Drug Administration", 14, 22);
-    doc.setFontSize(8);
-    doc.text(data.filedAt, W - 14, 11, { align: "right" });
-    doc.text("Complaint Receipt", W - 14, 17, { align: "right" });
-
-    let y = 40;
-    doc.setTextColor(20, 20, 20);
-    doc.setFont("courier", "bold");
-    doc.setFontSize(17);
-    doc.text(`Ref: ${data.reference}`, 14, y);
-    y += 6;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(255, 255, 255);
-    doc.setFillColor(data.overdue ? 220 : 4, data.overdue ? 38 : 120, data.overdue ? 38 : 87);
-    const statusW = doc.getTextWidth(data.statusLabel) + 12;
-    doc.roundedRect(14, y - 4, statusW, 8, 2, 2, "F");
-    doc.text(data.statusLabel, 20, y + 1);
-    y += 12;
-
-    doc.setDrawColor(210, 210, 210);
-    doc.line(14, y, W - 14, y);
-    y += 8;
-
-    const page = () => {
-      if (y > CONTENT_BOTTOM) {
-        doc.addPage();
-        y = 22;
-      }
-    };
-
-    const field = (labelText: string, value: string) => {
-      page();
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(110, 110, 110);
-      doc.text(labelText.toUpperCase(), 14, y);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(30, 30, 30);
-      const lines = doc.splitTextToSize(value, W - 14 - 62);
-      let yy = y;
-      for (const line of lines) {
-        if (yy > CONTENT_BOTTOM) {
-          doc.addPage();
-          yy = 22;
-        }
-        doc.text(line, 62, yy);
-        yy += 5.6;
-      }
-      y = yy + 0.8;
-    };
-
-    page();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 30, 30);
-    doc.text("Complaint Details", 14, y);
-    y += 6;
-
-    field("Filed on", data.filedAt);
-    field("Filed by", `${data.citizenName} <${data.citizenEmail}>`);
-    if (data.businessName) field("Business", `${data.businessName}${data.businessDistrict ? ` (${data.businessDistrict})` : ""}`);
-    const location = [data.address, data.district].filter(Boolean).join(", ");
-    if (location) field("Location", location);
-
-    page();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(110, 110, 110);
-    doc.text("DESCRIPTION", 14, y);
-    y += 5;
-    y = wrap(doc, data.description, 14, y, W - 28, 10) + 4;
-
-    if (data.photos.length > 0) {
-      const photos = await Promise.all(data.photos.map(loadPhoto));
-      page();
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8.5);
-      doc.setTextColor(110, 110, 110);
-      doc.text(`EVIDENCE PHOTOS (${photos.length})`, 14, y);
-      y += 5;
-      for (const p of photos) {
-        if (p.w <= 0 || p.h <= 0) continue;
-        const boxW = 86;
-        const boxH = 64;
-        const scale = Math.min(boxW / p.w, boxH / p.h);
-        const w = p.w * scale;
-        const h = p.h * scale;
-        if (y + h + 6 > 262) {
-          doc.addPage();
-          y = 22;
-        }
-        doc.setDrawColor(200, 200, 200);
-        doc.roundedRect(14, y - 4, w + 4, h + 4, 1, 1, "S");
-        doc.addImage(p.src, "JPEG", 16, y - 2, w, h);
-        y += h + 8;
-      }
-      y += 2;
-    }
-
-    doc.setDrawColor(210, 210, 210);
-    doc.line(14, y, W - 14, y);
-    y += 8;
-
-    page();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(30, 30, 30);
-    doc.text("Accountability", 14, y);
-    y += 6;
-    field("Assigned officer", `${data.officerName}${data.officerDistrict ? ` (${data.officerDistrict})` : ""}`);
-    field("SLA deadline", `${data.slaDeadline}${data.slaNote ? `  ·  ${data.slaNote}` : ""}`);
-    if (data.overdue) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(190, 30, 30);
-      y += 2;
-      doc.text(
-        "Auto-escalated to the Deputy Commissioner — this complaint exceeded its SLA window.",
-        14,
-        y
+    setBusy(true);
+    try {
+      const photos = await Promise.all(
+        data.photos.map(
+          (src) =>
+            new Promise<HTMLImageElement>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve(img);
+              img.onerror = () => reject(new Error("photo load failed"));
+              img.src = src;
+            })
+        )
       );
-      y += 8;
+
+      const pages: HTMLCanvasElement[] = [];
+      const contexts: CanvasRenderingContext2D[] = [];
+      let y = 0;
+
+      const newPage = (withHeader: boolean) => {
+        const c = document.createElement("canvas");
+        c.width = W;
+        c.height = H;
+        const x = c.getContext("2d")!;
+        x.fillStyle = "#ffffff";
+        x.fillRect(0, 0, W, H);
+        x.textBaseline = "top";
+        pages.push(c);
+        contexts.push(x);
+        y = withHeader ? CONTENT_TOP : 80;
+        if (!withHeader) return;
+        // Header band
+        x.fillStyle = EMERALD;
+        x.fillRect(0, 0, W, 150);
+        x.fillStyle = "#ffffff";
+        x.font = `800 34px ${FONT}`;
+        x.fillText("SafeBite", PAD, 28);
+        x.font = `400 17px ${FONT}`;
+        x.fillText(t("pdf.title"), PAD, 72);
+        x.font = `400 14px ${FONT}`;
+        x.globalAlpha = 0.85;
+        x.fillText(t("pdf.subtitle"), PAD, 96);
+        x.globalAlpha = 1;
+        x.textAlign = "right";
+        x.font = `400 14px ${FONT}`;
+        x.fillText(data.filedAt, W - PAD, 40);
+        x.font = `700 18px ${FONT}`;
+        x.fillText(t("pdf.receipt"), W - PAD, 64);
+        x.textAlign = "left";
+      };
+
+      const fit = (h: number) => {
+        if (y + h > H - FOOTER_H - 20) newPage(false);
+      };
+
+      newPage(true);
+      const ctx = () => contexts[pages.length - 1];
+      const fieldWidth = W - 2 * PAD;
+
+      // Ref + status
+      fit(50);
+      ctx().font = `800 26px 'Consolas', 'Courier New', monospace`;
+      ctx().fillStyle = "#171717";
+      ctx().fillText(`${t("pdf.refLabel")}: ${data.reference}`, PAD, y);
+      ctx().font = `700 16px ${FONT}`;
+      const statusText = data.statusLabel;
+      const sw = ctx().measureText(statusText).width + 40;
+      ctx().fillStyle = data.overdue ? "#dc2626" : EMERALD;
+      roundRect(ctx(), W - PAD - sw, y, sw, 38, 19);
+      ctx().fill();
+      ctx().fillStyle = "#ffffff";
+      ctx().textBaseline = "middle";
+      ctx().fillText(statusText, W - PAD - sw + 20, y + 19);
+      ctx().textBaseline = "top";
+      y += 58;
+
+      ctx().strokeStyle = "#e5e5e5";
+      ctx().beginPath();
+      ctx().moveTo(PAD, y);
+      ctx().lineTo(W - PAD, y);
+      ctx().stroke();
+      y += 26;
+
+      // Details
+      fit(40);
+      y = drawSection(ctx(), y, t("pdf.details")) - 8;
+      const fields: Array<[string, string]> = [
+        [t("pdf.filedOn"), data.filedAt],
+        [t("pdf.filedBy"), `${data.citizenName} <${data.citizenEmail}>`],
+      ];
+      if (data.businessName)
+        fields.push([t("pdf.business"), data.businessName + (data.businessDistrict ? ` (${data.businessDistrict})` : "")]);
+      const location = [data.address, data.district].filter(Boolean).join(", ");
+      if (location) fields.push([t("pdf.location"), location]);
+      for (const [labelText, value] of fields) {
+        const lines = wrapLines(ctx(), value, fieldWidth);
+        fit(Math.max(30, lines.length * 24));
+        y = drawField(ctx(), y, labelText, value, fieldWidth);
+        y += 10;
+      }
+
+      // Description
+      fit(40);
+      y = drawSection(ctx(), y, t("pdf.description")) - 8;
+      ctx().font = `400 16px ${FONT}`;
+      ctx().fillStyle = "#262626";
+      for (const ln of wrapLines(ctx(), data.description, fieldWidth)) {
+        fit(26);
+        ctx().fillText(ln, PAD, y);
+        y += 26;
+      }
+      y += 6;
+
+      // Photos
+      if (photos.length) {
+        fit(40);
+        y = drawSection(ctx(), y, t("pdf.evidence", { n: String(photos.length) })) - 8;
+        const pw = 340;
+        const ph = 255;
+        const gap = 20;
+        const perRow = 2;
+        for (let i = 0; i < photos.length; i++) {
+          const col = i % perRow;
+          if (col === 0) fit(ph);
+          const x = PAD + col * (pw + gap);
+          ctx().strokeStyle = "#e5e5e5";
+          ctx().strokeRect(x, y, pw, ph);
+          ctx().drawImage(photos[i], x, y, pw, ph);
+          if (col === perRow - 1 || i === photos.length - 1) y += ph + 14;
+        }
+        y += 10;
+      }
+
+      // Accountability
+      fit(40);
+      y = drawSection(ctx(), y, t("pdf.accountability")) - 8;
+      const acc: Array<[string, string]> = [
+        [t("pdf.officer"), data.officerName + (data.officerDistrict ? ` (${data.officerDistrict})` : "")],
+        [t("pdf.sla"), `${data.slaDeadline}${data.slaNote ? `  ·  ${data.slaNote}` : ""}`],
+      ];
+      for (const [labelText, value] of acc) {
+        const lines = wrapLines(ctx(), value, fieldWidth);
+        fit(Math.max(30, lines.length * 24));
+        y = drawField(ctx(), y, labelText, value, fieldWidth);
+        y += 10;
+      }
+      if (data.overdue) {
+        fit(30);
+        ctx().font = `700 15px ${FONT}`;
+        ctx().fillStyle = "#be123c";
+        ctx().fillText(t("pdf.overdueMsg"), PAD, y);
+        y += 34;
+      }
+
+      // How to track
+      fit(40);
+      y = drawSection(ctx(), y, t("pdf.howToTrack")) - 8;
+      ctx().font = `400 15px ${FONT}`;
+      ctx().fillStyle = "#404040";
+      for (const ln of wrapLines(ctx(), t("pdf.trackBody", { email: data.citizenEmail }), fieldWidth)) {
+        fit(24);
+        ctx().fillText(ln, PAD, y);
+        y += 24;
+      }
+
+      // Footer on the last page
+      if (y > H - FOOTER_H - 20) newPage(false);
+      const f = contexts[pages.length - 1];
+      f.fillStyle = "#f5f5f5";
+      f.fillRect(0, H - FOOTER_H, W, FOOTER_H);
+      f.strokeStyle = "#e5e5e5";
+      f.beginPath();
+      f.moveTo(0, H - FOOTER_H);
+      f.lineTo(W, H - FOOTER_H);
+      f.stroke();
+      f.font = `400 13px ${FONT}`;
+      f.fillStyle = "#737373";
+      f.textAlign = "left";
+      f.fillText(t("pdf.helpline"), PAD, H - FOOTER_H + 24);
+      f.textAlign = "right";
+      f.fillText(t("pdf.generated"), W - PAD, H - FOOTER_H + 24);
+      f.textAlign = "left";
+      f.font = `400 12px ${FONT}`;
+      f.fillText(t("pdf.disclaimer"), PAD, H - FOOTER_H + 52);
+      f.textAlign = "right";
+      f.fillText(
+        `${t("pdf.refLabel")} ${data.reference} · ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`,
+        W - PAD,
+        H - FOOTER_H + 52
+      );
+      f.textAlign = "left";
+
+      // Assemble PDF
+      const doc = new jsPDF({ orientation: "portrait", unit: "px", format: "a4", hotfixes: ["px_scaling"] });
+      pages.forEach((c, i) => {
+        if (i > 0) doc.addPage("a4", "portrait");
+        doc.addImage(c.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, W, H, undefined, "FAST");
+      });
+      doc.save(`${data.reference}-complaint-${lang}.pdf`);
+    } finally {
+      setBusy(false);
     }
-
-    doc.setDrawColor(210, 210, 210);
-    doc.line(14, y, W - 14, y);
-    y += 8;
-
-    page();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(110, 110, 110);
-    doc.text("HOW TO TRACK", 14, y);
-    y += 5;
-    y = wrap(
-      doc,
-      `Sign in to SafeBite as ${data.citizenEmail} and open "Track Complaints". Your complaint moves through Submitted → Under Review → Inspection Scheduled → Resolved, and escalates automatically if the SLA is missed.`,
-      14,
-      y,
-      W - 28,
-      9
-    ) + 4;
-
-    if (y > 262) {
-      doc.addPage();
-    }
-
-    doc.setFillColor(244, 244, 244);
-    doc.rect(0, 272, W, 25, "F");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text("Helpline: 1800-222-365", 14, 280);
-    doc.text("Generated by SafeBite", W - 14, 280, { align: "right" });
-    doc.text("This is a system-generated receipt for citizen reference and is not a legal document.", 14, 285);
-    doc.text(`Ref ${data.reference} · ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`, W - 14, 285, { align: "right" });
-
-    doc.save(`${data.reference}-complaint.pdf`);
   };
 
   return (
     <button
       type="button"
       onClick={download}
-      className="inline-flex items-center gap-1.5 rounded-lg border bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+      disabled={busy}
+      className="inline-flex items-center gap-1.5 rounded-lg border bg-muted/40 px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary disabled:opacity-60"
     >
-      <FileDown className="h-3.5 w-3.5" />
-      {label}
+      {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+      {busy ? t("pdf.downloading") : label}
     </button>
   );
 }

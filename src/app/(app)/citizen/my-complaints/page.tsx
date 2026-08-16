@@ -91,7 +91,11 @@ export default async function CitizenComplaintsPage({
               officerName: officer.name,
               officerDistrict: officer.district ?? null,
               slaDeadline: formatDateTime(slaDeadline),
-              slaNote: resolved ? "resolved" : overdue ? "overdue" : `${daysLeft}d left`,
+              slaNote: resolved
+                ? t("my.slaResolved")
+                : overdue
+                  ? t("my.slaOverdue")
+                  : t("my.daysLeft", { n: String(daysLeft) }).replace(/^ · /, ""),
               overdue,
               photos: c.photos === "[]" ? [] : JSON.parse(c.photos),
               citizenName: citizen.name,
@@ -113,7 +117,7 @@ export default async function CitizenComplaintsPage({
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="text-xs text-muted-foreground">{formatDateTime(c.createdAt)}</p>
-                      <ComplaintPdf data={pdfData} label={t("my.pdf")} />
+                      <ComplaintPdf data={pdfData} label={t("my.pdf")} lang={lang} />
                     </div>
                   </div>
 
