@@ -242,6 +242,22 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         x.fillStyle = "#d1fae5";
         x.fillText(dlT("pdf.tagline"), logoX, 330);
 
+        // Right-aligned authority block
+        x.textAlign = "right";
+        x.font = `700 32px ${FONT}`;
+        x.fillStyle = "#ffffff";
+        x.fillText(dlT("pdf.authority"), W - PAD - 60, 140);
+        x.fillStyle = GOLD;
+        roundRect(x, W - PAD - 60 - 160, 168, 160, 7, 3);
+        x.fill();
+        x.font = `400 30px ${FONT}`;
+        x.fillStyle = "#d1fae5";
+        x.fillText(dlT("pdf.state"), W - PAD - 60, 212);
+        x.font = `400 28px ${FONT}`;
+        x.fillStyle = "#a7f3d0";
+        x.fillText(dlT("pdf.helpline"), W - PAD - 60, 270);
+        x.textAlign = "left";
+
         // Centred title block below the band
         x.textAlign = "center";
         x.font = `700 44px ${FONT}`;
@@ -329,33 +345,22 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         y += 20;
       }
 
-      // Description (boxed — solid emerald panel, white label + divider + text)
+      // Description (boxed — plain light panel, single heading above)
       fit(80);
       y = drawSection(ctx(), y, dlT("pdf.description")) - 16;
       ctx().font = `400 30px ${FONT}`;
       const descLines = wrapLines(ctx(), data.description, fieldWidth - 100);
-      const boxH = descLines.length * 52 + 116;
+      const boxH = descLines.length * 52 + 80;
       fit(boxH);
-      const descGrad = ctx().createLinearGradient(0, y, 0, y + boxH);
-      descGrad.addColorStop(0, "#059669");
-      descGrad.addColorStop(1, "#047857");
       roundRect(ctx(), PAD, y, fieldWidth, boxH, 16);
-      ctx().fillStyle = descGrad;
+      ctx().fillStyle = "#fafafa";
       ctx().fill();
-      ctx().font = `700 24px ${FONT}`;
-      ctx().fillStyle = "#ffffff";
-      ctx().fillText(dlT("pdf.description").toUpperCase(), PAD + 40, y + 42);
-      ctx().globalAlpha = 0.35;
-      ctx().strokeStyle = "#ffffff";
+      ctx().strokeStyle = "#f0f0f0";
       ctx().lineWidth = 2;
-      ctx().beginPath();
-      ctx().moveTo(PAD + 40, y + 74);
-      ctx().lineTo(W - PAD - 40, y + 74);
       ctx().stroke();
-      ctx().globalAlpha = 1;
       ctx().font = `400 30px ${FONT}`;
-      ctx().fillStyle = "#ffffff";
-      descLines.forEach((ln, i) => ctx().fillText(ln, PAD + 40, y + 102 + i * 52));
+      ctx().fillStyle = "#374151";
+      descLines.forEach((ln, i) => ctx().fillText(ln, PAD + 50, y + 40 + i * 52));
       y += boxH + 36;
 
       // Photos (rounded, aspect-preserving, captioned)
