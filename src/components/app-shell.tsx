@@ -114,12 +114,15 @@ function SidebarNav({
 
       <aside className="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r bg-background transition-transform peer-checked/nav:translate-x-0 lg:translate-x-0">
         <div className={cn("flex h-16 items-center gap-2 border-b px-5 bg-gradient-to-r text-white", ROLE_ACCENT[role])}>
-          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-            <Image src="/logo-mark.png" alt="SafeBite" width={256} height={256} className="h-full w-full object-cover" />
-          </div>
-          <div className="leading-tight">
-            <p className="text-sm font-semibold">SafeBite</p>
-            <p className="text-[11px] text-white/80">{ROLE_LABELS[role]}</p>
+          <Image
+            src="/logo-white.png"
+            alt="SafeBite"
+            width={760}
+            height={247}
+            className="h-8 w-auto shrink-0"
+          />
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-[11px] text-white/80">{ROLE_LABELS[role]}</p>
           </div>
         </div>
 

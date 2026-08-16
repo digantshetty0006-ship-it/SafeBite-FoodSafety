@@ -26,9 +26,20 @@ export function PublicHeader({ lang }: { lang: Lang }) {
     <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center">
-          <span className="flex items-center overflow-hidden rounded-xl bg-white p-1 shadow-sm ring-1 ring-black/5">
-            <Image src="/logo.png" alt="SafeBite" width={760} height={281} className="h-8 w-auto sm:h-9" />
-          </span>
+          <Image
+            src="/logo.png"
+            alt="SafeBite"
+            width={760}
+            height={247}
+            className="h-8 w-auto sm:h-9 dark:hidden"
+          />
+          <Image
+            src="/logo-white.png"
+            alt="SafeBite"
+            width={760}
+            height={247}
+            className="hidden h-8 w-auto sm:h-9 dark:block"
+          />
         </Link>
 
         <nav className="ml-2 hidden items-center gap-1 md:flex">

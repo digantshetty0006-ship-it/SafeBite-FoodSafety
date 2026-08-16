@@ -28,9 +28,13 @@ export default async function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950 px-4 py-12">
       <div className="mb-6 flex items-center gap-2 text-white">
-        <span className="flex items-center overflow-hidden rounded-xl bg-white p-2 shadow-lg ring-1 ring-black/5">
-          <Image src="/logo.png" alt="SafeBite" width={760} height={281} className="h-8 w-auto" />
-        </span>
+        <Image
+          src="/logo-white.png"
+          alt="SafeBite"
+          width={760}
+          height={247}
+          className="h-8 w-auto drop-shadow-md"
+        />
         <LanguageSwitcher current={lang} className="ml-4 border-white/20 bg-white/10 text-white" />
       </div>
 
