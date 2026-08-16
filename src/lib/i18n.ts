@@ -640,6 +640,7 @@ const dict: Record<string, [string, string, string]> = {
   // ---- complaint PDF ----
   "pdf.title": ["Food Safety Citizen Complaint", "खाद्य सुरक्षा नागरिक शिकायत", "अन्न सुरक्षा नागरिक तक्रार"],
   "pdf.subtitle": ["FSSAI · Maharashtra Food & Drug Administration", "FSSAI · महाराष्ट्र खाद्य एवं औषध प्रशासन", "FSSAI · महाराष्ट्र अन्न व औषध प्रशासन"],
+  "pdf.tagline": ["Safe Food for All", "सबके लिए सुरक्षित भोजन", "सर्वांसाठी सुरक्षित अन्न"],
   "pdf.receipt": ["Complaint Receipt", "शिकायत रसीद", "तक्रार पावती"],
   "pdf.refLabel": ["Ref", "संदर्भ", "संदर्भ"],
   "pdf.details": ["Complaint Details", "शिकायत विवरण", "तक्रार तपशील"],

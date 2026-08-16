@@ -218,7 +218,7 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
 
         if (!withHeader) return;
 
-        // Header band — emerald gradient, logo centred, no wordmark
+        // Header band — emerald gradient, logo top-left with short tagline under it
         const band = x.createLinearGradient(0, 0, 0, BAND_H);
         band.addColorStop(0, "#059669");
         band.addColorStop(1, "#047857");
@@ -228,17 +228,19 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         x.fillStyle = "#a7f3d0";
         x.fillRect(0, BAND_H - 8, W, 8);
         x.globalAlpha = 1;
+        const logoX = PAD + 60;
         if (logoImg) {
           const lh = 150;
           const lw = (logoImg.naturalWidth / logoImg.naturalHeight) * lh;
-          x.drawImage(logoImg, (W - lw) / 2, (BAND_H - lh) / 2 - 20, lw, lh);
+          x.drawImage(logoImg, logoX, 120, lw, lh);
         } else {
           x.fillStyle = "#ffffff";
           x.font = `800 90px ${FONT}`;
-          x.textAlign = "center";
-          x.fillText("✓", W / 2, (BAND_H - 90) / 2 - 20);
-          x.textAlign = "left";
+          x.fillText("✓", logoX, 130);
         }
+        x.font = `400 38px ${FONT}`;
+        x.fillStyle = "#d1fae5";
+        x.fillText(dlT("pdf.tagline"), logoX, 330);
 
         // Centred title block below the band
         x.textAlign = "center";
@@ -289,6 +291,7 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
       } else {
         ctx().font = `800 50px 'Consolas', 'Courier New', monospace`;
         ctx().fillText(refText, PAD, y);
+        ctx().font = `700 34px ${FONT}`;
         ctx().fillStyle = data.overdue ? "#dc2626" : EMERALD;
         roundRect(ctx(), pillX, y, sw, 74, 37);
         ctx().fill();
