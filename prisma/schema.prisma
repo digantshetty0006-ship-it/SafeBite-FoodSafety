@@ -66,6 +66,7 @@ model Complaint {
   lng                 Float?
   address             String?
   district            String?
+  aiAnalysis          String?
   business            Business? @relation(fields: [businessId], references: [id])
   citizen             User?     @relation("CitizenComplaints", fields: [citizenId], references: [id])
   assignedOfficer     User?     @relation("AssignedComplaints", fields: [assignedOfficerId], references: [id])

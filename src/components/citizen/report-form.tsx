@@ -219,6 +219,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
     if (picked?.address) fd.set("address", picked.address);
     if (picked?.district) fd.set("district", picked.district);
     if (businessId) fd.set("businessId", businessId);
+    if (analysis) fd.set("aiAnalysis", JSON.stringify(analysis));
     setSubmitting(true);
     await submitComplaintAction(fd);
   };

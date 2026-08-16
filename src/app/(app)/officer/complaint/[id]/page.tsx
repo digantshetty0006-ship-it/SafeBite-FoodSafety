@@ -12,9 +12,12 @@ import {
   Camera,
   CheckCircle2,
   FileSearch,
+  Gauge,
+  Sparkles,
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
+import type { EvidenceAnalysis } from "@/lib/food-image-analysis";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +57,24 @@ export default async function OfficerComplaintPage({
   const overdue = !resolved && now > slaDeadline;
   const daysLeft = Math.max(0, Math.ceil((slaDeadline.getTime() - now.getTime()) / 86400000));
   const location = [complaint.address, complaint.district].filter(Boolean).join(", ");
+
+  const aiAnalysis = (() => {
+    if (!complaint.aiAnalysis) return null;
+    try {
+      const a = JSON.parse(complaint.aiAnalysis);
+      if (typeof a !== "object" || a === null || !("evidenceQuality" in a)) return null;
+      return a as EvidenceAnalysis;
+    } catch {
+      return null;
+    }
+  })();
+
+  const LEVEL_LABEL: Record<string, string> = { HIGH: "sev.high", MEDIUM: "sev.medium", LOW: "sev.low" };
+  const LEVEL_STYLE: Record<string, string> = {
+    HIGH: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+    MEDIUM: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+    LOW: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+  };
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -198,6 +219,71 @@ export default async function OfficerComplaintPage({
                 <PhotoLightbox key={i} src={p} index={i + 1} count={photos.length} />
               ))}
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-sm font-semibold">
+              <Sparkles className="h-4 w-4 text-primary" /> {t("complaint.aiTitle")}
+            </h2>
+            {aiAnalysis && (
+              <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                {aiAnalysis.engine === "vision" ? (aiAnalysis.model ? aiAnalysis.model : t("cit.visionModel")) : t("cit.onDevice")}
+              </span>
+            )}
+          </div>
+          {!aiAnalysis ? (
+            <p className="mt-2 text-sm text-muted-foreground">{t("complaint.aiNone")}</p>
+          ) : (
+            <>
+              {aiAnalysis.rationale && <p className="mt-1 text-xs italic text-muted-foreground">{aiAnalysis.rationale}</p>}
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("cit.possibleContamination")}</span>
+                  <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", LEVEL_STYLE[aiAnalysis.contamination])}>
+                    {t(LEVEL_LABEL[aiAnalysis.contamination] ?? "sev.medium")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{t("cit.possibleHygiene")}</span>
+                  <span className={cn("rounded-md px-2 py-0.5 text-xs font-semibold", LEVEL_STYLE[aiAnalysis.hygiene])}>
+                    {t(LEVEL_LABEL[aiAnalysis.hygiene] ?? "sev.medium")}
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <Gauge className="h-3.5 w-3.5" /> {t("cit.evidenceQuality")}
+                    </span>
+                    <span className="font-semibold">{aiAnalysis.evidenceQuality}%</span>
+                  </div>
+                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                      style={{ width: `${aiAnalysis.evidenceQuality}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("cit.indicators")}
+                </p>
+                {aiAnalysis.indicators.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{t("cit.noIndicators")}</p>
+                ) : (
+                  <ul className="list-inside list-disc space-y-0.5 text-sm">
+                    {aiAnalysis.indicators.map((ind, i) => (
+                      <li key={i}>{ind}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <p className="mt-3 rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">{t("cit.advisoryTitle")}</p>
+            </>
           )}
         </CardContent>
       </Card>

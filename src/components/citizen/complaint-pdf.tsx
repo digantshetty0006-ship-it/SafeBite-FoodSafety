@@ -5,6 +5,7 @@ import { jsPDF } from "jspdf";
 import { FileDown, Loader2, ChevronDown } from "lucide-react";
 import { tr, LANGS, LANG_NAMES, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import type { EvidenceAnalysis } from "@/lib/food-image-analysis";
 
 export interface ComplaintPdfData {
   reference: string;
@@ -22,6 +23,7 @@ export interface ComplaintPdfData {
   slaDaysLeft: number;
   overdue: boolean;
   photos: string[];
+  aiAnalysis?: string | null;
   citizenName: string;
   citizenEmail: string;
 }
@@ -398,6 +400,120 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
           if (col === perRow - 1 || i === photos.length - 1) y += ph + 70;
         }
         y += 16;
+      }
+
+      // AI evidence analysis
+      fit(80);
+      y = drawSection(ctx(), y, dlT("pdf.aiTitle")) - 16;
+      const ai = (() => {
+        if (!data.aiAnalysis) return null;
+        try {
+          const a = JSON.parse(data.aiAnalysis);
+          if (typeof a !== "object" || a === null || !("evidenceQuality" in a)) return null;
+          return a as EvidenceAnalysis;
+        } catch {
+          return null;
+        }
+      })();
+      const LEVEL_COLOR: Record<string, string> = { HIGH: "#dc2626", MEDIUM: "#d97706", LOW: "#059669" };
+      if (!ai) {
+        const boxH = 110;
+        fit(boxH);
+        roundRect(ctx(), PAD, y, fieldWidth, boxH, 16);
+        ctx().fillStyle = "#fafafa";
+        ctx().fill();
+        ctx().strokeStyle = "#f0f0f0";
+        ctx().lineWidth = 2;
+        ctx().stroke();
+        ctx().font = `400 28px ${FONT}`;
+        ctx().fillStyle = "#6b7280";
+        ctx().fillText(dlT("pdf.aiNone"), PAD + 50, y + 62);
+        y += boxH + 36;
+      } else {
+        const innerW = fieldWidth - 100;
+        const rationaleLines = ai.rationale ? wrapLines(ctx(), `"${ai.rationale}"`, innerW) : [];
+        const indicatorLines = ai.indicators.length
+          ? ai.indicators.flatMap((ind) => wrapLines(ctx(), `• ${ind}`, innerW))
+          : [];
+        const engineText =
+          (ai.engine === "vision" ? dlT("pdf.aiEngine") : dlT("pdf.aiOnDevice")) +
+          (ai.model ? ` · ${ai.model}` : "");
+        const engineLines = wrapLines(ctx(), engineText, innerW);
+        const advisoryLines = wrapLines(ctx(), dlT("pdf.aiAdvisory"), innerW);
+        const boxH =
+          46 + 46 + 64 +
+          rationaleLines.length * 42 +
+          (ai.indicators.length ? 30 + indicatorLines.length * 42 : 0) +
+          engineLines.length * 36 +
+          advisoryLines.length * 36 + 70;
+        fit(boxH);
+        roundRect(ctx(), PAD, y, fieldWidth, boxH, 16);
+        ctx().fillStyle = "#fafafa";
+        ctx().fill();
+        ctx().strokeStyle = "#f0f0f0";
+        ctx().lineWidth = 2;
+        ctx().stroke();
+        let ty = y + 46;
+        const row = (label: string, level: string) => {
+          ctx().font = `400 28px ${FONT}`;
+          ctx().fillStyle = "#6b7280";
+          ctx().fillText(label, PAD + 50, ty);
+          ctx().textAlign = "right";
+          ctx().font = `700 28px ${FONT}`;
+          ctx().fillStyle = LEVEL_COLOR[level] ?? "#059669";
+          ctx().fillText(dlT("sev." + level.toLowerCase()), PAD + fieldWidth - 50, ty);
+          ctx().textAlign = "left";
+          ty += 46;
+        };
+        row(dlT("pdf.aiContamination"), ai.contamination);
+        row(dlT("pdf.aiHygiene"), ai.hygiene);
+        ctx().font = `400 28px ${FONT}`;
+        ctx().fillStyle = "#6b7280";
+        ctx().fillText(dlT("pdf.aiQuality"), PAD + 50, ty);
+        ctx().textAlign = "right";
+        ctx().font = `700 28px ${FONT}`;
+        ctx().fillStyle = "#111827";
+        ctx().fillText(`${ai.evidenceQuality}%`, PAD + fieldWidth - 50, ty);
+        ctx().textAlign = "left";
+        ty += 14;
+        roundRect(ctx(), PAD + 50, ty, innerW, 12, 6);
+        ctx().fillStyle = "#e5e7eb";
+        ctx().fill();
+        roundRect(ctx(), PAD + 50, ty, Math.max(8, (innerW * ai.evidenceQuality) / 100), 12, 6);
+        ctx().fillStyle = "#10b981";
+        ctx().fill();
+        ty += 50;
+        if (rationaleLines.length) {
+          ctx().font = `400 26px ${FONT}`;
+          ctx().fillStyle = "#4b5563";
+          rationaleLines.forEach((ln) => {
+            ctx().fillText(ln, PAD + 50, ty);
+            ty += 42;
+          });
+        }
+        if (ai.indicators.length) {
+          ctx().font = `600 24px ${FONT}`;
+          ctx().fillStyle = "#111827";
+          ctx().fillText(dlT("pdf.aiIndicators").toUpperCase(), PAD + 50, ty);
+          ty += 30;
+          ctx().font = `400 26px ${FONT}`;
+          ctx().fillStyle = "#374151";
+          indicatorLines.forEach((ln) => {
+            ctx().fillText(ln, PAD + 50, ty);
+            ty += 42;
+          });
+        }
+        ctx().font = `400 22px ${FONT}`;
+        ctx().fillStyle = "#9ca3af";
+        engineLines.forEach((ln) => {
+          ctx().fillText(ln, PAD + 50, ty);
+          ty += 36;
+        });
+        advisoryLines.forEach((ln) => {
+          ctx().fillText(ln, PAD + 50, ty);
+          ty += 36;
+        });
+        y += boxH + 36;
       }
 
       // Accountability (side-by-side boxes)

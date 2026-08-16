@@ -103,6 +103,7 @@ export default async function CitizenComplaintsPage({
               slaDaysLeft: daysLeft,
               overdue,
               photos: c.photos === "[]" ? [] : JSON.parse(c.photos),
+              aiAnalysis: c.aiAnalysis ?? null,
               citizenName: citizen.name,
               citizenEmail: citizen.email,
             };

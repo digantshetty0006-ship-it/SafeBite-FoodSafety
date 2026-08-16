@@ -24,6 +24,15 @@ export async function submitComplaintAction(formData: FormData) {
   const lng = String(formData.get("lng") ?? "");
   const address = String(formData.get("address") ?? "").slice(0, 500) || null;
   const district = String(formData.get("district") ?? "").slice(0, 100) || null;
+  const aiAnalysis = String(formData.get("aiAnalysis") ?? "").slice(0, 4000) || null;
+  if (aiAnalysis) {
+    try {
+      const parsed = JSON.parse(aiAnalysis);
+      if (typeof parsed !== "object" || parsed === null || !("evidenceQuality" in parsed)) return;
+    } catch {
+      return;
+    }
+  }
 
   if (!description) return;
   if (!Array.isArray(photos) || photos.length === 0) return;
@@ -40,6 +49,7 @@ export async function submitComplaintAction(formData: FormData) {
       lng: lng ? Number(lng) : null,
       address,
       district,
+      aiAnalysis,
     },
   });
 
