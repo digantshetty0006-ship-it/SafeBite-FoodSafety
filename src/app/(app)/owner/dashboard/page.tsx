@@ -13,7 +13,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OwnerDashboardPage() {
   const owner = await requireRole("business_owner");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const businesses = await db.business.findMany({
     where: { ownerId: owner.id },
@@ -31,9 +31,9 @@ export default async function OwnerDashboardPage() {
         <Card>
           <CardContent className="flex h-56 flex-col items-center justify-center text-center">
             <Building2 className="h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No businesses linked to your account</p>
+            <p className="mt-3 font-medium">{t("own.noBusinesses")}</p>
             <p className="text-sm text-muted-foreground">
-              This demo links your owner account to the registered businesses in the seed data.
+              {t("own.noBusinessesSub")}
             </p>
           </CardContent>
         </Card>
@@ -45,20 +45,20 @@ export default async function OwnerDashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("owner.title")}</h1>
-        <p className="text-sm text-muted-foreground">Your safety grade, inspection history, and documents at a glance.</p>
+        <p className="text-sm text-muted-foreground">{t("own.sub")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiCard label="Registered businesses" value={businesses.length} icon={Building2} />
+        <KpiCard label={t("own.registered")} value={businesses.length} icon={Building2} />
         <KpiCard
-          label="Violations on record"
+          label={t("own.violations")}
           value={totalViolations}
           icon={AlertTriangle}
           tone={totalViolations ? "warning" : "default"}
           href="/owner/suggestions"
         />
         <KpiCard
-          label="Expired documents"
+          label={t("own.expiredDocs")}
           value={expiredDocs}
           icon={ShieldCheck}
           tone={expiredDocs ? "danger" : "default"}
@@ -84,7 +84,7 @@ export default async function OwnerDashboardPage() {
                 </div>
                 <div className="w-full max-w-xs">
                   <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Risk score</span>
+                    <span className="text-sm text-muted-foreground">{t("own.riskScore")}</span>
                     <RiskScore score={breakdown.score} className="text-lg" />
                   </div>
                   <RiskScoreBar score={breakdown.score} />
@@ -93,29 +93,23 @@ export default async function OwnerDashboardPage() {
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Grade</p>
+                  <p className="text-xs text-muted-foreground">{t("own.grade")}</p>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="text-3xl font-bold">{b.riskTier}</span>
                     <span className="text-xs text-muted-foreground">
-                      {b.riskTier === "A"
-                        ? "Great — keep it up"
-                        : b.riskTier === "B"
-                          ? "Generally good"
-                          : b.riskTier === "C"
-                            ? "Needs improvement"
-                            : "Act urgently"}
+                      {t(b.riskTier === "A" ? "own.gradeA" : b.riskTier === "B" ? "own.gradeB" : b.riskTier === "C" ? "own.gradeC" : "own.gradeD")}
                     </span>
                   </div>
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Next inspection</p>
-                  <p className="mt-1 font-medium">{nextInspection ? formatDate(nextInspection.scheduledAt) : "Not scheduled"}</p>
+                  <p className="text-xs text-muted-foreground">{t("own.nextInspection")}</p>
+                  <p className="mt-1 font-medium">{nextInspection ? formatDate(nextInspection.scheduledAt) : t("own.notScheduled")}</p>
                   {nextInspection && (
-                    <p className="text-xs text-muted-foreground">Officer will visit on this date.</p>
+                    <p className="text-xs text-muted-foreground">{t("own.officerVisit")}</p>
                   )}
                 </div>
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">Past inspections</p>
+                  <p className="text-xs text-muted-foreground">{t("own.pastInspections")}</p>
                   <p className="mt-1 font-medium tabular-nums">{b.inspections.length}</p>
                 </div>
               </div>
@@ -123,7 +117,7 @@ export default async function OwnerDashboardPage() {
               {b.inspections.some((i) => i.violations.length > 0) && (
                 <div>
                   <p className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                    <ClipboardList className="h-3.5 w-3.5" /> Recent inspection outcomes
+                    <ClipboardList className="h-3.5 w-3.5" /> {t("own.recentOutcomes")}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {b.inspections
@@ -143,14 +137,14 @@ export default async function OwnerDashboardPage() {
                   href="/owner/documents"
                   className="flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition hover:border-primary/40 hover:text-primary"
                 >
-                  <FolderOpen className="h-4 w-4" /> Manage documents
+                  <FolderOpen className="h-4 w-4" /> {t("own.manageDocuments")}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="/owner/suggestions"
                   className="flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition hover:border-primary/40 hover:text-primary"
                 >
-                  <Lightbulb className="h-4 w-4" /> Get improvement tips
+                  <Lightbulb className="h-4 w-4" /> {t("own.improvementTips")}
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>

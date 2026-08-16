@@ -8,7 +8,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OfficerSchedulePage() {
   await requireRole("food_officer");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const [officers, businesses, inspections] = await Promise.all([
     db.user.findMany({ where: { role: "food_officer" } }),
@@ -30,14 +30,14 @@ export default async function OfficerSchedulePage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("schedule.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Assign officers to businesses. Queue is sorted by live risk score.
+          {t("schedule.sub")}
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiCard label="Scheduled ahead" value={upcoming.length} icon={CalendarClock} />
-        <KpiCard label="Completed" value={completed.length} icon={ClipboardCheck} />
-        <KpiCard label="Overdue" value={overdue.length} icon={AlertTriangle} tone={overdue.length ? "danger" : "default"} />
+        <KpiCard label={t("schedule.scheduledAhead")} value={upcoming.length} icon={CalendarClock} />
+        <KpiCard label={t("kpi.completed")} value={completed.length} icon={ClipboardCheck} />
+        <KpiCard label={t("kpi.overdue")} value={overdue.length} icon={AlertTriangle} tone={overdue.length ? "danger" : "default"} />
       </div>
 
       <ScheduleManager
@@ -53,6 +53,7 @@ export default async function OfficerSchedulePage() {
           scheduledAt: i.scheduledAt,
           status: i.status,
         }))}
+        lang={lang}
       />
     </div>
   );

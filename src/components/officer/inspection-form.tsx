@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { DEFAULT_CHECKLIST, generateAiReport, type ChecklistItem, type AiReport } from "@/lib/ai-report";
 import { uploadInspectionPhotoAction, completeInspectionAction } from "@/app/(app)/officer/inspection/actions";
-import { SEVERITY_LABELS } from "@/lib/format";
+import { severityLabel } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
 import { toast } from "sonner";
 
 const SEVERITY_ORDER = ["low", "medium", "high", "critical"] as const;
@@ -23,6 +24,7 @@ export function InspectionForm({
   initialPhotos,
   initialAiSummary,
   completed,
+  lang,
 }: {
   inspectionId: string;
   businessName: string;
@@ -32,6 +34,7 @@ export function InspectionForm({
   initialPhotos: string[] | null;
   initialAiSummary: string | null;
   completed: boolean;
+  lang: Lang;
 }) {
   const [checklist, setChecklist] = useState<ChecklistItem[]>(
     initialChecklist && initialChecklist.length
@@ -45,6 +48,7 @@ export function InspectionForm({
   const [report, setReport] = useState<AiReport | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const failedCount = checklist.filter((c) => !c.passed).length;
 
@@ -71,16 +75,16 @@ export function InspectionForm({
     setUploading(false);
     if (res.ok && res.url) {
       setPhotos((p) => [...p, res.url!]);
-      toast.success("Photo attached");
+      toast.success(t("insp.photoAttached"));
     } else {
-      toast.error(res.error ?? "Upload failed");
+      toast.error(res.error ?? t("insp.uploadFailed"));
     }
     if (fileRef.current) fileRef.current.value = "";
   };
 
   const submit = () => {
     if (!report) {
-      toast.error("Generate the AI report before submitting.");
+      toast.error(t("insp.generateFirst"));
       return;
     }
     const fd = new FormData();
@@ -111,9 +115,9 @@ export function InspectionForm({
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950">
             <Check className="h-7 w-7" />
           </div>
-          <h2 className="mt-4 text-xl font-bold">Inspection completed</h2>
+          <h2 className="mt-4 text-xl font-bold">{t("insp.completedTitle")}</h2>
           <p className="mt-1 max-w-md text-sm text-muted-foreground">
-            The AI report below was generated and the business risk score has been recomputed.
+            {t("insp.completedHint")}
           </p>
           {initialAiSummary && (
             <div className="mt-4 w-full max-w-xl rounded-lg border bg-muted/40 p-4 text-left text-sm">{initialAiSummary}</div>
@@ -128,9 +132,9 @@ export function InspectionForm({
       {/* Checklist */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Inspection checklist</CardTitle>
+          <CardTitle className="text-base">{t("insp.checklist")}</CardTitle>
           <Badge variant="outline" className={cn(failedCount > 0 && "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300")}>
-            {failedCount} non-compliant
+            {t("insp.nonCompliantCount", { n: String(failedCount) })}
           </Badge>
         </CardHeader>
         <CardContent className="grid gap-2 sm:grid-cols-2">
@@ -146,7 +150,7 @@ export function InspectionForm({
             >
               <div>
                 <p className="text-sm font-medium">{item.label}</p>
-                <p className="text-xs text-muted-foreground">{item.passed ? "Compliant" : "Non-compliant"}</p>
+                <p className="text-xs text-muted-foreground">{item.passed ? t("insp.compliant") : t("insp.nonCompliant")}</p>
               </div>
               <span
                 className={cn(
@@ -166,13 +170,13 @@ export function InspectionForm({
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Officer notes</CardTitle>
+              <CardTitle className="text-base">{t("insp.officerNotes")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Record observations, corrective advice given, and any immediate risks…"
+                placeholder={t("insp.notesPlaceholder")}
                 rows={5}
               />
             </CardContent>
@@ -180,7 +184,7 @@ export function InspectionForm({
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Photo evidence</CardTitle>
+              <CardTitle className="text-base">{t("insp.photoEvidence")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {photos.length > 0 && (
@@ -202,10 +206,10 @@ export function InspectionForm({
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
               <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
                 {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                {uploading ? "Uploading…" : "Capture / upload photo"}
+                {uploading ? t("insp.uploading") : t("insp.capturePhoto")}
               </Button>
               <p className="text-xs text-muted-foreground">
-                Stored on local disk for the demo — would move to S3/GCS in production.
+                {t("insp.diskNote")}
               </p>
             </CardContent>
           </Card>
@@ -215,17 +219,16 @@ export function InspectionForm({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4 text-primary" /> AI Report
+              <Sparkles className="h-4 w-4 text-primary" /> {t("insp.aiReport")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-xs text-muted-foreground">
-              A deterministic, explainable model turns the checklist + notes into a structured report and a recommended
-              risk delta for this business.
+              {t("insp.aiExplain")}
             </p>
             <Button onClick={generate} disabled={generating} className="w-full">
               {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-              Generate AI report
+              {t("insp.generateReport")}
             </Button>
 
             {report && (
@@ -241,19 +244,19 @@ export function InspectionForm({
                   )}
                 >
                   <p className="text-sm font-medium">
-                    {report.tone === "positive" ? "Positive result" : report.tone === "warning" ? "Follow-up recommended" : "High-risk finding"}
+                    {report.tone === "positive" ? t("insp.tonePositive") : report.tone === "warning" ? t("insp.toneFollowup") : t("insp.toneHigh")}
                   </p>
                   <p className="mt-1 text-sm">{report.summary}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Badge variant="outline">Checklist {report.checklistScore}</Badge>
-                    <Badge variant="outline">Risk delta +{report.riskDelta}</Badge>
+                    <Badge variant="outline">{t("insp.checklistScore", { n: String(report.checklistScore) })}</Badge>
+                    <Badge variant="outline">{t("insp.riskDeltaLabel", { n: String(report.riskDelta) })}</Badge>
                   </div>
                 </div>
 
                 <div>
-                  <p className="mb-2 text-sm font-medium">Suggested violations to log</p>
+                  <p className="mb-2 text-sm font-medium">{t("insp.suggestedViolations")}</p>
                   {report.suggestedViolations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No violations detected. Clean bill of compliance.</p>
+                    <p className="text-sm text-muted-foreground">{t("insp.cleanBill")}</p>
                   ) : (
                     <div className="space-y-2">
                       {report.suggestedViolations.map((v, i) => (
@@ -264,6 +267,7 @@ export function InspectionForm({
                           </div>
                           <SelectSeverity
                             value={v.severity}
+                            lang={lang}
                             onChange={(sev) => {
                               setReport((r) =>
                                 r
@@ -287,7 +291,7 @@ export function InspectionForm({
 
             <Button onClick={submit} disabled={!report || submitted} className="w-full">
               {submitted ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-              {submitted ? "Submitting…" : "Complete inspection"}
+              {submitted ? t("insp.submitting") : t("insp.complete")}
             </Button>
           </CardContent>
         </Card>
@@ -296,7 +300,7 @@ export function InspectionForm({
   );
 }
 
-function SelectSeverity({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function SelectSeverity({ value, onChange, lang }: { value: string; onChange: (v: string) => void; lang: Lang }) {
   return (
     <select
       value={value}
@@ -305,7 +309,7 @@ function SelectSeverity({ value, onChange }: { value: string; onChange: (v: stri
     >
       {SEVERITY_ORDER.map((s) => (
         <option key={s} value={s}>
-          {SEVERITY_LABELS[s]}
+          {severityLabel(lang, s)}
         </option>
       ))}
     </select>

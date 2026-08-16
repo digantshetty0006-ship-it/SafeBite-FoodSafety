@@ -9,7 +9,8 @@ import { RiskBadge, RiskScore, RiskScoreBar } from "@/components/risk-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { categoryLabel, formatDate, formatDateTime, COMPLAINT_STATUS_LABELS, INSPECTION_STATUS_LABELS, SEVERITY_LABELS } from "@/lib/format";
+import { categoryLabel, formatDate, formatDateTime, complaintStatusLabel, inspectionStatusLabel, severityLabel } from "@/lib/format";
+import { getLang, tr } from "@/lib/lang";
 
 const SEVERITY_STYLES: Record<string, string> = {
   low: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -20,6 +21,8 @@ const SEVERITY_STYLES: Record<string, string> = {
 
 export default async function BusinessProfilePage({ params }: { params: Promise<{ id: string }> }) {
   await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const { id } = await params;
   const business = await db.business.findUnique({
     where: { id },
@@ -41,7 +44,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
     <div className="space-y-6">
       <div>
         <Link href="/officer/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to dashboard
+          <ArrowLeft className="h-4 w-4" /> {t("biz.backToDashboard")}
         </Link>
       </div>
 
@@ -60,14 +63,14 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
               <span className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5" /> {business.address}
               </span>
-              <span>{categoryLabel(business.category)}</span>
+              <span>{categoryLabel(lang, business.category)}</span>
               <span className="font-mono">Lic. {business.licenseNumber}</span>
             </p>
           </div>
         </div>
         <div className="w-full max-w-xs">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Live risk score</span>
+            <span className="text-sm text-muted-foreground">{t("biz.liveRisk")}</span>
             <RiskScore score={breakdown.score} className="text-lg" />
           </div>
           <RiskScoreBar score={breakdown.score} />
@@ -81,7 +84,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
             <ClipboardCheck className="h-8 w-8 text-primary" />
             <div>
               <p className="text-2xl font-bold tabular-nums">{business.inspections.length}</p>
-              <p className="text-xs text-muted-foreground">Inspections on record</p>
+              <p className="text-xs text-muted-foreground">{t("biz.inspectionsOnRecord")}</p>
             </div>
           </CardContent>
         </Card>
@@ -90,7 +93,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
             <AlertTriangle className="h-8 w-8 text-red-500" />
             <div>
               <p className="text-2xl font-bold tabular-nums">{allViolations.length}</p>
-              <p className="text-xs text-muted-foreground">Total violations logged</p>
+              <p className="text-xs text-muted-foreground">{t("biz.totalViolations")}</p>
             </div>
           </CardContent>
         </Card>
@@ -99,7 +102,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
             <Megaphone className="h-8 w-8 text-amber-500" />
             <div>
               <p className="text-2xl font-bold tabular-nums">{openComplaints}</p>
-              <p className="text-xs text-muted-foreground">Open complaints</p>
+              <p className="text-xs text-muted-foreground">{t("biz.openComplaints")}</p>
             </div>
           </CardContent>
         </Card>
@@ -111,7 +114,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 {expiredDocs.length}
                 <span className="text-sm font-normal text-muted-foreground"> / {business.documents.length}</span>
               </p>
-              <p className="text-xs text-muted-foreground">Expired documents</p>
+              <p className="text-xs text-muted-foreground">{t("biz.expiredDocuments")}</p>
             </div>
           </CardContent>
         </Card>
@@ -119,38 +122,38 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-4 sm:w-auto">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="inspections">Inspections</TabsTrigger>
-          <TabsTrigger value="complaints">Complaints</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="overview">{t("biz.overview")}</TabsTrigger>
+          <TabsTrigger value="inspections">{t("biz.inspections")}</TabsTrigger>
+          <TabsTrigger value="complaints">{t("biz.complaints")}</TabsTrigger>
+          <TabsTrigger value="documents">{t("biz.documents")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           <div className="grid gap-4 lg:grid-cols-2">
-            <RiskBreakdownCard breakdown={breakdown} />
+            <RiskBreakdownCard breakdown={breakdown} lang={lang} />
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">Registration & contact</CardTitle>
+                <CardTitle className="text-base">{t("biz.registration")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Owner</span>
+                  <span className="text-muted-foreground">{t("biz.owner")}</span>
                   <span className="font-medium">{business.owner.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Contact email</span>
+                  <span className="text-muted-foreground">{t("biz.contactEmail")}</span>
                   <span className="font-medium">{business.owner.email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Registered</span>
+                  <span className="text-muted-foreground">{t("biz.registered")}</span>
                   <span>{formatDate(business.registeredAt)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Supplier</span>
+                  <span className="text-muted-foreground">{t("biz.supplier")}</span>
                   <span>{business.supplier ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Coordinates</span>
+                  <span className="text-muted-foreground">{t("biz.coordinates")}</span>
                   <span className="font-mono">
                     {business.lat.toFixed(4)}, {business.lng.toFixed(4)}
                   </span>
@@ -161,7 +164,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
           {allViolations.length > 0 && (
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">All violations by type</CardTitle>
+                <CardTitle className="text-base">{t("biz.violationsByType")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -170,7 +173,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-medium">{v.type.replace(/_/g, " ")}</span>
                         <Badge variant="outline" className={SEVERITY_STYLES[v.severity]}>
-                          {SEVERITY_LABELS[v.severity]}
+                          {severityLabel(lang, v.severity)}
                         </Badge>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{v.description}</p>
@@ -184,7 +187,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
 
         <TabsContent value="inspections" className="mt-4 space-y-3">
           {business.inspections.length === 0 && (
-            <Empty text="No inspections on record for this business." />
+            <Empty text={t("biz.noInspections")} />
           )}
           {business.inspections.map((insp) => (
             <Card key={insp.id}>
@@ -192,18 +195,18 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-medium">
-                      Inspection by {insp.officer.name}
+                      {t("biz.inspectionBy", { name: insp.officer.name })}
                       <span className="ml-2 text-xs font-normal text-muted-foreground">
                         {formatDateTime(insp.scheduledAt)}
                       </span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {insp.status === "completed" ? "Completed" : INSPECTION_STATUS_LABELS[insp.status]} ·{" "}
-                      {insp.violations.length} violation(s) ·{" "}
-                      {Array.isArray(insp.photos) ? insp.photos.length : JSON.parse(insp.photos).length} photo(s)
+                      {inspectionStatusLabel(lang, insp.status)} ·{" "}
+                      {t("biz.violationsCount", { n: String(insp.violations.length) })} ·{" "}
+                      {t("biz.photosCount", { n: String(Array.isArray(insp.photos) ? insp.photos.length : JSON.parse(insp.photos).length) })}
                     </p>
                   </div>
-                  <Badge variant="outline">{INSPECTION_STATUS_LABELS[insp.status]}</Badge>
+                  <Badge variant="outline">{inspectionStatusLabel(lang, insp.status)}</Badge>
                 </div>
                 {insp.notes && <p className="mt-2 text-sm text-muted-foreground">{insp.notes}</p>}
                 {insp.violations.length > 0 && (
@@ -217,7 +220,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                 )}
                 {insp.aiSummary && (
                   <div className="mt-3 rounded-lg border bg-muted/40 p-3 text-sm">
-                    <p className="text-xs font-medium text-muted-foreground">AI report summary</p>
+                    <p className="text-xs font-medium text-muted-foreground">{t("biz.aiSummary")}</p>
                     <p className="mt-1">{insp.aiSummary}</p>
                   </div>
                 )}
@@ -227,7 +230,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
         </TabsContent>
 
         <TabsContent value="complaints" className="mt-4 space-y-3">
-          {business.complaints.length === 0 && <Empty text="No complaints have been filed against this business." />}
+          {business.complaints.length === 0 && <Empty text={t("biz.noComplaints")} />}
           {business.complaints.map((c) => (
             <Card key={c.id}>
               <CardContent className="p-5">
@@ -236,7 +239,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                     <p className="text-sm">{c.description}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatDateTime(c.createdAt)} ·{" "}
-                      {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                      {c.anonymous || !c.citizen ? t("common.anonymous") : c.citizen.name}
                     </p>
                     {c.address && (
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
@@ -248,7 +251,7 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
                       </p>
                     )}
                   </div>
-                  <Badge variant="outline">{COMPLAINT_STATUS_LABELS[c.status]}</Badge>
+                  <Badge variant="outline">{complaintStatusLabel(lang, c.status)}</Badge>
                 </div>
                 {c.photos !== "[]" && (
                   <div className="mt-3 flex gap-2">
@@ -263,27 +266,27 @@ export default async function BusinessProfilePage({ params }: { params: Promise<
         </TabsContent>
 
         <TabsContent value="documents" className="mt-4 space-y-3">
-          {business.documents.length === 0 && <Empty text="No documents uploaded by this business." />}
+          {business.documents.length === 0 && <Empty text={t("biz.noDocuments")} />}
           {business.documents.map((d) => (
             <Card key={d.id}>
               <CardContent className="flex items-center justify-between p-5">
                 <div>
                   <p className="font-medium capitalize">{d.type.replace(/_/g, " ")}</p>
                   <p className="text-xs text-muted-foreground">
-                    Uploaded {formatDate(d.uploadedAt)}
-                    {d.expiresAt && <> · Expires {formatDate(d.expiresAt)}</>}
+                    {t("biz.uploaded", { d: formatDate(d.uploadedAt) })}
+                    {d.expiresAt && <> · {t("biz.expires", { d: formatDate(d.expiresAt) })}</>}
                   </p>
                 </div>
                 {d.expiresAt && d.expiresAt < new Date() ? (
                   <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-950 dark:text-red-300">
-                    Expired
+                    {t("biz.expired")}
                   </Badge>
                 ) : d.expiresAt ? (
                   <Badge variant="outline" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    Valid
+                    {t("biz.valid")}
                   </Badge>
                 ) : (
-                  <Badge variant="outline">On file</Badge>
+                  <Badge variant="outline">{t("biz.onFile")}</Badge>
                 )}
               </CardContent>
             </Card>

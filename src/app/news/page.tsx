@@ -73,7 +73,7 @@ export default async function NewsPage({
                 <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   <ShieldCheck className="h-4 w-4 text-emerald-600" /> {t("home.recentActions")}
                 </h2>
-                <RecentActions limit={5} />
+                <RecentActions limit={5} lang={lang} />
               </div>
               <div>
                 <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

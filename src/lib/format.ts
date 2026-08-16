@@ -1,3 +1,5 @@
+import { tr } from "@/lib/i18n";
+
 export function formatDate(d: Date | string | null | undefined): string {
   if (!d) return "—";
   const date = typeof d === "string" ? new Date(d) : d;
@@ -67,8 +69,29 @@ export const SEVERITY_LABELS: Record<string, string> = {
   critical: "Critical",
 };
 
-export function categoryLabel(cat: string): string {
-  return CATEGORY_LABELS[cat] ?? cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function label(lang: string, key: string, fallback: string): string {
+  const s = tr(lang as "en" | "hi" | "mr", key);
+  return s === key ? fallback : s;
+}
+
+export function categoryLabel(lang: string, cat: string): string {
+  return label(
+    lang,
+    `cat.${cat}`,
+    CATEGORY_LABELS[cat] ?? cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
+
+export function complaintStatusLabel(lang: string, status: string): string {
+  return label(lang, `status.${status}`, COMPLAINT_STATUS_LABELS[status] ?? status);
+}
+
+export function inspectionStatusLabel(lang: string, status: string): string {
+  return label(lang, `insp.${status}`, INSPECTION_STATUS_LABELS[status] ?? status);
+}
+
+export function severityLabel(lang: string, sev: string): string {
+  return label(lang, `sev.${sev}`, SEVERITY_LABELS[sev] ?? sev);
 }
 
 export function uid(prefix = "id"): string {

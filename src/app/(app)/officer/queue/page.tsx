@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RiskBadge, RiskScoreBar } from "@/components/risk-badge";
-import { categoryLabel, formatDateTime, COMPLAINT_STATUS_LABELS } from "@/lib/format";
+import { categoryLabel, formatDateTime, complaintStatusLabel } from "@/lib/format";
 import { KpiCard } from "@/components/kpi-card";
 import { AlertTriangle, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OfficerQueuePage() {
   const officer = await requireRole("food_officer");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const [inspections, assignedComplaints, allComplaints] = await Promise.all([
     db.inspection.findMany({
@@ -67,7 +67,7 @@ export default async function OfficerQueuePage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Megaphone className="h-4 w-4 text-amber-500" /> Complaints assigned to you
+              <Megaphone className="h-4 w-4 text-amber-500" /> {t("queue.assignedToYou")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -79,9 +79,9 @@ export default async function OfficerQueuePage() {
                       {c.business ? (
                         <h3 className="font-semibold">{c.business.name}</h3>
                       ) : (
-                        <h3 className="font-semibold italic">Unlinked report</h3>
+                        <h3 className="font-semibold italic">{t("queue.unlinked")}</h3>
                       )}
-                      <Badge variant="outline">{COMPLAINT_STATUS_LABELS[c.status]}</Badge>
+                      <Badge variant="outline">{complaintStatusLabel(lang, c.status)}</Badge>
                     </div>
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
@@ -91,10 +91,10 @@ export default async function OfficerQueuePage() {
                         </span>
                       )}
                       <span className="flex items-center gap-1">
-                        <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                        <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? t("common.anonymous") : c.citizen.name}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> filed {formatDateTime(c.createdAt)}
+                        <Clock className="h-3 w-3" /> {t("queue.filed", { d: formatDateTime(c.createdAt) })}
                       </span>
                     </p>
                     {c.photos && c.photos !== "[]" && (
@@ -116,7 +116,7 @@ export default async function OfficerQueuePage() {
                         <input type="hidden" name="id" value={c.id} />
                         <input type="hidden" name="status" value="under_review" />
                         <Button type="submit" size="sm" variant="outline">
-                          Start review
+                          {t("queue.startReview")}
                         </Button>
                       </form>
                     )}
@@ -125,7 +125,7 @@ export default async function OfficerQueuePage() {
                         <input type="hidden" name="id" value={c.id} />
                         <input type="hidden" name="status" value="resolved" />
                         <Button type="submit" size="sm">
-                          Mark resolved
+                          {t("queue.markResolved")}
                         </Button>
                       </form>
                     )}
@@ -141,7 +141,7 @@ export default async function OfficerQueuePage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4 text-sky-500" /> All open complaints · review everything
+              <Users className="h-4 w-4 text-sky-500" /> {t("queue.allOpen")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -153,9 +153,9 @@ export default async function OfficerQueuePage() {
                       {c.business ? (
                         <h3 className="font-semibold">{c.business.name}</h3>
                       ) : (
-                        <h3 className="font-semibold italic">Unlinked report</h3>
+                        <h3 className="font-semibold italic">{t("queue.unlinked")}</h3>
                       )}
-                      <Badge variant="outline">{COMPLAINT_STATUS_LABELS[c.status]}</Badge>
+                      <Badge variant="outline">{complaintStatusLabel(lang, c.status)}</Badge>
                     </div>
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
@@ -165,13 +165,13 @@ export default async function OfficerQueuePage() {
                         </span>
                       )}
                       <span className="flex items-center gap-1">
-                        <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                        <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? t("common.anonymous") : c.citizen.name}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> filed {formatDateTime(c.createdAt)}
+                        <Clock className="h-3 w-3" /> {t("queue.filed", { d: formatDateTime(c.createdAt) })}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" /> {c.assignedOfficer?.name ?? "unassigned"}
+                        <Users className="h-3 w-3" /> {c.assignedOfficer?.name ?? t("queue.unassigned")}
                       </span>
                     </p>
                     {c.photos && c.photos !== "[]" && (
@@ -193,7 +193,7 @@ export default async function OfficerQueuePage() {
                         <input type="hidden" name="id" value={c.id} />
                         <input type="hidden" name="status" value="under_review" />
                         <Button type="submit" size="sm" variant="outline">
-                          Start review
+                          {t("queue.startReview")}
                         </Button>
                       </form>
                     )}
@@ -202,7 +202,7 @@ export default async function OfficerQueuePage() {
                         <input type="hidden" name="id" value={c.id} />
                         <input type="hidden" name="status" value="resolved" />
                         <Button type="submit" size="sm">
-                          Mark resolved
+                          {t("queue.markResolved")}
                         </Button>
                       </form>
                     )}
@@ -218,8 +218,8 @@ export default async function OfficerQueuePage() {
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center">
             <ClipboardList className="h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No inspections in your queue</p>
-            <p className="text-sm text-muted-foreground">New assignments will appear here sorted by risk.</p>
+            <p className="mt-3 font-medium">{t("queue.noInspections")}</p>
+            <p className="text-sm text-muted-foreground">{t("queue.empty")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -235,7 +235,7 @@ export default async function OfficerQueuePage() {
                       <RiskBadge score={insp.business.riskScore} />
                       {isOverdue && (
                         <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-950 dark:text-red-300">
-                          Overdue
+                          {t("kpi.overdue")}
                         </Badge>
                       )}
                     </div>
@@ -243,7 +243,7 @@ export default async function OfficerQueuePage() {
                       <span className="flex items-center gap-1">
                         <MapPin className="h-3.5 w-3.5" /> {insp.business.district}
                       </span>
-                      <span>{categoryLabel(insp.business.category)}</span>
+                      <span>{categoryLabel(lang, insp.business.category)}</span>
                       <span className="flex items-center gap-1">
                         <CalendarClock className="h-3.5 w-3.5" /> {formatDateTime(insp.scheduledAt)}
                       </span>
@@ -254,7 +254,7 @@ export default async function OfficerQueuePage() {
                       <RiskScoreBar score={insp.business.riskScore} />
                     </div>
                     <Button asChild>
-                      <Link href={`/officer/inspection/${insp.id}`}>Start inspection</Link>
+                      <Link href={`/officer/inspection/${insp.id}`}>{t("queue.startInspection")}</Link>
                     </Button>
                   </div>
                 </CardContent>

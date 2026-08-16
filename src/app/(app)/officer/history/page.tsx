@@ -12,7 +12,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OfficerHistoryPage() {
   const officer = await requireRole("food_officer");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const inspections = await db.inspection.findMany({
     where: { officerId: officer.id, status: { in: ["completed", "missed"] } },
@@ -29,21 +29,21 @@ export default async function OfficerHistoryPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("history.title")}</h1>
-        <p className="text-sm text-muted-foreground">Past inspections you have conducted.</p>
+        <p className="text-sm text-muted-foreground">{t("history.sub")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <KpiCard label="Inspections conducted" value={inspections.length} icon={History} />
-        <KpiCard label="Violations logged" value={totalViolations} icon={AlertTriangle} />
-        <KpiCard label="Critical findings" value={criticalFindings} icon={AlertTriangle} tone={criticalFindings ? "danger" : "default"} />
+        <KpiCard label={t("kpi.conducted")} value={inspections.length} icon={History} />
+        <KpiCard label={t("kpi.violationsLogged")} value={totalViolations} icon={AlertTriangle} />
+        <KpiCard label={t("kpi.criticalFindings")} value={criticalFindings} icon={AlertTriangle} tone={criticalFindings ? "danger" : "default"} />
       </div>
 
       {inspections.length === 0 ? (
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center">
             <FileText className="h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No past inspections</p>
-            <p className="text-sm text-muted-foreground">Completed inspections will appear here.</p>
+            <p className="mt-3 font-medium">{t("history.noPast")}</p>
+            <p className="text-sm text-muted-foreground">{t("history.empty")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -63,7 +63,7 @@ export default async function OfficerHistoryPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         <RiskBadge score={insp.business.riskScore} />
-                        <Badge variant="outline">{insp.violations.length} violations</Badge>
+                        <Badge variant="outline">{t("history.violations", { n: String(insp.violations.length) })}</Badge>
                         {photos.length > 0 && (
                           <Badge variant="outline">
                             <Camera className="mr-1 h-3 w-3" /> {photos.length}

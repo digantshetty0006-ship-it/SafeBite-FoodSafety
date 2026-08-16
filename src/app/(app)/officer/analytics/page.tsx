@@ -11,7 +11,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OfficerAnalyticsPage() {
   await requireRole("food_officer");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const [businesses, complaints, inspections] = await Promise.all([
     db.business.findMany({
@@ -53,7 +53,7 @@ export default async function OfficerAnalyticsPage() {
     catCount.set(cat, (catCount.get(cat) ?? 0) + 1);
   }
   const complaintsByCategory = [...catCount.entries()]
-    .map(([category, count]) => ({ category: categoryLabel(category), count }))
+    .map(([category, count]) => ({ category: categoryLabel(lang, category), count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
@@ -74,7 +74,7 @@ export default async function OfficerAnalyticsPage() {
   // Tier distribution
   const tiers = ["A", "B", "C", "D"];
   const tierDistribution = tiers
-    .map((t) => ({ name: `Tier ${t}`, value: businesses.filter((b) => b.riskTier === t).length }))
+    .map((tier) => ({ name: t("biz.tier", { t: tier }), value: businesses.filter((b) => b.riskTier === tier).length }))
     .filter((t) => t.value > 0);
 
   // Severity by district (stacked)
@@ -115,7 +115,7 @@ export default async function OfficerAnalyticsPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("analytics.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("analytics.sub")}</p>
+          <p className="text-sm text-muted-foreground">{t("an.sub")}</p>
         </div>
         <Link href="/judges-guide" className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
           <BookOpen className="h-4 w-4" /> {t("analytics.explain")}
@@ -132,9 +132,10 @@ export default async function OfficerAnalyticsPage() {
           businessNames,
           topRisky,
         }}
+        lang={lang}
       />
       <div className="border-t pt-6">
-        <AnalyticsGuide />
+        <AnalyticsGuide lang={lang} />
       </div>
     </div>
   );

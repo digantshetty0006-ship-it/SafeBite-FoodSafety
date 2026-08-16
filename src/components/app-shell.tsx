@@ -137,9 +137,6 @@ function SidebarNav({
         </nav>
 
         <div className="border-t p-3">
-          <div className="mb-2 flex items-center justify-center">
-            <LanguageSwitcher current={lang} />
-          </div>
           <div className="flex items-center gap-3 rounded-lg p-2">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
@@ -169,6 +166,7 @@ async function Header({ user, lang }: { user: { name: string; role: string; emai
         <h2 className="text-sm font-semibold leading-tight">{tr(lang, ROLE_HEADER[user.role] ?? "shell.hOfficer")}</h2>
       </div>
       <div className="ml-auto flex items-center gap-3">
+        <LanguageSwitcher current={lang} />
         <ThemeSwitcher />
         <span className="hidden text-xs text-muted-foreground sm:block">{user.email}</span>
       </div>

@@ -1,8 +1,11 @@
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
+import { tr } from "@/lib/lang";
+import type { Lang } from "@/lib/i18n";
 
-export async function RecentActions({ limit = 6 }: { limit?: number }) {
+export async function RecentActions({ limit = 6, lang }: { limit?: number; lang: Lang }) {
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const [inspections, complaints] = await Promise.all([
     db.inspection.findMany({
       where: { completedAt: { not: null } },
@@ -22,14 +25,14 @@ export async function RecentActions({ limit = 6 }: { limit?: number }) {
     ...inspections.map((i) => ({
       id: i.id,
       kind: "inspection" as const,
-      title: `${i.business.name} — inspection completed`,
+      title: t("news.inspected", { name: i.business.name }),
       place: i.business.district,
       date: i.completedAt,
     })),
     ...complaints.map((c) => ({
       id: c.id,
       kind: "complaint" as const,
-      title: `${c.business?.name ?? "Food business"} — complaint resolved`,
+      title: t("news.resolved", { name: c.business?.name ?? t("news.foodBusiness") }),
       place: "",
       date: c.createdAt,
     })),
@@ -37,7 +40,7 @@ export async function RecentActions({ limit = 6 }: { limit?: number }) {
 
   if (rows.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">No actions recorded yet.</p>
+      <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">{t("news.noActions")}</p>
     );
   }
 

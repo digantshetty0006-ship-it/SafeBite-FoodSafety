@@ -23,7 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { scheduleInspectionAction } from "@/app/(app)/officer/schedule/actions";
-import { formatDate, formatDateTime, INSPECTION_STATUS_LABELS } from "@/lib/format";
+import { formatDate, formatDateTime, inspectionStatusLabel } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
 import { RiskBadge } from "@/components/risk-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -62,16 +63,19 @@ export function ScheduleManager({
   officers,
   businesses,
   inspections,
+  lang,
 }: {
   officers: Officer[];
   businesses: BusinessOption[];
   inspections: ScheduledInspection[];
+  lang: Lang;
 }) {
   const [open, setOpen] = useState(false);
   const [businessId, setBusinessId] = useState("");
   const [officerId, setOfficerId] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const upcoming = inspections
     .filter((i) => i.status === "scheduled")
@@ -97,34 +101,34 @@ export function ScheduleManager({
             size="sm"
             onClick={() => setStatusFilter("all")}
           >
-            All
+            {t("schedule.all")}
           </Button>
           <Button
             variant={statusFilter === "upcoming" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("upcoming")}
           >
-            Upcoming ({upcoming.length})
+            {t("schedule.upcomingCount", { n: String(upcoming.length) })}
           </Button>
           <Button
             variant={statusFilter === "past" ? "default" : "outline"}
             size="sm"
             onClick={() => setStatusFilter("past")}
           >
-            Completed / missed
+            {t("schedule.completedMissed")}
           </Button>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Schedule inspection
+              <Plus className="mr-2 h-4 w-4" /> {t("schedule.scheduleBtn")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Schedule an inspection</DialogTitle>
+              <DialogTitle>{t("schedule.scheduleInspection")}</DialogTitle>
               <DialogDescription>
-                Assign an officer to a business based on risk priority.
+                {t("schedule.dialogDesc")}
               </DialogDescription>
             </DialogHeader>
             <form
@@ -133,25 +137,25 @@ export function ScheduleManager({
               onSubmit={() => setOpen(false)}
             >
               <div className="space-y-2">
-                <Label>Business</Label>
+                <Label>{t("form.business")}</Label>
                 <Select value={businessId} onValueChange={setBusinessId} name="businessId">
                   <SelectTrigger>
-                    <SelectValue placeholder="Select business" />
+                    <SelectValue placeholder={t("schedule.selectBusiness")} />
                   </SelectTrigger>
                   <SelectContent>
                     {businesses.map((b) => (
                       <SelectItem key={b.id} value={b.id}>
-                        {b.name} ({b.district}) — risk {Math.round(b.riskScore)}
+                        {t("schedule.riskOption", { name: b.name, district: b.district, r: String(Math.round(b.riskScore)) })}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Officer</Label>
+                <Label>{t("form.officer")}</Label>
                 <Select value={officerId} onValueChange={setOfficerId} name="officerId">
                   <SelectTrigger>
-                    <SelectValue placeholder="Select officer" />
+                    <SelectValue placeholder={t("schedule.selectOfficer")} />
                   </SelectTrigger>
                   <SelectContent>
                     {officers.map((i) => (
@@ -163,7 +167,7 @@ export function ScheduleManager({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Date & time</Label>
+                <Label>{t("form.dateTime")}</Label>
                 <Input
                   type="datetime-local"
                   name="scheduledAt"
@@ -174,7 +178,7 @@ export function ScheduleManager({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={!businessId || !officerId || !scheduledAt}>
-                  Schedule
+                  {t("schedule.submit")}
                 </Button>
               </DialogFooter>
             </form>
@@ -186,13 +190,13 @@ export function ScheduleManager({
         {(statusFilter === "all" || statusFilter === "upcoming") && (
           <div>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <CalendarClock className="h-4 w-4" /> Upcoming — priority sorted
+              <CalendarClock className="h-4 w-4" /> {t("schedule.upcomingSorted")}
             </h2>
             <div className="space-y-3">
               {upcoming.length === 0 && (
                 <Card>
                   <CardContent className="flex h-24 items-center justify-center text-sm text-muted-foreground">
-                    No upcoming inspections.
+                    {t("schedule.noUpcoming")}
                   </CardContent>
                 </Card>
               )}
@@ -216,14 +220,14 @@ export function ScheduleManager({
                         <div>
                           <p className="font-medium group-hover:text-primary">{i.businessName}</p>
                           <p className="text-xs text-muted-foreground">
-                            {i.district} · Officer {i.officerName} · {formatDateTime(i.scheduledAt)}
+                            {i.district} · {t("schedule.officerOf", { name: i.officerName })} · {formatDateTime(i.scheduledAt)}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <RiskBadge score={i.riskScore} />
                         <span className={cn("text-xs font-medium", STATUS_STYLE[i.status])}>
-                          {INSPECTION_STATUS_LABELS[i.status]}
+                          {inspectionStatusLabel(lang, i.status)}
                         </span>
                         <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition group-hover:translate-x-0.5 group-hover:text-primary" />
                       </div>
@@ -238,13 +242,13 @@ export function ScheduleManager({
         {(statusFilter === "all" || statusFilter === "past") && (
           <div>
             <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <XCircle className="h-4 w-4" /> Completed & missed
+              <XCircle className="h-4 w-4" /> {t("schedule.completedMissed")}
             </h2>
             <div className="space-y-3">
               {past.length === 0 && (
                 <Card>
                   <CardContent className="flex h-24 items-center justify-center text-sm text-muted-foreground">
-                    No completed inspections yet.
+                    {t("schedule.noPast")}
                   </CardContent>
                 </Card>
               )}
@@ -260,7 +264,7 @@ export function ScheduleManager({
                       </div>
                       <div className="flex items-center gap-3">
                         <span className={cn("text-xs font-medium", STATUS_STYLE[i.status])}>
-                          {INSPECTION_STATUS_LABELS[i.status]}
+                          {inspectionStatusLabel(lang, i.status)}
                         </span>
                         <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition group-hover:translate-x-0.5 group-hover:text-primary" />
                       </div>

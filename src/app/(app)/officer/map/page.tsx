@@ -8,7 +8,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OfficerMapPage() {
   await requireRole("food_officer");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const businesses = await db.business.findMany({
     include: { inspections: { orderBy: { completedAt: "desc" }, take: 1 } },
@@ -52,34 +52,34 @@ export default async function OfficerMapPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("map.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Colour-coded by aggregate risk. Click a district in the list to isolate it on the map.
+          {t("map.sub")}
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <KpiCard
-          label="Districts mapped"
+          label={t("map.districtsMapped")}
           value={districts.length}
           icon={MapIcon}
-          hint="6 Maharashtra districts"
+          hint={t("map.maharashtraHint")}
         />
         <KpiCard
-          label="Highest average risk"
+          label={t("map.highestAvg")}
           value={highestDistrict?.name ?? "—"}
           icon={AlertTriangle}
-          hint={`avg ${highestDistrict ? Math.round(highestDistrict.avgScore) : 0}`}
+          hint={t("map.avgHint", { n: String(highestDistrict ? Math.round(highestDistrict.avgScore) : 0) })}
           tone="danger"
         />
         <KpiCard
-          label="High-risk businesses"
+          label={t("map.highRiskBusinesses")}
           value={points.filter((p) => p.riskScore >= 51).length}
           icon={AlertTriangle}
-          hint="C/D tier on the map"
+          hint={t("map.cdTier")}
           tone="warning"
         />
       </div>
 
-      <MapView businesses={points} districts={districts} />
+      <MapView businesses={points} districts={districts} lang={lang} />
     </div>
   );
 }

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { RiskScoreBar, RiskBadge } from "@/components/risk-badge";
 import { categoryLabel, formatDate } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export interface BusinessRow {
@@ -46,10 +47,12 @@ export function BusinessTable({
   businesses,
   districts,
   categories,
+  lang,
 }: {
   businesses: BusinessRow[];
   districts: string[];
   categories: string[];
+  lang: Lang;
 }) {
   const [q, setQ] = useState("");
   const [district, setDistrict] = useState<string>("all");
@@ -58,6 +61,7 @@ export function BusinessTable({
   const [sortKey, setSortKey] = useState<SortKey>("riskScore");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const router = useRouter();
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -111,23 +115,23 @@ export function BusinessTable({
   return (
     <Card>
       <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle>All registered businesses</CardTitle>
+        <CardTitle>{t("biz.allBusinesses")}</CardTitle>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name or license…"
+              placeholder={t("biz.searchPlaceholder")}
               className="w-56 pl-8"
             />
           </div>
           <Select value={district} onValueChange={setDistrict}>
             <SelectTrigger className="w-36">
-              <SelectValue placeholder="District" />
+              <SelectValue placeholder={t("biz.district")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All districts</SelectItem>
+              <SelectItem value="all">{t("biz.allDistricts")}</SelectItem>
               {districts.map((d) => (
                 <SelectItem key={d} value={d}>
                   {d}
@@ -137,26 +141,26 @@ export function BusinessTable({
           </Select>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={t("biz.category")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("biz.allCategories")}</SelectItem>
               {categories.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {categoryLabel(c)}
+                  {categoryLabel(lang, c)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={tier} onValueChange={setTier}>
             <SelectTrigger className="w-28">
-              <SelectValue placeholder="Risk tier" />
+              <SelectValue placeholder={t("biz.riskTier")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All tiers</SelectItem>
-              {["A", "B", "C", "D"].map((t) => (
-                <SelectItem key={t} value={t}>
-                  Tier {t}
+              <SelectItem value="all">{t("biz.allTiers")}</SelectItem>
+              {["A", "B", "C", "D"].map((tier) => (
+                <SelectItem key={tier} value={tier}>
+                  {t("biz.tier", { t: tier })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -168,31 +172,31 @@ export function BusinessTable({
           <TableHeader>
             <TableRow>
               <TableHead>
-                <SortHeader label="Business" k="name" />
+                <SortHeader label={t("biz.business")} k="name" />
               </TableHead>
               <TableHead>
-                <SortHeader label="Risk score" k="riskScore" />
+                <SortHeader label={t("biz.riskScore")} k="riskScore" />
               </TableHead>
               <TableHead>
-                <SortHeader label="District" k="district" />
+                <SortHeader label={t("biz.district")} k="district" />
               </TableHead>
               <TableHead className="hidden md:table-cell">
-                <SortHeader label="Category" k="category" />
+                <SortHeader label={t("biz.category")} k="category" />
               </TableHead>
               <TableHead className="hidden lg:table-cell">
-                <SortHeader label="Last inspection" k="lastInspection" />
+                <SortHeader label={t("biz.lastInspection")} k="lastInspection" />
               </TableHead>
               <TableHead className="text-right">
-                <SortHeader label="Open complaints" k="openComplaints" />
+                <SortHeader label={t("kpi.open")} k="openComplaints" />
               </TableHead>
-              <TableHead className="hidden sm:table-cell">Status</TableHead>
+              <TableHead className="hidden sm:table-cell">{t("biz.status")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                  No businesses match the current filters.
+                  {t("biz.noMatch")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -224,7 +228,7 @@ export function BusinessTable({
                     <RiskScoreBar score={b.riskScore} />
                   </TableCell>
                   <TableCell>{b.district}</TableCell>
-                  <TableCell className="hidden md:table-cell">{categoryLabel(b.category)}</TableCell>
+                  <TableCell className="hidden md:table-cell">{categoryLabel(lang, b.category)}</TableCell>
                   <TableCell className="hidden text-muted-foreground lg:table-cell">
                     {formatDate(b.lastInspection)}
                   </TableCell>
@@ -249,7 +253,7 @@ export function BusinessTable({
           </TableBody>
         </Table>
         <p className="border-t px-4 py-2 text-xs text-muted-foreground">
-          {filtered.length} of {businesses.length} businesses · Scores recomputed by the explainable risk model
+          {t("biz.footerCount", { a: String(filtered.length), b: String(businesses.length) })} · {t("biz.footerModel")}
         </p>
       </CardContent>
     </Card>

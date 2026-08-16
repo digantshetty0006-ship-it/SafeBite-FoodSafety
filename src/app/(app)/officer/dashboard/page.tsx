@@ -4,7 +4,7 @@ import { BusinessTable } from "@/components/officer/business-table";
 import { KpiCard } from "@/components/kpi-card";
 import { AlertTriangle, Building2, ClipboardCheck, Megaphone, MessageSquareWarning, MapPin, User } from "lucide-react";
 import { requireRole } from "@/lib/auth";
-import { COMPLAINT_STATUS_LABELS, formatDateTime } from "@/lib/format";
+import { complaintStatusLabel, formatDateTime } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLang, tr } from "@/lib/lang";
@@ -12,7 +12,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OfficerDashboardPage() {
   await requireRole("food_officer");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const [
     total,
@@ -55,7 +55,7 @@ export default async function OfficerDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("dash.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {t("dash.sub")} — highest-risk businesses first.
+            {t("dash.sub")} {t("dash.subRisk")}
           </p>
         </div>
         <Link href="/officer/map" className="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
@@ -68,7 +68,7 @@ export default async function OfficerDashboardPage() {
           label={t("kpi.registered")}
           value={total.toLocaleString("en-IN")}
           icon={Building2}
-          hint={`${districts.length} districts`}
+          hint={t("kpi.districts", { n: String(districts.length) })}
         />
         <KpiCard
           label={t("kpi.highRisk")}
@@ -108,7 +108,7 @@ export default async function OfficerDashboardPage() {
         <CardContent className="space-y-2">
           {latestComplaints.length === 0 && (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              No open complaints right now.
+              {t("dash.noComplaints")}
             </p>
           )}
           {latestComplaints.map((c) => {
@@ -128,10 +128,10 @@ export default async function OfficerDashboardPage() {
                         </span>
                       </>
                     ) : (
-                      <span className="italic">Not linked to a business</span>
+                      <span className="italic">{t("common.unlinked")}</span>
                     )}
                     <span className="flex items-center gap-1">
-                      <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? "Anonymous" : c.citizen.name}
+                      <User className="h-3 w-3" /> {c.anonymous || !c.citizen ? t("common.anonymous") : c.citizen.name}
                     </span>
                     <span>{formatDateTime(c.createdAt)}</span>
                   </p>
@@ -149,7 +149,7 @@ export default async function OfficerDashboardPage() {
                   )}
                 </div>
                 <Badge variant="outline" className="shrink-0">
-                  {COMPLAINT_STATUS_LABELS[c.status]}
+                  {complaintStatusLabel(lang, c.status)}
                 </Badge>
               </div>
             );
@@ -179,6 +179,7 @@ export default async function OfficerDashboardPage() {
         }))}
         districts={districts.map((d) => d.district)}
         categories={categories.map((c) => c.category)}
+        lang={lang}
       />
     </div>
   );

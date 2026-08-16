@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { categoryLabel } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 interface BusinessHit {
@@ -26,14 +27,15 @@ const TIER_GRADE_STYLES: Record<string, string> = {
   D: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
 };
 
-const GRADE_NOTE: Record<string, string> = {
-  A: "Consistently compliant",
-  B: "Generally compliant",
-  C: "Needs improvement",
-  D: "High concern — avoid",
+const GRADE_NOTE_KEYS: Record<string, string> = {
+  A: "lookup.gradeA",
+  B: "lookup.gradeB",
+  C: "lookup.gradeC",
+  D: "lookup.gradeD",
 };
 
-export function LookupResults({ businesses }: { businesses: BusinessHit[] }) {
+export function LookupResults({ businesses, lang }: { businesses: BusinessHit[]; lang: Lang }) {
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const [q, setQ] = useState("");
   const results = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -43,22 +45,22 @@ export function LookupResults({ businesses }: { businesses: BusinessHit[] }) {
         (b) =>
           b.name.toLowerCase().includes(term) ||
           b.district.toLowerCase().includes(term) ||
-          categoryLabel(b.category).toLowerCase().includes(term)
+          categoryLabel(lang, b.category).toLowerCase().includes(term)
       )
       .slice(0, 20);
-  }, [q, businesses]);
+  }, [q, businesses, lang]);
 
   return (
     <div className="space-y-4">
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, district, or category…" className="pl-8" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("lookup.searchPlaceholder")} className="pl-8" />
       </div>
 
       {results.length === 0 ? (
         <Card>
           <CardContent className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-            No businesses found for &quot;{q}&quot;.
+            {t("lookup.noResults", { q })}
           </CardContent>
         </Card>
       ) : (
@@ -75,7 +77,7 @@ export function LookupResults({ businesses }: { businesses: BusinessHit[] }) {
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" /> {b.district}
                     </span>
-                    <span>{categoryLabel(b.category)}</span>
+                    <span>{categoryLabel(lang, b.category)}</span>
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
@@ -88,14 +90,14 @@ export function LookupResults({ businesses }: { businesses: BusinessHit[] }) {
                     >
                       {b.riskTier}
                     </div>
-                    <p className="mt-1 text-center text-[10px] text-muted-foreground">{GRADE_NOTE[b.riskTier]}</p>
+                    <p className="mt-1 text-center text-[10px] text-muted-foreground">{t(GRADE_NOTE_KEYS[b.riskTier] ?? "lookup.gradeD")}</p>
                   </div>
                   <Link
                     href={`/citizen/report?business=${encodeURIComponent(b.name)}`}
                     className="flex h-9 items-center gap-1 rounded-md border px-2.5 text-xs font-medium text-muted-foreground transition hover:border-red-300 hover:text-red-600"
-                    title="File a complaint against this business"
+                    title={t("lookup.reportTitle")}
                   >
-                    <Megaphone className="h-3.5 w-3.5" /> Report
+                    <Megaphone className="h-3.5 w-3.5" /> {t("lookup.report")}
                   </Link>
                 </div>
               </CardContent>
@@ -106,7 +108,7 @@ export function LookupResults({ businesses }: { businesses: BusinessHit[] }) {
 
       <div className="flex items-center gap-2 rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
         {q ? <ShieldCheck className="h-4 w-4 text-emerald-600" /> : <ShieldAlert className="h-4 w-4 text-amber-600" />}
-        Public grades are a simplified view. Regulators see the full risk breakdown.
+        {t("lookup.gradeNote")}
       </div>
     </div>
   );

@@ -49,7 +49,7 @@ export function UnsafeSpots({ businesses, limit = 5 }: { businesses: UnsafeBusin
   if (spots.length === 0) {
     return (
       <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-        No high-risk businesses flagged yet.
+        {t("news.noUnsafe")}
       </p>
     );
   }

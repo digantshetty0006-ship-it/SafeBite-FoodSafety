@@ -30,6 +30,13 @@ import {
   deleteDocumentAction,
 } from "@/app/(app)/owner/actions";
 import { formatDate } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
+
+const DOC_TYPE_KEYS: Record<string, string> = {
+  license: "own.typeLicense",
+  lab_certificate: "own.typeLab",
+  health_certificate: "own.typeHealth",
+};
 
 interface DocRow {
   id: string;
@@ -41,7 +48,8 @@ interface DocRow {
   expiresAt: Date | string | null;
 }
 
-export function DocumentsManager({ documents }: { documents: DocRow[] }) {
+export function DocumentsManager({ documents, lang }: { documents: DocRow[]; lang: Lang }) {
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const [open, setOpen] = useState(false);
   const [businessId, setBusinessId] = useState("");
   const [type, setType] = useState("");
@@ -62,9 +70,9 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
     setUploading(false);
     if (res.ok && res.url) {
       setFileUrl(res.url!);
-      toast.success("File staged — now fill in the details and save.");
+      toast.success(t("own.staged"));
     } else {
-      toast.error(res.error ?? "Upload failed");
+      toast.error(res.error ?? t("own.uploadFailed"));
     }
     if (fileRef.current) fileRef.current.value = "";
   };
@@ -82,27 +90,27 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Expired or missing documents directly increase your risk score — keep them current.
+          {t("own.docSub")}
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Upload className="mr-2 h-4 w-4" /> Upload document
+              <Upload className="mr-2 h-4 w-4" /> {t("own.uploadDoc")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Upload compliance document</DialogTitle>
+              <DialogTitle>{t("own.uploadTitle")}</DialogTitle>
               <DialogDescription>
-                License renewals, lab certificates, and staff health certificates.
+                {t("own.uploadDesc")}
               </DialogDescription>
             </DialogHeader>
             <form action={submit} className="space-y-4" onSubmit={() => setOpen(false)}>
               <div className="space-y-2">
-                <Label>Business</Label>
+                <Label>{t("own.business")}</Label>
                 <Select value={businessId} onValueChange={setBusinessId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select business" />
+                    <SelectValue placeholder={t("own.selectBusiness")} />
                   </SelectTrigger>
                   <SelectContent>
                     {businesses.map(([id, name]) => (
@@ -114,24 +122,24 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Document type</Label>
+                <Label>{t("own.docType")}</Label>
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={t("own.selectType")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="license">FSSAI License</SelectItem>
-                    <SelectItem value="lab_certificate">Lab Certificate</SelectItem>
-                    <SelectItem value="health_certificate">Staff Health Certificate</SelectItem>
+                    <SelectItem value="license">{t("own.typeLicense")}</SelectItem>
+                    <SelectItem value="lab_certificate">{t("own.typeLab")}</SelectItem>
+                    <SelectItem value="health_certificate">{t("own.typeHealth")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>File</Label>
+                <Label>{t("own.file")}</Label>
                 <input ref={fileRef} type="file" className="hidden" onChange={onUpload} />
                 <Button type="button" variant="outline" className="w-full" onClick={() => fileRef.current?.click()} disabled={uploading}>
                   {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                  {fileUrl ? "Change file" : uploading ? "Uploading…" : "Choose file"}
+                  {fileUrl ? t("own.changeFile") : uploading ? t("own.uploading") : t("own.chooseFile")}
                 </Button>
                 {fileUrl && (
                   <p className="break-all font-mono text-xs text-muted-foreground">{fileUrl}</p>
@@ -139,7 +147,7 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
               </div>
               <input type="hidden" name="fileUrl" value={fileUrl} />
               <div className="space-y-2">
-                <Label htmlFor="expiresAt">Expiry date (optional)</Label>
+                <Label htmlFor="expiresAt">{t("own.expiryOpt")}</Label>
                 <Input
                   id="expiresAt"
                   type="date"
@@ -150,7 +158,7 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={!businessId || !type || !fileUrl}>
-                  Save document
+                  {t("own.saveDoc")}
                 </Button>
               </DialogFooter>
             </form>
@@ -162,8 +170,8 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center">
             <FileText className="h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No documents uploaded</p>
-            <p className="text-sm text-muted-foreground">Upload licenses and certificates to keep your score healthy.</p>
+            <p className="mt-3 font-medium">{t("own.noDocs")}</p>
+            <p className="text-sm text-muted-foreground">{t("own.noDocsHint")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -178,12 +186,12 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
                       <FileText className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate font-medium capitalize">{d.type.replace(/_/g, " ")}</p>
+                      <p className="truncate font-medium capitalize">{t(DOC_TYPE_KEYS[d.type] ?? d.type.replace(/_/g, " "))}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {d.businessName} · uploaded {formatDate(d.uploadedAt)}
+                        {d.businessName} · {t("own.uploaded", { date: formatDate(d.uploadedAt) })}
                         {d.expiresAt && (
                           <span className="flex items-center gap-1">
-                            <CalendarClock className="h-3 w-3" /> expires {formatDate(d.expiresAt)}
+                            <CalendarClock className="h-3 w-3" /> {t("own.expires", { date: formatDate(d.expiresAt) })}
                           </span>
                         )}
                       </p>
@@ -192,14 +200,14 @@ export function DocumentsManager({ documents }: { documents: DocRow[] }) {
                   <div className="flex items-center gap-3">
                     {expired ? (
                       <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-950 dark:text-red-300">
-                        Expired
+                        {t("own.expired")}
                       </Badge>
                     ) : d.expiresAt ? (
                       <Badge variant="outline" className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                        Valid
+                        {t("own.valid")}
                       </Badge>
                     ) : (
-                      <Badge variant="outline">On file</Badge>
+                      <Badge variant="outline">{t("own.onFile")}</Badge>
                     )}
                     <form action={deleteDocumentAction}>
                       <input type="hidden" name="id" value={d.id} />

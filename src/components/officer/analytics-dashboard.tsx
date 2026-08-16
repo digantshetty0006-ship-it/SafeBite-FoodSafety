@@ -25,6 +25,7 @@ import Link from "next/link";
 import { RiskBadge } from "@/components/risk-badge";
 import { Badge } from "@/components/ui/badge";
 import type { OutbreakCluster } from "@/lib/network";
+import { tr, type Lang } from "@/lib/i18n";
 
 const TIER_COLORS: Record<string, string> = {
   A: "#10b981",
@@ -51,8 +52,9 @@ export interface AnalyticsData {
   topRisky: { id: string; name: string; score: number; district: string }[];
 }
 
-export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
+export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: Lang }) {
   const [networkTab, setNetworkTab] = useState<string>("all");
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const filteredNetworks = useMemo(
     () => (networkTab === "all" ? data.networks : data.networks.filter((n) => n.type === networkTab)),
@@ -64,10 +66,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-base">Inspection activity & violations (12 months)</CardTitle>
+            <CardTitle className="text-base">{t("an.inspectionActivity")}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Green area = inspections completed · red line = violations found. A widening gap to the right means
-              enforcement is working.
+              {t("an.activityHint")}
             </p>
           </CardHeader>
           <CardContent>
@@ -83,8 +84,8 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                 <XAxis dataKey="month" fontSize={11} />
                 <YAxis fontSize={11} allowDecimals={false} />
                 <Tooltip />
-                <Area type="monotone" dataKey="inspections" name="Inspections" stroke="#10b981" fill="url(#insp)" />
-                <Line type="monotone" dataKey="violations" name="Violations" stroke="#ef4444" strokeWidth={2} dot={false} />
+                <Area type="monotone" dataKey="inspections" name={t("an.seriesInspections")} stroke="#10b981" fill="url(#insp)" />
+                <Line type="monotone" dataKey="violations" name={t("an.seriesViolations")} stroke="#ef4444" strokeWidth={2} dot={false} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -92,9 +93,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-base">Complaints by business category</CardTitle>
+            <CardTitle className="text-base">{t("an.complaintsByCategory")}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Where citizens are actually feeling the problem — taller bar = that business type draws the most complaints.
+              {t("an.complaintsHint")}
             </p>
           </CardHeader>
           <CardContent>
@@ -104,7 +105,7 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                 <XAxis dataKey="category" fontSize={10} />
                 <YAxis fontSize={11} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" name="Complaints" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="count" name={t("an.seriesComplaints")} fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -112,10 +113,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-base">Average risk by district</CardTitle>
+            <CardTitle className="text-base">{t("an.avgRiskByDistrict")}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Mean 0–100 risk score per district, coloured red ≥ 75 · orange ≥ 51 · amber ≥ 26 · green below. Red =
-              where officers are needed first.
+              {t("an.avgRiskHint")}
             </p>
           </CardHeader>
           <CardContent>
@@ -125,7 +125,7 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                 <XAxis dataKey="district" fontSize={10} />
                 <YAxis fontSize={11} domain={[0, 100]} />
                 <Tooltip />
-                <Bar dataKey="avg" name="Avg risk" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="avg" name={t("an.seriesAvgRisk")} radius={[4, 4, 0, 0]}>
                   {data.riskByDistrict.map((d) => (
                     <Cell key={d.district} fill={d.avg >= 75 ? "#ef4444" : d.avg >= 51 ? "#f97316" : d.avg >= 26 ? "#f59e0b" : "#10b981"} />
                   ))}
@@ -137,10 +137,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
 
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-base">Risk tier distribution</CardTitle>
+            <CardTitle className="text-base">{t("an.riskTierDist")}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Share of all businesses per tier — A ≤ 25 · B 26–50 · C 51–75 · D 76–100. The C+D slices are the audit
-              priority.
+              {t("an.tierHint")}
             </p>
           </CardHeader>
           <CardContent>
@@ -162,10 +161,9 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
       {/* Severity by district */}
       <Card>
         <CardHeader className="pb-1">
-          <CardTitle className="text-base">Violation severity by district</CardTitle>
+          <CardTitle className="text-base">{t("an.severityByDistrict")}</CardTitle>
           <p className="text-xs text-muted-foreground">
-            Every violation found, stacked by severity — grey Low · amber Medium · orange High · red Critical. Few
-            critical violations beat many low ones for urgency.
+            {t("an.severityHint")}
           </p>
         </CardHeader>
         <CardContent>
@@ -176,10 +174,10 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
               <YAxis fontSize={11} allowDecimals={false} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="low" stackId="a" name="Low" fill={SEVERITY_COLOR.low} />
-              <Bar dataKey="medium" stackId="a" name="Medium" fill={SEVERITY_COLOR.medium} />
-              <Bar dataKey="high" stackId="a" name="High" fill={SEVERITY_COLOR.high} />
-              <Bar dataKey="critical" stackId="a" name="Critical" fill={SEVERITY_COLOR.critical} />
+              <Bar dataKey="low" stackId="a" name={t("sev.low")} fill={SEVERITY_COLOR.low} />
+              <Bar dataKey="medium" stackId="a" name={t("sev.medium")} fill={SEVERITY_COLOR.medium} />
+              <Bar dataKey="high" stackId="a" name={t("sev.high")} fill={SEVERITY_COLOR.high} />
+              <Bar dataKey="critical" stackId="a" name={t("sev.critical")} fill={SEVERITY_COLOR.critical} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -190,30 +188,27 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-bold">
-              <Link2 className="h-5 w-5 text-primary" /> Suspected outbreak networks
+              <Link2 className="h-5 w-5 text-primary" /> {t("an.networksTitle")}
             </h2>
             <p className="text-sm text-muted-foreground">
-              The point: when several businesses fail the same way at the same time, the cause is usually upstream — one
-              bad supplier or one local hotspot. Fix the network, and you fix every outlet in it at once.
+              {t("an.networksHint")}
             </p>
           </div>
           <Tabs value={networkTab} onValueChange={setNetworkTab}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="supplier">Shared supplier</TabsTrigger>
-              <TabsTrigger value="geo_pattern">Geo clusters</TabsTrigger>
+              <TabsTrigger value="all">{t("an.all")}</TabsTrigger>
+              <TabsTrigger value="supplier">{t("an.supplier")}</TabsTrigger>
+              <TabsTrigger value="geo_pattern">{t("an.geo")}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">Shared supplier</span> — businesses that buy from the same
-            supplier and log similar violations. Suspect the supplier, not just each outlet.
+            <span className="font-semibold text-foreground">{t("an.supplier")}</span> — {t("an.supplierDesc")}
           </div>
           <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
-            <span className="font-semibold text-foreground">Geo cluster</span> — businesses within ~8 km that logged the
-            same violation type in the last 45 days. Suspect a common local cause.
+            <span className="font-semibold text-foreground">{t("an.geo")}</span> — {t("an.geoDesc")}
           </div>
         </div>
 
@@ -221,8 +216,8 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
           <Card>
             <CardContent className="flex h-40 flex-col items-center justify-center text-center">
               <AlertTriangle className="h-10 w-10 text-muted-foreground" />
-              <p className="mt-3 font-medium">No networks detected</p>
-              <p className="text-sm text-muted-foreground">Try the supplier filter or inspect the data more closely.</p>
+              <p className="mt-3 font-medium">{t("an.noNetworks")}</p>
+              <p className="text-sm text-muted-foreground">{t("an.noPatterns")}</p>
             </CardContent>
           </Card>
         ) : (
@@ -234,11 +229,11 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                     <div>
                       <h3 className="font-semibold">{n.label}</h3>
                       <p className="text-xs text-muted-foreground">
-                        {n.businesses.length} businesses · confidence {(n.confidence * 100).toFixed(0)}%
+                        {t("an.networkSummary", { n: String(n.businesses.length), c: (n.confidence * 100).toFixed(0) })}
                       </p>
                     </div>
                     <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                      {n.type === "supplier" ? "Supplier" : "Geo pattern"}
+                      {n.type === "supplier" ? t("an.typeSupplier") : t("an.typeGeo")}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">{n.description}</p>
@@ -246,14 +241,14 @@ export function AnalyticsDashboard({ data }: { data: AnalyticsData }) {
                     {n.businesses.map((id) => (
                       <Link key={id} href={`/officer/business/${id}`}>
                         <Badge variant="secondary" className="hover:bg-accent">
-                          {data.businessNames[id] ?? "Business"}
+                          {data.businessNames[id] ?? t("biz.business")}
                         </Badge>
                       </Link>
                     ))}
                   </div>
                   {n.violations.length > 0 && (
                     <div className="space-y-1 border-t pt-2">
-                      <p className="text-xs font-medium text-muted-foreground">Shared findings</p>
+                      <p className="text-xs font-medium text-muted-foreground">{t("an.sharedFindings")}</p>
                       {n.violations.slice(0, 6).map((v, i) => (
                         <p key={i} className="flex items-center gap-2 text-xs">
                           <span className="h-2 w-2 rounded-full" style={{ background: SEVERITY_COLOR[v.severity] }} />

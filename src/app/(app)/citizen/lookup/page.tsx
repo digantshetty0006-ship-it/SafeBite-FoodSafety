@@ -9,7 +9,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function CitizenLookupPage() {
   await requireRole("citizen");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   const businesses = await db.business.findMany({
     select: {
@@ -29,24 +29,23 @@ export default async function CitizenLookupPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("lookup.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Search registered food businesses and view their public safety grade. Grades hide the exact score to keep the
-          system fair — A is best, D needs attention.
+          {t("lookup.sub")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Find a business</CardTitle>
+          <CardTitle className="text-base">{t("lookup.findBusiness")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search by name, district, or category…" className="pl-8" />
+            <Input placeholder={t("lookup.searchPlaceholder")} className="pl-8" />
           </div>
         </CardContent>
       </Card>
 
-      <LookupResults businesses={businesses} />
+      <LookupResults businesses={businesses} lang={lang} />
     </div>
   );
 }

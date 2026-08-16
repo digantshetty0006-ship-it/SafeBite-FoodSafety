@@ -10,7 +10,7 @@ export default async function CitizenReportPage({
 }) {
   await requireRole("citizen");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const { business } = await searchParams;
   const businesses = await db.business.findMany({
     select: { id: true, name: true, district: true, category: true },
@@ -22,10 +22,10 @@ export default async function CitizenReportPage({
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("report.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Help keep your community safe. Reports are reviewed by food safety officers and can trigger an inspection.
+          {t("report.sub")}
         </p>
       </div>
-      <ReportForm businesses={businesses} initialBusiness={business ?? ""} />
+      <ReportForm businesses={businesses} initialBusiness={business ?? ""} lang={lang} />
     </div>
   );
 }

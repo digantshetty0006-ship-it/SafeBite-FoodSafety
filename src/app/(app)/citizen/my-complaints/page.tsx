@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTime, COMPLAINT_STATUS_LABELS } from "@/lib/format";
+import { formatDateTime, complaintStatusLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { reference } from "@/lib/complaints";
 import { getLang, tr } from "@/lib/lang";
@@ -20,7 +20,7 @@ export default async function CitizenComplaintsPage({
 }) {
   const citizen = await requireRole("citizen");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const { submitted } = await searchParams;
 
   const [complaints] = await Promise.all([
@@ -38,10 +38,9 @@ export default async function CitizenComplaintsPage({
     <div className="mx-auto max-w-3xl space-y-6">
       {submitted === "1" && (
         <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-          <p className="font-medium">Complaint submitted successfully.</p>
+          <p className="font-medium">{t("my.submittedOk")}</p>
           <p className="mt-1">
-            It was auto-assigned to a Food Safety Officer and given a reference number. Track progress, the assigned
-            officer, and auto-escalation below.
+            {t("my.submittedHint")}
           </p>
         </div>
       )}
@@ -50,14 +49,14 @@ export default async function CitizenComplaintsPage({
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{t("my.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Follow each report from submission through resolution — with the officer assigned and SLA clock running.
+            {t("my.sub")}
           </p>
         </div>
         <a
           href="tel:1800222365"
           className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-primary"
         >
-          <PhoneCall className="h-4 w-4" /> Helpline 1800-222-365
+          <PhoneCall className="h-4 w-4" /> {t("my.helpline")}
         </a>
       </div>
 
@@ -65,8 +64,8 @@ export default async function CitizenComplaintsPage({
         <Card>
           <CardContent className="flex h-48 flex-col items-center justify-center text-center">
             <Megaphone className="h-10 w-10 text-muted-foreground" />
-            <p className="mt-3 font-medium">No complaints yet</p>
-            <p className="text-sm text-muted-foreground">Reports you submit will appear here with live status.</p>
+            <p className="mt-3 font-medium">{t("my.noComplaints")}</p>
+            <p className="text-sm text-muted-foreground">{t("my.empty")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -82,7 +81,7 @@ export default async function CitizenComplaintsPage({
               c.assignedOfficer ?? { name: "Food Safety Officer", district: null };
             const pdfData: ComplaintPdfData = {
               reference: reference(c.id),
-              statusLabel: COMPLAINT_STATUS_LABELS[c.status] ?? c.status,
+              statusLabel: complaintStatusLabel(lang, c.status),
               filedAt: formatDateTime(c.createdAt),
               description: c.description,
               businessName: c.business?.name ?? null,
@@ -105,10 +104,10 @@ export default async function CitizenComplaintsPage({
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-mono text-xs text-muted-foreground">{reference(c.id)}</p>
-                      <Badge variant="outline">{COMPLAINT_STATUS_LABELS[c.status]}</Badge>
+                      <Badge variant="outline">{complaintStatusLabel(lang, c.status)}</Badge>
                       {overdue && (
                         <Badge className="bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-950 dark:text-red-300">
-                          <AlertOctagon className="mr-1 h-3 w-3" /> Escalated
+                          <AlertOctagon className="mr-1 h-3 w-3" /> {t("my.escalatedBadge")}
                         </Badge>
                       )}
                     </div>
@@ -139,7 +138,7 @@ export default async function CitizenComplaintsPage({
                     <div className="flex items-center gap-2">
                       <UserCheck className="h-4 w-4 shrink-0 text-primary" />
                       <div className="text-xs">
-                        <p className="text-muted-foreground">Assigned officer</p>
+                        <p className="text-muted-foreground">{t("my.assignedOfficer")}</p>
                         <p className="font-medium">
                           {officer.name}
                           {officer.district ? ` · ${officer.district}` : ""}
@@ -149,10 +148,10 @@ export default async function CitizenComplaintsPage({
                     <div className="flex items-center gap-2">
                       <Clock className={cn("h-4 w-4 shrink-0", overdue ? "text-red-500" : "text-muted-foreground")} />
                       <div className="text-xs">
-                        <p className="text-muted-foreground">SLA deadline</p>
+                        <p className="text-muted-foreground">{t("my.slaDeadline")}</p>
                         <p className={cn("font-medium", overdue && "text-red-600")}>
                           {formatDateTime(slaDeadline)}
-                          {!resolved && (overdue ? " · overdue" : ` · ${daysLeft}d left`)}
+                          {!resolved && (overdue ? t("my.overdueSuffix") : t("my.daysLeft", { n: String(daysLeft) }))}
                         </p>
                       </div>
                     </div>
@@ -160,10 +159,9 @@ export default async function CitizenComplaintsPage({
 
                   {overdue && (
                     <div className="mt-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:bg-red-950 dark:text-red-300">
-                      <p className="font-medium">Auto-escalated to the Deputy Commissioner</p>
+                      <p className="font-medium">{t("my.escalated")}</p>
                       <p className="mt-0.5">
-                        The SLA for this complaint was exceeded. It has been escalated automatically for accountability —
-                        this mirrors the FDA&apos;s auto-escalation policy.
+                        {t("my.escalatedBody")}
                       </p>
                     </div>
                   )}
@@ -188,7 +186,7 @@ export default async function CitizenComplaintsPage({
                                 <Icon className="h-4 w-4" />
                               </div>
                               <span className="mt-1 hidden text-[10px] text-muted-foreground sm:block">
-                                {COMPLAINT_STATUS_LABELS[s]}
+                                {complaintStatusLabel(lang, s)}
                               </span>
                             </div>
                             {i < STEPS.length - 1 && (

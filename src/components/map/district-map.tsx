@@ -7,6 +7,7 @@ import "leaflet/dist/leaflet.css";
 import { Search, X, CornerDownLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categoryLabel, formatDate } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
 import { RiskBadge } from "@/components/risk-badge";
 import Link from "next/link";
 
@@ -51,15 +52,18 @@ function FlyToController({ target }: { target: { lat: number; lng: number; zoom:
 export function DistrictMap({
   businesses,
   districts,
+  lang,
 }: {
   businesses: MapBusiness[];
   districts: DistrictAgg[];
+  lang: Lang;
 }) {
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [query, setQuery] = useState("");
   const [flyTarget, setFlyTarget] = useState<{ lat: number; lng: number; zoom: number } | null>(null);
   const markerRefs = useRef(new Map<string, LeafletCircleMarker>());
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
 
   useEffect(() => setReady(true), []);
 
@@ -102,7 +106,7 @@ export function DistrictMap({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search business, district, category…"
+            placeholder={t("map.searchPlaceholder")}
             className="flex h-10 w-full rounded-lg border bg-background pl-8 pr-8 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           {query && (
@@ -139,7 +143,7 @@ export function DistrictMap({
         )}
         {query && matches.length === 0 && (
           <p className="rounded-lg border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-            No businesses match &quot;{query}&quot;.
+            {t("map.noMatch", { q: query })}
           </p>
         )}
 
@@ -155,8 +159,8 @@ export function DistrictMap({
           )}
         >
           <div>
-            <p className="font-medium">All districts</p>
-            <p className="text-xs text-muted-foreground">{businesses.length} businesses</p>
+            <p className="font-medium">{t("biz.allDistricts")}</p>
+            <p className="text-xs text-muted-foreground">{t("map.businessCount", { n: String(businesses.length) })}</p>
           </div>
           <span className="font-mono text-sm font-semibold">—</span>
         </button>
@@ -182,18 +186,18 @@ export function DistrictMap({
                   <p className="font-medium">{d.name}</p>
                 </div>
                 <p className="mt-0.5 pl-5 text-xs text-muted-foreground">
-                  {d.count} businesses · {d.critical} high-risk
+                  {t("map.districtSummary", { n: String(d.count), m: String(d.critical) })}
                 </p>
               </div>
               <span className="font-mono text-sm font-semibold tabular-nums">{Math.round(d.avgScore)}</span>
             </button>
           ))}
         <div className="rounded-lg border p-3">
-          <p className="text-xs font-medium text-muted-foreground">Colour scale</p>
+          <p className="text-xs font-medium text-muted-foreground">{t("map.colourScale")}</p>
           <div className="mt-2 h-2 rounded-full bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500" />
           <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
-            <span>Low risk</span>
-            <span>High risk</span>
+            <span>{t("map.lowRisk")}</span>
+            <span>{t("map.highRisk")}</span>
           </div>
         </div>
       </div>
@@ -224,7 +228,7 @@ export function DistrictMap({
                   <Tooltip direction="top" opacity={1}>
                     <strong>{d.name}</strong>
                     <br />
-                    Avg risk {Math.round(d.avgScore)} · {d.count} businesses
+                    {t("map.avgRiskTooltip", { r: String(Math.round(d.avgScore)), n: String(d.count) })}
                   </Tooltip>
                 </CircleMarker>
               ))}
@@ -242,18 +246,18 @@ export function DistrictMap({
                 <Tooltip direction="top" opacity={1}>
                   <strong>{b.name}</strong>
                   <br />
-                  Risk {Math.round(b.riskScore)} · {categoryLabel(b.category)}
+                  {t("map.riskTooltip", { r: String(Math.round(b.riskScore)), cat: categoryLabel(lang, b.category) })}
                 </Tooltip>
                 <Popup>
                   <div className="min-w-40 space-y-1">
                     <p className="font-semibold">{b.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {categoryLabel(b.category)} · {b.district}
+                      {categoryLabel(lang, b.category)} · {b.district}
                     </p>
                     <RiskBadge score={b.riskScore} />
-                    <p className="pt-1 text-xs text-muted-foreground">Last inspection: {formatDate(b.lastInspection)}</p>
+                    <p className="pt-1 text-xs text-muted-foreground">{t("map.lastInspection", { d: formatDate(b.lastInspection) })}</p>
                     <Link href={`/officer/business/${b.id}`} className="block pt-1 text-xs font-medium text-primary hover:underline">
-                      Open profile →
+                      {t("map.openProfile")}
                     </Link>
                   </div>
                 </Popup>

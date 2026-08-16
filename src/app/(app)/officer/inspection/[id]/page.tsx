@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth";
 import { InspectionForm } from "@/components/officer/inspection-form";
 import { RiskBadge } from "@/components/risk-badge";
 import { categoryLabel, formatDateTime } from "@/lib/format";
+import { getLang, tr } from "@/lib/lang";
 
 export default async function InspectionPage({
   params,
@@ -15,6 +16,8 @@ export default async function InspectionPage({
   searchParams: Promise<{ done?: string }>;
 }) {
   const officer = await requireRole("food_officer");
+  const lang = await getLang();
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const { id } = await params;
   const { done } = await searchParams;
 
@@ -38,12 +41,12 @@ export default async function InspectionPage({
           href="/officer/queue"
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to queue
+          <ArrowLeft className="h-4 w-4" /> {t("insp.backToQueue")}
         </Link>
         <div className="flex items-center gap-2">
           <RiskBadge score={inspection.business.riskScore} />
           <span className="text-xs text-muted-foreground">
-            scheduled {formatDateTime(inspection.scheduledAt)}
+            {t("insp.scheduledOn", { d: formatDateTime(inspection.scheduledAt) })}
           </span>
         </div>
       </div>
@@ -58,7 +61,7 @@ export default async function InspectionPage({
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" /> {inspection.business.address}
             </span>
-            <span>{categoryLabel(inspection.business.category)}</span>
+            <span>{categoryLabel(lang, inspection.business.category)}</span>
             <span className="font-mono">Lic. {inspection.business.licenseNumber}</span>
           </p>
         </div>
@@ -73,6 +76,7 @@ export default async function InspectionPage({
         initialPhotos={inspection.photos && inspection.photos !== "[]" ? JSON.parse(inspection.photos) : null}
         initialAiSummary={inspection.aiSummary}
         completed={completed}
+        lang={lang}
       />
     </div>
   );

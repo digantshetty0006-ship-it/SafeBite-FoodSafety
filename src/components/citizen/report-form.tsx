@@ -29,6 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { uploadComplaintPhotoAction, submitComplaintAction } from "@/app/(app)/citizen/actions";
 import { categoryLabel } from "@/lib/format";
+import { tr, type Lang } from "@/lib/i18n";
 import { draftComplaint } from "@/lib/ai-report";
 import { analyzeEvidenceImage, aggregateEvidence, type AnalysisLevel, type EvidenceAnalysis } from "@/lib/food-image-analysis";
 import type { PickedPlace } from "@/components/citizen/map-picker";
@@ -62,7 +63,8 @@ interface AnalysisState extends EvidenceAnalysis {
   rationale?: string;
 }
 
-export function ReportForm({ businesses, initialBusiness = "" }: { businesses: BusinessHit[]; initialBusiness?: string }) {
+export function ReportForm({ businesses, initialBusiness = "", lang }: { businesses: BusinessHit[]; initialBusiness?: string; lang: Lang }) {
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [anonymous, setAnonymous] = useState(false);
@@ -138,7 +140,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("Only image files are allowed.");
+      toast.error(t("cit.onlyImages"));
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
@@ -146,7 +148,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
     try {
       const dataUrl = await downscaleImage(file, 1280, 0.82);
       if (dataUrl.length > 1_500_000) {
-        toast.error("Image too large. Try a smaller photo.");
+        toast.error(t("cit.imageTooLarge"));
         return;
       }
       const fd = new FormData();
@@ -155,10 +157,10 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
       if (res.ok && res.url) {
         setPhotos((p) => [...p, res.url!]);
       } else {
-        toast.error(res.error ?? "Upload failed");
+        toast.error(res.error ?? t("cit.uploadFailed"));
       }
     } catch {
-      toast.error("Could not read that image. Try a different photo.");
+      toast.error(t("cit.readFail"));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -167,13 +169,13 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
   const draftWithAi = () => {
     if (!description.trim()) {
-      toast.error("Describe what happened first, then we'll structure it.");
+      toast.error(t("cit.describeFirst"));
       return;
     }
     const d = draftComplaint(description, selected?.name);
     setDescription(d.body);
     setDraft({ type: d.type, severity: d.severity });
-    toast.success("AI structured your complaint into points.");
+    toast.success(t("cit.structured"));
   };
 
   const startVoice = () => {
@@ -184,7 +186,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
     const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
     if (!Ctor) {
       setSpeechSupported(false);
-      toast.error("Voice input is not supported in this browser. Please type your complaint.");
+      toast.error(t("cit.voiceUnsupported"));
       return;
     }
     const rec = new Ctor();
@@ -194,7 +196,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
     rec.onend = () => setListening(false);
     rec.onerror = () => {
       setListening(false);
-      toast.error("Could not hear you. Please type your complaint instead.");
+      toast.error(t("cit.voiceFail"));
     };
     rec.onresult = (e: SpeechRecognitionEventLike) => {
       const transcript = e.results[0][0].transcript;
@@ -207,7 +209,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (photos.length === 0) {
-      toast.error("Please attach at least one photo — it helps the officer verify your complaint.");
+      toast.error(t("cit.photoRequired"));
       return;
     }
     const fd = new FormData(e.currentTarget);
@@ -226,12 +228,12 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Megaphone className="h-4 w-4 text-primary" /> Tell us what happened
+            <Megaphone className="h-4 w-4 text-primary" /> {t("cit.tellUs")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Which business? (optional)</Label>
+            <Label>{t("cit.whichBusiness")}</Label>
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -240,7 +242,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
                   setQuery(e.target.value);
                   if (businessId) setBusinessId(null);
                 }}
-                placeholder="Search business name or area…"
+                placeholder={t("cit.businessPlaceholder")}
                 className="pl-8"
               />
             </div>
@@ -258,7 +260,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
                   >
                     <span className="font-medium">{b.name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {categoryLabel(b.category)} · {b.district}
+                      {categoryLabel(lang, b.category)} · {b.district}
                     </span>
                   </button>
                 ))}
@@ -278,21 +280,21 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
           <div className="space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label htmlFor="description">Describe the issue *</Label>
+              <Label htmlFor="description">{t("cit.describe")}</Label>
               <div className="flex items-center gap-2">
                 <Button type="button" size="sm" variant="outline" onClick={startVoice} disabled={!speechSupported}>
                   {listening ? (
                     <>
-                      <MicOff className="mr-1.5 h-3.5 w-3.5 animate-pulse text-red-500" /> Listening…
+                      <MicOff className="mr-1.5 h-3.5 w-3.5 animate-pulse text-red-500" /> {t("cit.listening")}
                     </>
                   ) : (
                     <>
-                      <Mic className="mr-1.5 h-3.5 w-3.5" /> Speak
+                      <Mic className="mr-1.5 h-3.5 w-3.5" /> {t("cit.speak")}
                     </>
                   )}
                 </Button>
                 <Button type="button" size="sm" variant="outline" onClick={draftWithAi}>
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" /> Draft with AI
+                  <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" /> {t("cit.draftAi")}
                 </Button>
               </div>
             </div>
@@ -306,14 +308,13 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
                 setDescription(e.target.value);
                 setDraft(null);
               }}
-              placeholder="Speak or type loosely — e.g. 'Ate at the shop last night, got sick, fridge items looked stale and expired' — then tap Draft with AI to structure it."
+              placeholder={t("cit.descPlaceholder")}
             />
             {draft && (
               <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>
-                  AI classified this as <strong>{draft.type}</strong> (severity: {draft.severity}). Edit the draft above if
-                  needed.
+                  {t("cit.draftNote", { type: draft.type, sev: draft.severity })}
                 </span>
                 <button type="button" onClick={() => setDraft(null)} className="ml-auto text-muted-foreground hover:text-foreground">
                   <X className="h-3.5 w-3.5" />
@@ -321,15 +322,14 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              Type or speak in English, Hindi, or Marathi. Our rule-based assistant structures it for the Food Safety
-              Officer.
+              {t("cit.languageHint")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Photo evidence *</Label>
+            <Label>{t("cit.photoEvidence")}</Label>
             <p className="text-xs text-muted-foreground">
-              At least one photo is required — it helps the officer verify your complaint.
+              {t("cit.photoHint")}
             </p>
             <div className="flex flex-wrap gap-2">
               {photos.map((p, i) => (
@@ -348,7 +348,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
             <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>
               {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-              {uploading ? "Uploading…" : "Add photo"}
+              {uploading ? t("cit.uploading") : t("cit.addPhoto")}
             </Button>
           </div>
 
@@ -362,21 +362,20 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
               disabled={analyzing || photos.length === 0}
             >
               {analyzing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanSearch className="mr-2 h-4 w-4 text-primary" />}
-              {analyzing ? "Analysing evidence…" : "Analyse Evidence"}
+              {analyzing ? t("cit.analysing") : t("cit.analyse")}
             </Button>
             <p className="text-xs text-muted-foreground">
-              On-device AI inspects sharpness, lighting, colour and texture to flag possible contamination and hygiene
-              risks before you submit.
+              {t("cit.analyseHint")}
             </p>
 
             {analysis && !analyzing && (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
                 <div className="flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-sm font-semibold">
-                    <Sparkles className="h-4 w-4 text-primary" /> AI preliminary assessment
+                    <Sparkles className="h-4 w-4 text-primary" /> {t("cit.preliminary")}
                   </p>
                   <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                    {analysis.engine === "vision" ? (analysis.model ? analysis.model : "Vision model") : "On-device analysis"}
+                    {analysis.engine === "vision" ? (analysis.model ? analysis.model : t("cit.visionModel")) : t("cit.onDevice")}
                   </span>
                 </div>
                 {analysis.rationale && (
@@ -385,17 +384,17 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Possible visible contamination</span>
+                    <span className="text-muted-foreground">{t("cit.possibleContamination")}</span>
                     <LevelPill level={analysis.contamination} />
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Possible hygiene violation</span>
+                    <span className="text-muted-foreground">{t("cit.possibleHygiene")}</span>
                     <LevelPill level={analysis.hygiene} />
                   </div>
                   <div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="flex items-center gap-1.5 text-muted-foreground">
-                        <Gauge className="h-3.5 w-3.5" /> Evidence quality
+                        <Gauge className="h-3.5 w-3.5" /> {t("cit.evidenceQuality")}
                       </span>
                       <span className="font-semibold">{analysis.evidenceQuality}%</span>
                     </div>
@@ -410,10 +409,10 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
                 <div className="mt-3 space-y-1">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Detected indicators
+                    {t("cit.indicators")}
                   </p>
                   {analysis.indicators.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No specific indicators detected in the visible scene.</p>
+                    <p className="text-sm text-muted-foreground">{t("cit.noIndicators")}</p>
                   ) : (
                     <ul className="space-y-1">
                       {analysis.indicators.map((i) => (
@@ -428,12 +427,10 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
                 <div className="mt-3 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
                   <p className="flex items-center gap-1.5 font-semibold">
-                    <ShieldAlert className="h-3.5 w-3.5 shrink-0" /> AI output is advisory. Final determination requires an
-                    authorised inspection.
+                    <ShieldAlert className="h-3.5 w-3.5 shrink-0" /> {t("cit.advisoryTitle")}
                   </p>
                   <p className="mt-1 text-amber-700 dark:text-amber-300/70">
-                    Automated image analysis assists triage only. A Food Safety Officer&apos;s on-site inspection under the
-                    Food Safety and Standards Act, 2006 remains the definitive assessment.
+                    {t("cit.advisoryBody")}
                   </p>
                 </div>
               </div>
@@ -442,8 +439,8 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <p className="text-sm font-medium">Report anonymously</p>
-              <p className="text-xs text-muted-foreground">We will not share your identity with the business.</p>
+              <p className="text-sm font-medium">{t("cit.reportAnonymously")}</p>
+              <p className="text-xs text-muted-foreground">{t("cit.anonymousHint")}</p>
             </div>
             <Switch checked={anonymous} onCheckedChange={setAnonymous} />
           </div>
@@ -454,7 +451,7 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Location</CardTitle>
+            <CardTitle className="text-base">{t("cit.location")}</CardTitle>
           </CardHeader>
           <CardContent>
             <MapPicker lat={lat} lng={lng} onPick={(a, b, place) => {
@@ -471,13 +468,13 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
               <Phone className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium">Prefer to talk to someone?</p>
+              <p className="text-sm font-medium">{t("cit.helpTitle")}</p>
               <p className="text-xs text-muted-foreground">
                 Toll-free helpline{" "}
                 <a href="tel:1800222365" className="font-semibold text-primary hover:underline">
                   1800-222-365
                 </a>{" "}
-                · 24×7, all days
+                {t("cit.hours")}
               </p>
             </div>
           </CardContent>
@@ -485,11 +482,11 @@ export function ReportForm({ businesses, initialBusiness = "" }: { businesses: B
 
         <Button type="submit" size="lg" className="w-full" disabled={submitting}>
           {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Megaphone className="mr-2 h-4 w-4" />}
-          Submit complaint
+          {t("cit.submit")}
         </Button>
 
         <p className="flex items-center gap-2 text-center text-xs text-muted-foreground">
-          <RefreshCcw className="h-3.5 w-3.5" /> Track progress, assigned officer and escalation online after submission.
+          <RefreshCcw className="h-3.5 w-3.5" /> {t("cit.trackHint")}
         </p>
       </div>
     </form>

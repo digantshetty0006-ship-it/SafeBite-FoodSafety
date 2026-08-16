@@ -6,7 +6,7 @@ import { getLang, tr } from "@/lib/lang";
 export default async function OwnerDocumentsPage({ searchParams }: { searchParams: Promise<{ added?: string }> }) {
   const owner = await requireRole("business_owner");
   const lang = await getLang();
-  const t = (k: string) => tr(lang, k);
+  const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
   await searchParams;
 
   const businesses = await db.business.findMany({
@@ -23,10 +23,10 @@ export default async function OwnerDocumentsPage({ searchParams }: { searchParam
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{t("docs.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Upload renewals, lab certificates, and staff health certificates.
+          {t("docs.sub")}
         </p>
       </div>
-      <DocumentsManager documents={documents} />
+      <DocumentsManager documents={documents} lang={lang} />
     </div>
   );
 }
