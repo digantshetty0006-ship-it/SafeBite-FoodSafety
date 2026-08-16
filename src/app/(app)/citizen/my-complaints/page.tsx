@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { reference } from "@/lib/complaints";
 import { getLang, tr } from "@/lib/lang";
 import { ComplaintPdf, type ComplaintPdfData } from "@/components/citizen/complaint-pdf";
+import { DeleteComplaintButton } from "@/components/citizen/delete-complaint-button";
 
 const STEPS = ["submitted", "under_review", "inspection_scheduled", "resolved"];
 const STEP_ICONS = [Megaphone, FileSearch, ClipboardCheck, CheckCircle2];
@@ -16,12 +17,12 @@ const SLA_DAYS = 7;
 export default async function CitizenComplaintsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ submitted?: string }>;
+  searchParams: Promise<{ submitted?: string; deleted?: string }>;
 }) {
   const citizen = await requireRole("citizen");
   const lang = await getLang();
   const t = (k: string, vars?: Record<string, string>) => tr(lang, k, vars);
-  const { submitted } = await searchParams;
+  const { submitted, deleted } = await searchParams;
 
   const [complaints] = await Promise.all([
     db.complaint.findMany({
@@ -42,6 +43,13 @@ export default async function CitizenComplaintsPage({
           <p className="mt-1">
             {t("my.submittedHint")}
           </p>
+        </div>
+      )}
+
+      {deleted === "1" && (
+        <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950 dark:text-red-300">
+          <p className="font-medium">{t("my.deletedOk")}</p>
+          <p className="mt-1">{t("my.deletedHint")}</p>
         </div>
       )}
 
@@ -115,6 +123,7 @@ export default async function CitizenComplaintsPage({
                     <div className="flex items-center gap-2">
                       <p className="text-xs text-muted-foreground">{formatDateTime(c.createdAt)}</p>
                       <ComplaintPdf data={pdfData} label={t("my.pdf")} lang={lang} />
+                      <DeleteComplaintButton id={c.id} lang={lang} />
                     </div>
                   </div>
 

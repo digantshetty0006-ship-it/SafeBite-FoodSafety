@@ -32,9 +32,11 @@ export interface ComplaintPdfData {
 const W = 2480;
 const H = 3508;
 const PAD = 120;
-const CONTENT_TOP = 380;
+const BAND_H = 480;
+const CONTENT_TOP = 700;
 const FOOTER_H = 240;
 const EMERALD = "#047857";
+const GOLD = "#f59e0b";
 const FONT = "'Noto Sans Devanagari', 'Nirmala UI', 'Segoe UI', system-ui, sans-serif";
 
 function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
@@ -76,28 +78,61 @@ function drawField(
   value: string,
   maxWidth: number
 ): number {
-  ctx.font = `700 26px ${FONT}`;
-  ctx.fillStyle = "#a3a3a3";
+  ctx.font = `700 24px ${FONT}`;
+  ctx.fillStyle = "#6b7280";
   const lw = Math.min(ctx.measureText(label).width, 600);
   ctx.fillText(label, PAD, y);
-  ctx.font = `400 32px ${FONT}`;
-  ctx.fillStyle = "#262626";
+  ctx.font = `400 30px ${FONT}`;
+  ctx.fillStyle = "#1f2937";
   const lines = wrapLines(ctx, value, maxWidth - lw - 32);
-  lines.forEach((ln, i) => ctx.fillText(ln, PAD + lw + 32, y + i * 48));
-  return y + lines.length * 48;
+  lines.forEach((ln, i) => ctx.fillText(ln, PAD + lw + 32, y + i * 46));
+  ctx.strokeStyle = "#f3f4f6";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(PAD, y + lines.length * 46 + 14);
+  ctx.lineTo(W - PAD, y + lines.length * 46 + 14);
+  ctx.stroke();
+  return y + lines.length * 46;
 }
 
 function drawSection(ctx: CanvasRenderingContext2D, y: number, text: string): number {
-  ctx.font = `700 24px ${FONT}`;
-  ctx.fillStyle = "#a3a3a3";
-  ctx.fillText(text.toUpperCase(), PAD, y);
+  ctx.fillStyle = GOLD;
+  roundRect(ctx, PAD, y + 10, 90, 7, 3);
+  ctx.fill();
+  ctx.font = `700 26px ${FONT}`;
+  ctx.fillStyle = "#374151";
+  ctx.fillText(text.toUpperCase(), PAD + 124, y);
   ctx.strokeStyle = "#e5e5e5";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(PAD, y + 44);
   ctx.lineTo(W - PAD, y + 44);
   ctx.stroke();
-  return y + 72;
+  return y + 80;
+}
+
+function drawBox(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  label: string,
+  value: string
+): void {
+  roundRect(ctx, x, y, w, h, 16);
+  ctx.fillStyle = "#ecfdf5";
+  ctx.fill();
+  ctx.strokeStyle = "#a7f3d0";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.font = `700 22px ${FONT}`;
+  ctx.fillStyle = EMERALD;
+  ctx.fillText(label.toUpperCase(), x + 36, y + 30);
+  ctx.font = `400 28px ${FONT}`;
+  ctx.fillStyle = "#065f46";
+  const lines = wrapLines(ctx, value, w - 72);
+  lines.forEach((ln, i) => ctx.fillText(ln, x + 36, y + 82 + i * 46));
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
@@ -152,6 +187,13 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         )
       );
 
+      const logoImg = logo ?? (await new Promise<HTMLImageElement | null>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = "/logo-white.png";
+      }));
+
       const pages: HTMLCanvasElement[] = [];
       const contexts: CanvasRenderingContext2D[] = [];
       let y = 0;
@@ -167,35 +209,50 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         pages.push(c);
         contexts.push(x);
         y = withHeader ? CONTENT_TOP : 160;
+
+        // subtle page frame
+        x.strokeStyle = "#d1fae5";
+        x.lineWidth = 4;
+        roundRect(x, 24, 24, W - 48, H - 48, 24);
+        x.stroke();
+
         if (!withHeader) return;
-        // Header band
-        x.fillStyle = EMERALD;
-        x.fillRect(0, 0, W, 300);
-        // Logo + brand
-        if (logo) {
-          const lh = 104;
-          const lw = (logo.naturalWidth / logo.naturalHeight) * lh;
-          x.drawImage(logo, PAD, 52, lw, lh);
-          x.fillStyle = "#ffffff";
-          x.font = `800 64px ${FONT}`;
-          x.fillText("SafeBite", PAD + lw + 44, 62);
+
+        // Header band — emerald gradient, logo centred, no wordmark
+        const band = x.createLinearGradient(0, 0, 0, BAND_H);
+        band.addColorStop(0, "#059669");
+        band.addColorStop(1, "#047857");
+        x.fillStyle = band;
+        x.fillRect(0, 0, W, BAND_H);
+        x.globalAlpha = 0.3;
+        x.fillStyle = "#a7f3d0";
+        x.fillRect(0, BAND_H - 8, W, 8);
+        x.globalAlpha = 1;
+        if (logoImg) {
+          const lh = 150;
+          const lw = (logoImg.naturalWidth / logoImg.naturalHeight) * lh;
+          x.drawImage(logoImg, (W - lw) / 2, (BAND_H - lh) / 2 - 20, lw, lh);
         } else {
           x.fillStyle = "#ffffff";
-          x.font = `800 64px ${FONT}`;
-          x.fillText("SafeBite", PAD, 62);
+          x.font = `800 90px ${FONT}`;
+          x.textAlign = "center";
+          x.fillText("✓", W / 2, (BAND_H - 90) / 2 - 20);
+          x.textAlign = "left";
         }
-        x.font = `400 30px ${FONT}`;
-        x.fillText(dlT("pdf.title"), PAD, 150);
-        x.font = `400 26px ${FONT}`;
-        x.globalAlpha = 0.85;
-        x.fillText(dlT("pdf.subtitle"), PAD, 196);
-        x.globalAlpha = 1;
-        x.textAlign = "right";
-        x.font = `400 26px ${FONT}`;
-        x.fillText(data.filedAt, W - PAD, 60);
-        x.font = `700 34px ${FONT}`;
-        x.fillText(dlT("pdf.receipt"), W - PAD, 104);
+
+        // Centred title block below the band
+        x.textAlign = "center";
+        x.font = `700 44px ${FONT}`;
+        x.fillStyle = "#111827";
+        x.fillText(dlT("pdf.receipt"), W / 2, BAND_H + 62);
+        x.font = `400 28px ${FONT}`;
+        x.fillStyle = "#6b7280";
+        x.fillText(dlT("pdf.subtitle"), W / 2, BAND_H + 138);
+        x.fillStyle = GOLD;
+        roundRect(x, W / 2 - 70, BAND_H + 194, 140, 8, 4);
+        x.fill();
         x.textAlign = "left";
+        y = CONTENT_TOP;
       };
 
       const fit = (h: number) => {
@@ -262,34 +319,39 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
       if (location) fields.push([dlT("pdf.location"), location]);
       for (const [labelText, value] of fields) {
         const lines = wrapLines(ctx(), value, fieldWidth);
-        fit(Math.max(60, lines.length * 48));
+        fit(Math.max(60, lines.length * 46));
         y = drawField(ctx(), y, labelText, value, fieldWidth);
         y += 20;
       }
 
-      // Description
+      // Description (boxed)
       fit(80);
       y = drawSection(ctx(), y, dlT("pdf.description")) - 16;
-      ctx().font = `400 32px ${FONT}`;
-      ctx().fillStyle = "#262626";
-      for (const ln of wrapLines(ctx(), data.description, fieldWidth)) {
-        fit(52);
-        ctx().fillText(ln, PAD, y);
-        y += 52;
-      }
-      y += 12;
+      const descLines = wrapLines(ctx(), data.description, fieldWidth - 100);
+      const boxH = descLines.length * 52 + 80;
+      fit(boxH);
+      roundRect(ctx(), PAD, y, fieldWidth, boxH, 16);
+      ctx().fillStyle = "#fafafa";
+      ctx().fill();
+      ctx().strokeStyle = "#f0f0f0";
+      ctx().lineWidth = 2;
+      ctx().stroke();
+      ctx().font = `400 30px ${FONT}`;
+      ctx().fillStyle = "#374151";
+      descLines.forEach((ln, i) => ctx().fillText(ln, PAD + 50, y + 40 + i * 52));
+      y += boxH + 36;
 
-      // Photos (aspect-preserving)
+      // Photos (rounded, aspect-preserving, captioned)
       if (photos.length) {
         fit(80);
         y = drawSection(ctx(), y, dlT("pdf.evidence", { n: String(photos.length) })) - 16;
         const pw = 680;
-        const ph = 510;
+        const ph = 495;
         const gap = 40;
         const perRow = 2;
         for (let i = 0; i < photos.length; i++) {
           const col = i % perRow;
-          if (col === 0) fit(ph);
+          if (col === 0) fit(ph + 70);
           const x = PAD + col * (pw + gap);
           const iw = photos[i].naturalWidth || 1;
           const ih = photos[i].naturalHeight || 1;
@@ -298,16 +360,28 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
           const dh = ih * scale;
           const dx = x + (pw - dw) / 2;
           const dy = y + (ph - dh) / 2;
+          ctx().save();
+          roundRect(ctx(), x, y, pw, ph, 12);
+          ctx().clip();
+          ctx().fillStyle = "#f3f4f6";
+          ctx().fillRect(x, y, pw, ph);
+          ctx().drawImage(photos[i], dx, dy, dw, dh);
+          ctx().restore();
           ctx().strokeStyle = "#e5e5e5";
           ctx().lineWidth = 2;
-          ctx().strokeRect(x, y, pw, ph);
-          ctx().drawImage(photos[i], dx, dy, dw, dh);
-          if (col === perRow - 1 || i === photos.length - 1) y += ph + 28;
+          roundRect(ctx(), x, y, pw, ph, 12);
+          ctx().stroke();
+          ctx().font = `400 22px ${FONT}`;
+          ctx().fillStyle = "#9ca3af";
+          ctx().textAlign = "center";
+          ctx().fillText(dlT("pdf.photo", { n: String(i + 1) }), x + pw / 2, y + ph + 26);
+          ctx().textAlign = "left";
+          if (col === perRow - 1 || i === photos.length - 1) y += ph + 70;
         }
-        y += 20;
+        y += 16;
       }
 
-      // Accountability
+      // Accountability (side-by-side boxes)
       fit(80);
       y = drawSection(ctx(), y, dlT("pdf.accountability")) - 16;
       const slaNote = dlT(
@@ -318,68 +392,84 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
             : "my.daysLeft",
         data.slaStatus === "pending" ? { n: String(data.slaDaysLeft) } : undefined
       ).replace(/^ · /, "");
-      const acc: Array<[string, string]> = [
-        [dlT("pdf.officer"), data.officerName + (data.officerDistrict ? ` (${data.officerDistrict})` : "")],
-        [dlT("pdf.sla"), `${data.slaDeadline}  ·  ${slaNote}`],
-      ];
-      for (const [labelText, value] of acc) {
-        const lines = wrapLines(ctx(), value, fieldWidth);
-        fit(Math.max(60, lines.length * 48));
-        y = drawField(ctx(), y, labelText, value, fieldWidth);
-        y += 20;
-      }
+      const officerVal = data.officerName + (data.officerDistrict ? ` (${data.officerDistrict})` : "");
+      const slaVal = `${data.slaDeadline}  ·  ${slaNote}`;
+      const boxW = (fieldWidth - 40) / 2;
+      ctx().font = `400 28px ${FONT}`;
+      const officerH = Math.max(190, wrapLines(ctx(), officerVal, boxW - 72).length * 46 + 120);
+      const slaH = Math.max(190, wrapLines(ctx(), slaVal, boxW - 72).length * 46 + 120);
+      const hh = Math.max(officerH, slaH);
+      fit(hh);
+      drawBox(ctx(), PAD, y, boxW, hh, dlT("pdf.officer"), officerVal);
+      drawBox(ctx(), PAD + boxW + 40, y, boxW, hh, dlT("pdf.sla"), slaVal);
+      y += hh + 36;
+
       if (data.overdue) {
-        fit(60);
-        ctx().font = `700 30px ${FONT}`;
+        fit(160);
+        roundRect(ctx(), PAD, y, fieldWidth, 140, 16);
+        ctx().fillStyle = "#fef2f2";
+        ctx().fill();
+        ctx().strokeStyle = "#fecaca";
+        ctx().lineWidth = 2;
+        ctx().stroke();
+        ctx().font = `700 26px ${FONT}`;
         ctx().fillStyle = "#be123c";
-        ctx().fillText(dlT("pdf.overdueMsg"), PAD, y);
-        y += 68;
+        ctx().fillText(dlT("pdf.overdueMsg"), PAD + 40, y + 46);
+        y += 176;
       }
 
-      // How to track
+      // How to track (checklist)
       fit(80);
       y = drawSection(ctx(), y, dlT("pdf.howToTrack")) - 16;
-      ctx().font = `400 30px ${FONT}`;
+      ctx().font = `400 28px ${FONT}`;
+      ctx().fillStyle = "#059669";
+      ctx().fillText("✓", PAD, y);
       ctx().fillStyle = "#404040";
-      for (const ln of wrapLines(ctx(), dlT("pdf.trackBody", { email: data.citizenEmail }), fieldWidth)) {
-        fit(48);
-        ctx().fillText(ln, PAD, y);
-        y += 48;
-      }
+      const trackLines = wrapLines(ctx(), dlT("pdf.trackBody", { email: data.citizenEmail }), fieldWidth - 100);
+      trackLines.forEach((ln, i) => {
+        fit(46);
+        ctx().fillText(ln, PAD + 100, y + i * 46);
+      });
+      y += trackLines.length * 46 + 10;
 
       // Footer on the last page
       if (y > H - FOOTER_H - 40) newPage(false);
       const f = contexts[pages.length - 1];
-      f.fillStyle = "#f5f5f5";
+      f.fillStyle = "#fafafa";
       f.fillRect(0, H - FOOTER_H, W, FOOTER_H);
-      f.strokeStyle = "#e5e5e5";
-      f.lineWidth = 2;
-      f.beginPath();
-      f.moveTo(0, H - FOOTER_H);
-      f.lineTo(W, H - FOOTER_H);
-      f.stroke();
+      f.fillStyle = "#a7f3d0";
+      f.fillRect(0, H - FOOTER_H, W, 6);
       f.font = `400 26px ${FONT}`;
       f.fillStyle = "#737373";
       f.textAlign = "left";
-      f.fillText(dlT("pdf.helpline"), PAD, H - FOOTER_H + 44);
+      f.fillText(dlT("pdf.helpline"), PAD, H - FOOTER_H + 52);
       f.textAlign = "right";
-      f.fillText(dlT("pdf.generated"), W - PAD, H - FOOTER_H + 44);
+      f.fillText(dlT("pdf.generated"), W - PAD, H - FOOTER_H + 52);
       f.textAlign = "left";
       f.font = `400 24px ${FONT}`;
-      f.fillText(dlT("pdf.disclaimer"), PAD, H - FOOTER_H + 92);
+      f.fillText(dlT("pdf.disclaimer"), PAD, H - FOOTER_H + 104);
       f.textAlign = "right";
       f.fillText(
         `${dlT("pdf.refLabel")} ${data.reference} · ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`,
         W - PAD,
-        H - FOOTER_H + 92
+        H - FOOTER_H + 104
       );
       f.textAlign = "left";
+      // bottom accent bar
+      const bar = f.createLinearGradient(0, H - 14, W, H);
+      bar.addColorStop(0, "#059669");
+      bar.addColorStop(1, "#047857");
+      f.fillStyle = bar;
+      f.fillRect(0, H - 14, W, 14);
 
-      // Assemble PDF
+      // Assemble PDF — scale the 2480x3508 canvas down to the A4 page
+      // (2480/3508 matches 595/842 exactly, so nothing is cropped or stretched).
       const doc = new jsPDF({ orientation: "portrait", unit: "px", format: "a4", hotfixes: ["px_scaling"] });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
       pages.forEach((c, i) => {
         if (i > 0) doc.addPage("a4", "portrait");
-        doc.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, W, H, undefined, "FAST");
+        doc.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, pageW, pageH, undefined, "FAST");
       });
       doc.save(`${data.reference}-complaint-${dl}.pdf`);
     } finally {

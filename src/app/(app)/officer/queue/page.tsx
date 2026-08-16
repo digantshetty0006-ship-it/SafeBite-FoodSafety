@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { ClipboardList, CheckCircle2, MapPin, Megaphone, Clock, Users, User } from "lucide-react";
+import { ClipboardList, CheckCircle2, MapPin, Megaphone, Clock, Users, User, Maximize2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,6 +111,11 @@ export default async function OfficerQueuePage() {
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/officer/complaint/${c.id}`}>
+                        <Maximize2 className="mr-1.5 h-3.5 w-3.5" /> {t("queue.viewFull")}
+                      </Link>
+                    </Button>
                     {c.status === "submitted" && (
                       <form action={updateComplaintStatusAction}>
                         <input type="hidden" name="id" value={c.id} />
@@ -188,6 +193,11 @@ export default async function OfficerQueuePage() {
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/officer/complaint/${c.id}`}>
+                        <Maximize2 className="mr-1.5 h-3.5 w-3.5" /> {t("queue.viewFull")}
+                      </Link>
+                    </Button>
                     {c.status === "submitted" && (
                       <form action={updateComplaintStatusAction}>
                         <input type="hidden" name="id" value={c.id} />

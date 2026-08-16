@@ -428,8 +428,8 @@ export function DistrictMap({
                               {t("map.openProfile")}
                             </Link>
                           )}
-                          <Link href="/officer/history" className="text-xs font-medium text-primary hover:underline">
-                            {t("map.openHistory")}
+                          <Link href={`/officer/complaint/${c.id}`} className="text-xs font-medium text-primary hover:underline">
+                            {t("map.viewComplaint")}
                           </Link>
                         </div>
                       </div>
