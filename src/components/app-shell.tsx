@@ -1,4 +1,5 @@
 ﻿import { redirect } from "next/navigation";
+import Image from "next/image";
 import { getSessionUser } from "@/lib/auth";
 import {
   LayoutDashboard,
@@ -12,7 +13,6 @@ import {
   Search,
   FolderOpen,
   Lightbulb,
-  ShieldCheck,
   LogOut,
   Menu,
   X,
@@ -114,8 +114,8 @@ function SidebarNav({
 
       <aside className="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r bg-background transition-transform peer-checked/nav:translate-x-0 lg:translate-x-0">
         <div className={cn("flex h-16 items-center gap-2 border-b px-5 bg-gradient-to-r text-white", ROLE_ACCENT[role])}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/20">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5">
+            <Image src="/logo-mark.png" alt="SafeBite" width={256} height={256} className="h-full w-full object-cover" />
           </div>
           <div className="leading-tight">
             <p className="text-sm font-semibold">SafeBite</p>

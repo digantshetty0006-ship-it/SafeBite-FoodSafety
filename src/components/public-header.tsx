@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ShieldCheck, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useLocale } from "@/components/locale-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeSwitcher } from "@/components/theme-switcher";
@@ -25,8 +26,8 @@ export function PublicHeader({ lang }: { lang: Lang }) {
     <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-sm">
-            <ShieldCheck className="h-5 w-5" />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5">
+            <Image src="/logo-mark.png" alt="SafeBite" width={256} height={256} className="h-full w-full object-cover" />
           </span>
           <span className="hidden leading-tight sm:block">
             <span className="block text-[15px] font-bold tracking-tight">SafeBite</span>

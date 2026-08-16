@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ShieldCheck, PhoneCall } from "lucide-react";
+import Image from "next/image";
+import { PhoneCall } from "lucide-react";
 import { tr, type Lang } from "@/lib/i18n";
 
 export function PublicFooter({ lang }: { lang: Lang }) {
@@ -10,11 +11,8 @@ export function PublicFooter({ lang }: { lang: Lang }) {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <span className="text-[15px] font-bold tracking-tight">SafeBite</span>
+            <div className="flex w-fit items-center gap-2.5 rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5">
+              <Image src="/logo.png" alt="SafeBite" width={760} height={281} className="h-9 w-auto" />
             </div>
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">{t("home.footMocked")}</p>
           </div>
