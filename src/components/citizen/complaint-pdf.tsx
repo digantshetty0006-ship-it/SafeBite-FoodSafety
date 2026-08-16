@@ -240,16 +240,13 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         }
         x.font = `400 38px ${FONT}`;
         x.fillStyle = "#d1fae5";
-        x.fillText(dlT("pdf.tagline"), logoX, 330);
+        x.fillText(dlT("pdf.tagline"), logoX, 294);
 
         // Right-aligned authority block
         x.textAlign = "right";
         x.font = `700 32px ${FONT}`;
         x.fillStyle = "#ffffff";
         x.fillText(dlT("pdf.authority"), W - PAD - 60, 140);
-        x.fillStyle = GOLD;
-        roundRect(x, W - PAD - 60 - 160, 168, 160, 7, 3);
-        x.fill();
         x.font = `400 30px ${FONT}`;
         x.fillStyle = "#d1fae5";
         x.fillText(dlT("pdf.state"), W - PAD - 60, 212);
