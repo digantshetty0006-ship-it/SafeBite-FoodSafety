@@ -209,12 +209,17 @@ const dict: Record<string, [string, string, string]> = {
     "केवळ अन्न सुरक्षा अधिकारी, अधिकारी आणि डेमो खात्यांसाठी. सामान्य अभ्यागत SafeBite मुक्तपणे ब्राउझ करू शकतात.",
   ],
   "login.demoAccounts": ["Demo accounts — tap to fill", "डेमो खाते — भरने के लिए टैप करें", "डेमो खाती — भरण्यासाठी टॅप करा"],
-  "login.manualTitle": ["Sign in with email", "ईमेल से साइन इन करें", "ईमेलने साइन इन करा"],
+  "login.manualTitle": ["Sign in with email or login ID", "ईमेल या लॉगिन आईडी से साइन इन करें", "ईमेल किंवा लॉगिन आयडीने साइन इन करा"],
   "login.manualDesc": [
     "Use any demo account — password is",
     "कोई भी डेमो खाता उपयोग करें — पासवर्ड है",
     "कोणतेही डेमो खाते वापरा — पासवर्ड आहे",
   ],
+  "login.teamAccounts": ["Team login IDs — one account per member per role", "टीम लॉगिन आईडी — प्रत्येक सदस्य के लिए हर भूमिका में एक खाता", "टीम लॉगिन आयडी — प्रत्येक सदस्यासाठी प्रत्येक भूमिकेत एक खाते"],
+  "login.teamHint": ["Password for every team account is", "हर टीम खाते का पासवर्ड है", "प्रत्येक टीम खात्याचा पासवर्ड आहे"],
+  "login.idCit": ["Citizen", "नागरिक", "नागरिक"],
+  "login.idInsp": ["Officer", "अधिकारी", "अधिकारी"],
+  "login.idBiz": ["Business", "व्यवसाय", "व्यवसाय"],
 
   // ---- shell ----
   "shell.hOfficer": ["Food Safety Command Center", "खाद्य सुरक्षा कमांड सेंटर", "अन्न सुरक्षा कमांड सेंटर"],
@@ -325,6 +330,7 @@ const dict: Record<string, [string, string, string]> = {
   "cat.meat_poultry": ["Meat / Poultry", "मांस / पोल्ट्री", "मांस / पोल्ट्री"],
   "cat.bakery": ["Bakery", "बेकरी", "बेकरी"],
   "cat.catering": ["Catering", "कैटरिंग", "कॅटरिंग"],
+  "cat.cafe": ["Cafe", "कैफ़े", "कॅफे"],
   "cat.packaged_retail": ["Packaged Retail", "पैकेज्ड रिटेल", "पॅकेज्ड रिटेल"],
   "status.submitted": ["Submitted", "जमा", "सादर"],
   "status.under_review": ["Under Review", "समीक्षा में", "पुनरावलोकनाधीन"],

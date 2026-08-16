@@ -19,15 +19,16 @@ export default function LoginForm() {
       <form action={loginAction} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            Email or login ID
           </label>
           <input
             id="email"
             name="email"
-            type="email"
-            placeholder="officer@demo.in"
+            type="text"
+            placeholder="citdigantshetty or officer@demo.in"
             defaultValue={prefillEmail}
             required
+            autoComplete="username"
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>

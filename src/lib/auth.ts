@@ -88,7 +88,10 @@ export async function requireRole(...roles: string[]) {
   return user;
 }
 
-export async function loginUser(email: string, password: string): Promise<User | null> {
+export async function loginUser(emailOrId: string, password: string): Promise<User | null> {
+  // Accept both full emails (officer@demo.in) and bare login IDs
+  // (citdigantshetty -> citdigantshetty@demo.in)
+  const email = emailOrId.includes("@") ? emailOrId : `${emailOrId}@demo.in`;
   const user = await db.user.findUnique({ where: { email } });
   if (!user) return null;
   if (user.password !== password) return null;

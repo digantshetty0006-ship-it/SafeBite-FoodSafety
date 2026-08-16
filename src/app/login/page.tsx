@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { ShieldCheck, ArrowLeft, Landmark, Megaphone, Building2, ClipboardEdit } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Landmark, Megaphone, Building2, ClipboardEdit, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { loginAction } from "../(auth)/actions";
 import { DEMO_USERS, getSessionUser, ROLE_HOME } from "@/lib/auth";
@@ -15,6 +15,15 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
   citizen: Megaphone,
   business_owner: Building2,
 };
+
+const TEAM = [
+  { name: "Digant Shetty", cit: "citdigantshetty", insp: "inspdigantshetty", biz: "bizdigantshetty" },
+  { name: "Sejal Phadtare", cit: "citsejalphadtare", insp: "inspsejalphadtare", biz: "bizsejalphadtare" },
+  { name: "Sharanya Shivshankar", cit: "citsharanyashivshankar", insp: "inspsharanyashivshankar", biz: "bizsharanyashivshankar" },
+  { name: "Manit Suvarna", cit: "citmanitsuvarna", insp: "inspmanitsuvarna", biz: "bizmanitsuvarna" },
+  { name: "Paritosh Bagade", cit: "citparitoshbagade", insp: "inspparitoshbagade", biz: "bizparitoshbagade" },
+  { name: "Sarthak Mane", cit: "citsarthakmane", insp: "inspsarthakmane", biz: "bizsarthakmane" },
+];
 
 export default async function LoginPage() {
   const lang = await getLang();
@@ -67,6 +76,37 @@ export default async function LoginPage() {
               );
             })}
           </div>
+
+          <details className="group mt-4 rounded-xl border border-white/20 bg-white/10 backdrop-blur">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-4 text-white [&::-webkit-details-marker]:hidden">
+              <div>
+                <p className="text-sm font-medium">{t("login.teamAccounts")}</p>
+                <p className="mt-0.5 text-xs text-emerald-50/70">
+                  {t("login.teamHint")} <code className="rounded bg-white/15 px-1">demo1234</code>
+                </p>
+              </div>
+              <ChevronDown className="h-4 w-4 shrink-0 text-emerald-50/50 transition group-open:rotate-180" />
+            </summary>
+            <div className="divide-y divide-white/10 border-t border-white/10">
+              {TEAM.map((m) => (
+                <div key={m.name} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-xs">
+                  <p className="w-40 shrink-0 font-medium text-white">{m.name}</p>
+                  <span className="text-emerald-50/60">{t("login.idCit")}:</span>
+                  <a href={`/login?email=${m.cit}&password=demo1234`} className="font-mono text-emerald-100/80 hover:text-white">
+                    {m.cit}
+                  </a>
+                  <span className="text-emerald-50/60">{t("login.idInsp")}:</span>
+                  <a href={`/login?email=${m.insp}&password=demo1234`} className="font-mono text-emerald-100/80 hover:text-white">
+                    {m.insp}
+                  </a>
+                  <span className="text-emerald-50/60">{t("login.idBiz")}:</span>
+                  <a href={`/login?email=${m.biz}&password=demo1234`} className="font-mono text-emerald-100/80 hover:text-white">
+                    {m.biz}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
 
         {/* Manual login */}

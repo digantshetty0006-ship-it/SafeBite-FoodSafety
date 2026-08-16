@@ -91,11 +91,8 @@ export default async function CitizenComplaintsPage({
               officerName: officer.name,
               officerDistrict: officer.district ?? null,
               slaDeadline: formatDateTime(slaDeadline),
-              slaNote: resolved
-                ? t("my.slaResolved")
-                : overdue
-                  ? t("my.slaOverdue")
-                  : t("my.daysLeft", { n: String(daysLeft) }).replace(/^ · /, ""),
+              slaStatus: resolved ? "resolved" : overdue ? "overdue" : "pending",
+              slaDaysLeft: daysLeft,
               overdue,
               photos: c.photos === "[]" ? [] : JSON.parse(c.photos),
               citizenName: citizen.name,

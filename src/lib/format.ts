@@ -46,6 +46,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   meat_poultry: "Meat / Poultry",
   bakery: "Bakery",
   catering: "Catering",
+  cafe: "Cafe",
   packaged_retail: "Packaged Retail",
 };
 
