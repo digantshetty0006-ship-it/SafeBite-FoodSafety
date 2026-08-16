@@ -4,6 +4,7 @@ import { KpiCard } from "@/components/kpi-card";
 import { AlertTriangle, Map as MapIcon } from "lucide-react";
 import MapView from "@/components/map/map-view";
 import { getLang, tr } from "@/lib/lang";
+import { reference } from "@/lib/complaints";
 
 export default async function OfficerMapPage() {
   await requireRole("food_officer");
@@ -12,6 +13,13 @@ export default async function OfficerMapPage() {
 
   const businesses = await db.business.findMany({
     include: { inspections: { orderBy: { completedAt: "desc" }, take: 1 } },
+  });
+
+  const complaints = await db.complaint.findMany({
+    where: { lat: { not: null }, lng: { not: null } },
+    include: { business: { select: { id: true, name: true, district: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 250,
   });
 
   const points = businesses.map((b) => ({
@@ -24,6 +32,24 @@ export default async function OfficerMapPage() {
     category: b.category,
     lastInspection: b.inspections[0]?.completedAt ?? b.inspections[0]?.scheduledAt ?? null,
   }));
+
+  const SLA_MS = 7 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const complaintPoints = complaints
+    .filter((c) => c.lat !== null && c.lng !== null)
+    .map((c) => ({
+      id: c.id,
+      reference: reference(c.id),
+      status: c.status,
+      description: c.description,
+      lat: c.lat as number,
+      lng: c.lng as number,
+      createdAt: c.createdAt,
+      escalated: c.status !== "resolved" && now - c.createdAt.getTime() > SLA_MS,
+      businessId: c.business?.id ?? null,
+      businessName: c.business?.name ?? null,
+      businessDistrict: c.business?.district ?? null,
+    }));
 
   const byDistrict = new Map<string, { total: number; count: number; critical: number; lat: number; lng: number }>();
   for (const b of businesses) {
@@ -79,7 +105,7 @@ export default async function OfficerMapPage() {
         />
       </div>
 
-      <MapView businesses={points} districts={districts} lang={lang} />
+      <MapView businesses={points} districts={districts} complaints={complaintPoints} lang={lang} />
     </div>
   );
 }

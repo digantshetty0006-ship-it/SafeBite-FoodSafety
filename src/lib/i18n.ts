@@ -631,6 +631,28 @@ const dict: Record<string, [string, string, string]> = {
   "pdf.disclaimer": ["This is a system-generated receipt for citizen reference and is not a legal document.", "यह नागरिक संदर्भ के लिए एक सिस्टम-जनित रसीद है और कानूनी दस्तावेज़ नहीं है।", "हे नागरिक संदर्भासाठी सिस्टम-निर्मित पावती आहे आणि कायदेशीर कागदपत्र नाही."],
   "pdf.downloading": ["Generating…", "बन रहा है…", "तयार होत आहे…"],
 
+  // ---- officer map: complaint layer ----
+  "map.layersTitle": ["Layers", "परतें", "स्तर"],
+  "map.layerBusinesses": ["Businesses", "व्यवसाय", "व्यवसाय"],
+  "map.layerComplaints": ["Complaints", "शिकायतें", "तक्रारी"],
+  "map.layerBoth": ["Both", "दोनों", "दोन्ही"],
+  "map.filterAll": ["All", "सभी", "सर्व"],
+  "map.complaintLegend": ["Complaint status", "शिकायत स्थिति", "तक्रार स्थिती"],
+  "map.filedOn": ["Filed {d}", "दर्ज: {d}", "दाखल: {d}"],
+  "map.openHistory": ["View complaint list", "शिकायत सूची देखें", "तक्रार यादी पहा"],
+  "map.escalatedBadge": ["Escalated", "एस्केलेटेड", "वाढवले"],
+  "map.unknownBusiness": ["Unlinked complaint", "अनलिंक्ड शिकायत", "अनलिंक्ड तक्रार"],
+
+  // ---- citizen map picker ----
+  "pick.searchPlaceholder": ["Search area, landmark or business…", "क्षेत्र, लैंडमार्क या व्यवसाय खोजें…", "क्षेत्र, खूण किंवा व्यवसाय शोधा…"],
+  "pick.find": ["Find", "खोजें", "शोधा"],
+  "pick.noMatch": ["No matching place found. Try a different area or landmark.", "कोई मिलता-जुलता स्थान नहीं मिला। कोई और क्षेत्र या लैंडमार्क आज़माएं।", "जुळणारे ठिकाण सापडले नाही. दुसरे क्षेत्र किंवा खूण वापरून पहा."],
+  "pick.searchUnavailable": ["Search unavailable. Check your connection and try again.", "खोज उपलब्ध नहीं है। अपना कनेक्शन जांचें और फिर कोशिश करें।", "शोध उपलब्ध नाही. तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा."],
+  "pick.resolving": ["Resolving address for the pin…", "पिन के लिए पता निर्धारित किया जा रहा है…", "पिनसाठी पत्ता निश्चित केला जात आहे…"],
+  "pick.resolved": ["Address resolved from the pin", "पिन से पता मिल गया", "पिनवरून पत्ता मिळाला"],
+  "pick.districtRoutes": ["District: {d} — complaint routes to the officer covering this area", "जिला: {d} — शिकायत इस क्षेत्र के अधिकारी को जाएगी", "जिल्हा: {d} — तक्रार या भागाच्या अधिकाऱ्याकडे जाईल"],
+  "pick.clickHint": ["Click the map or search to pin the location.", "स्थान पिन करने के लिए नक्शे पर क्लिक करें या खोजें।", "स्थान पिन करण्यासाठी नकाशावर क्लिक करा किंवा शोधा."],
+
   // ---- lookup ----
   "lookup.findBusiness": ["Find a business", "व्यवसाय खोजें", "व्यवसाय शोधा"],
   "lookup.sub": ["Search registered food businesses and view their public safety grade. Grades hide the exact score to keep the system fair — A is best, D needs attention.", "पंजीकृत खाद्य व्यवसाय खोजें और उनका सार्वजनिक सुरक्षा ग्रेड देखें। ग्रेड सटीक स्कोर छिपाते हैं — A सर्वोत्तम, D को ध्यान चाहिए।", "नोंदणीकृत अन्न व्यवसाय शोधा आणि त्यांचा सार्वजनिक सुरक्षा ग्रेड पहा. ग्रेड अचूक गुण लपवतात — A सर्वोत्तम, D ला लक्ष हवे."],

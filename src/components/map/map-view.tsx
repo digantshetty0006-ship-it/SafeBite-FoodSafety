@@ -7,6 +7,8 @@ const DistrictMap = dynamic(() => import("./district-map").then((m) => m.Distric
   ssr: false,
 });
 
-export default function MapView(props: { businesses: any[]; districts: any[]; lang: Lang }) {
-  return <DistrictMap businesses={props.businesses} districts={props.districts} lang={props.lang} />;
+export default function MapView(props: { businesses: any[]; districts: any[]; complaints?: any[]; lang: Lang }) {
+  return (
+    <DistrictMap businesses={props.businesses} districts={props.districts} complaints={props.complaints} lang={props.lang} />
+  );
 }

@@ -43,7 +43,7 @@ interface SpeechRecognitionEventLike {
 }
 
 interface SpeechRecognitionLike {
-  lang: string;
+  lang: Lang;
   interimResults: boolean;
   onstart: (() => void) | null;
   onend: (() => void) | null;
@@ -190,7 +190,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
       return;
     }
     const rec = new Ctor();
-    rec.lang = "en-IN";
+    (rec as { lang: string }).lang = "en-IN";
     rec.interimResults = false;
     rec.onstart = () => setListening(true);
     rec.onend = () => setListening(false);
@@ -454,7 +454,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
             <CardTitle className="text-base">{t("cit.location")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <MapPicker lat={lat} lng={lng} onPick={(a, b, place) => {
+            <MapPicker lat={lat} lng={lng} lang={lang} onPick={(a, b, place) => {
               setLat(a);
               setLng(b);
               setPicked(place && place.address ? place : null);
