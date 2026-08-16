@@ -23,6 +23,7 @@ import { getLang, tr } from "@/lib/lang";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { logoutAction } from "@/app/(auth)/actions";
 import { ActiveNavLink } from "@/components/nav-link";
 import type { NavItem } from "@/components/nav-link";
@@ -136,6 +137,9 @@ function SidebarNav({
         </nav>
 
         <div className="border-t p-3">
+          <div className="mb-2 flex items-center justify-center">
+            <LanguageSwitcher current={lang} />
+          </div>
           <div className="flex items-center gap-3 rounded-lg p-2">
             <Avatar className="h-9 w-9">
               <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
