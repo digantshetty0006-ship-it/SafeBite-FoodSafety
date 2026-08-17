@@ -20,17 +20,24 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
   const [items, setItems] = useState<NewsItem[] | null>(initial);
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
   const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (fresh = false) => {
     setError(false);
+    if (fresh) setBusy(true);
     try {
-      const res = await fetch(`/api/news?state=${encodeURIComponent(state)}`, { cache: "no-store" });
+      const res = await fetch(
+        `/api/news?state=${encodeURIComponent(state)}${fresh ? "&fresh=1" : ""}`,
+        { cache: "no-store" }
+      );
       if (!res.ok) throw new Error("bad status");
       const data = await res.json();
       setItems(data.items ?? []);
       if (typeof data.updatedAt === "number") setUpdatedAt(data.updatedAt);
     } catch {
       setError(true);
+    } finally {
+      setBusy(false);
     }
   }, [state]);
 
@@ -47,7 +54,7 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
     return (
       <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed p-10 text-center">
         <p className="text-sm text-muted-foreground">{t("news.error")}</p>
-        <button onClick={load} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+        <button onClick={() => load(true)} className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
           <RefreshCw className="h-3.5 w-3.5" /> {t("news.retry")}
         </button>
       </div>
@@ -77,10 +84,11 @@ export function NewsList({ state, initial }: { state: string; initial: NewsItem[
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">{t("news.updated", { t: relativeTime(new Date(updatedAt).toISOString()) })}</p>
           <button
-            onClick={load}
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+            onClick={() => load(true)}
+            disabled={busy}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline disabled:cursor-wait disabled:opacity-60"
           >
-            <RefreshCw className="h-3.5 w-3.5" /> {t("news.refresh")}
+            <RefreshCw className={`h-3.5 w-3.5 ${busy ? "animate-spin" : ""}`} /> {t("news.refresh")}
           </button>
         </div>
       )}

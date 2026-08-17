@@ -234,10 +234,10 @@ async function fetchBing(q: string, limit: number): Promise<NewsItem[]> {
   }
 }
 
-export async function fetchFoodNews(state: string, limit = 12): Promise<{ items: NewsItem[]; updatedAt: number }> {
+export async function fetchFoodNews(state: string, limit = 12, force = false): Promise<{ items: NewsItem[]; updatedAt: number }> {
   const key = state || "All India";
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < CACHE_TTL) return { items: hit.items.slice(0, limit), updatedAt: hit.at };
+  if (!force && hit && Date.now() - hit.at < CACHE_TTL) return { items: hit.items.slice(0, limit), updatedAt: hit.at };
 
   const q =
     key === "All India"
