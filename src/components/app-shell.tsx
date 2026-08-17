@@ -57,8 +57,8 @@ const ROLE_HEADER: Record<string, string> = {
 
 const ROLE_ACCENT: Record<string, string> = {
   food_officer: "from-emerald-600 to-teal-600",
-  citizen: "from-violet-600 to-purple-600",
-  business_owner: "from-orange-600 to-amber-600",
+  citizen: "from-emerald-600 to-teal-600",
+  business_owner: "from-emerald-600 to-teal-600",
 };
 
 export default async function AppShell({ children }: { children: React.ReactNode }) {

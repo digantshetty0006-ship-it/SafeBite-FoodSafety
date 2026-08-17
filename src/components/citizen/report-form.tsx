@@ -89,39 +89,49 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
   });
   const fileRef = useRef<HTMLInputElement>(null);
   const analysisToken = useRef(0);
+  const pendingAnalysis = useRef<Promise<void> | null>(null);
+  const analysisRef = useRef<AnalysisState | null>(null);
+  const applyAnalysis = (v: AnalysisState | null) => {
+    analysisRef.current = v;
+    setAnalysis(v);
+  };
 
   const runAnalysis = useCallback(async (urls: string[]) => {
     const token = ++analysisToken.current;
-    if (urls.length === 0) {
-      setAnalysis(null);
-      setAnalyzing(false);
-      return;
-    }
-    setAnalyzing(true);
-    try {
-      const results = await Promise.all(urls.map((u) => analyzeEvidenceImage(u).catch(() => null)));
-      const valid = results.filter((r): r is EvidenceAnalysis => r !== null);
-      if (token !== analysisToken.current) return;
-      const local = aggregateEvidence(valid);
-      setAnalysis({ ...local });
+    const run = (async () => {
+      if (urls.length === 0) {
+        applyAnalysis(null);
+        setAnalyzing(false);
+        return;
+      }
+      setAnalyzing(true);
       try {
-        const res = await fetch("/api/analyze-evidence", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ images: urls.slice(0, 4) }),
-        });
-        if (res.ok) {
-          const data = (await res.json()) as AnalysisState;
-          if (token === analysisToken.current && data?.engine === "vision") setAnalysis(data);
+        const results = await Promise.all(urls.map((u) => analyzeEvidenceImage(u).catch(() => null)));
+        const valid = results.filter((r): r is EvidenceAnalysis => r !== null);
+        if (token !== analysisToken.current) return;
+        const local = aggregateEvidence(valid);
+        applyAnalysis({ ...local });
+        try {
+          const res = await fetch("/api/analyze-evidence", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ images: urls.slice(0, 4) }),
+          });
+          if (res.ok) {
+            const data = (await res.json()) as AnalysisState;
+            if (token === analysisToken.current && data?.engine === "vision") applyAnalysis(data);
+          }
+        } catch {
+          // keep on-device result
         }
       } catch {
-        // keep on-device result
+        applyAnalysis(null);
+      } finally {
+        if (token === analysisToken.current) setAnalyzing(false);
       }
-    } catch {
-      setAnalysis(null);
-    } finally {
-      if (token === analysisToken.current) setAnalyzing(false);
-    }
+    })();
+    pendingAnalysis.current = run;
+    await run;
   }, []);
 
   useEffect(() => {
@@ -219,8 +229,15 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
     if (picked?.address) fd.set("address", picked.address);
     if (picked?.district) fd.set("district", picked.district);
     if (businessId) fd.set("businessId", businessId);
-    if (analysis) fd.set("aiAnalysis", JSON.stringify(analysis));
     setSubmitting(true);
+    if (pendingAnalysis.current) {
+      try {
+        await Promise.race([pendingAnalysis.current, new Promise((r) => setTimeout(r, 10000))]);
+      } catch {
+        // analysis failed — submit without it
+      }
+    }
+    if (analysisRef.current) fd.set("aiAnalysis", JSON.stringify(analysisRef.current));
     await submitComplaintAction(fd);
   };
 
