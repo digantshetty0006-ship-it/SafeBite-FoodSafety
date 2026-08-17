@@ -111,12 +111,17 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
         if (token !== analysisToken.current) return;
         const local = aggregateEvidence(valid);
         applyAnalysis({ ...local });
+        setAnalyzing(false);
         try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 8000);
           const res = await fetch("/api/analyze-evidence", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ images: urls.slice(0, 4) }),
+            signal: ctrl.signal,
           });
+          clearTimeout(timer);
           if (res.ok) {
             const data = (await res.json()) as AnalysisState;
             if (token === analysisToken.current && data?.engine === "vision") applyAnalysis(data);
@@ -232,7 +237,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
     setSubmitting(true);
     if (pendingAnalysis.current) {
       try {
-        await Promise.race([pendingAnalysis.current, new Promise((r) => setTimeout(r, 10000))]);
+        await Promise.race([pendingAnalysis.current, new Promise((r) => setTimeout(r, 2500))]);
       } catch {
         // analysis failed — submit without it
       }

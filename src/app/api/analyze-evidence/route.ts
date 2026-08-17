@@ -78,7 +78,7 @@ function extractJson(text: string): unknown {
   }
 }
 
-async function callGemini(images: string[], model: string): Promise<VisionResult | null> {
+async function callGemini(images: string[], model: string, signal?: AbortSignal): Promise<VisionResult | null> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
   const input = [
@@ -99,6 +99,7 @@ async function callGemini(images: string[], model: string): Promise<VisionResult
       input,
       generation_config: { temperature: 0.1 },
     }),
+    signal,
   });
   if (!res.ok) {
     lastGeminiError = { status: res.status, model, detail: (await res.text()).slice(0, 300) };
@@ -124,7 +125,7 @@ async function callGemini(images: string[], model: string): Promise<VisionResult
 
 let lastGeminiError: { status: number; model: string; detail: string } | null = null;
 
-async function callOpenAI(images: string[]): Promise<VisionResult | null> {
+async function callOpenAI(images: string[], signal?: AbortSignal): Promise<VisionResult | null> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
@@ -141,6 +142,7 @@ async function callOpenAI(images: string[]): Promise<VisionResult | null> {
       response_format: { type: "json_object" },
       max_tokens: 400,
     }),
+    signal,
   });
   if (!res.ok) return null;
   const body = await res.json();
@@ -150,6 +152,8 @@ async function callOpenAI(images: string[]): Promise<VisionResult | null> {
   if (result) result.model = model;
   return result;
 }
+
+const VISION_BUDGET_MS = Math.max(1000, Number(process.env.VISION_TIMEOUT_MS ?? 8000));
 
 export async function POST(req: NextRequest) {
   let images: string[] = [];
@@ -169,17 +173,34 @@ export async function POST(req: NextRequest) {
 
   try {
     // Best available first, cheaper/faster as fallback. All configurable via env.
+    // Hard time budget so the citizen never waits more than ~5s for analysis.
     const geminiChain = [
       process.env.GEMINI_MODEL || "gemini-3.6-flash",
       "gemini-3.1-pro-preview",
       "gemini-3.5-flash",
     ];
+    const deadline = Date.now() + VISION_BUDGET_MS;
     let result: VisionResult | null = null;
     for (const model of geminiChain) {
-      result = await callGemini(images, model);
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      try {
+        result = await callGemini(images, model, AbortSignal.timeout(remaining));
+      } catch {
+        result = null;
+      }
       if (result) break;
     }
-    result = result ?? (await callOpenAI(images));
+    if (!result) {
+      const remaining = deadline - Date.now();
+      if (remaining > 0) {
+        try {
+          result = await callOpenAI(images, AbortSignal.timeout(remaining));
+        } catch {
+          result = null;
+        }
+      }
+    }
     if (result) return NextResponse.json(result);
     return NextResponse.json({
       engine: "on-device",
