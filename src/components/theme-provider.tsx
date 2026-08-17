@@ -13,11 +13,11 @@ const Ctx = createContext<{ theme: Theme; setTheme: (t: Theme) => void }>({
 
 function readStoredTheme(): Theme {
   const m = document.cookie.match(/(?:^|;\s*)safebite_theme=([^;]*)/);
-  return m && (m[1] === "light" || m[1] === "dark" || m[1] === "system") ? m[1] : "system";
+  return m && (m[1] === "light" || m[1] === "dark" || m[1] === "system") ? m[1] : "dark";
 }
 
 function shouldBeDark(theme: Theme): boolean {
-  return theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  return theme !== "light";
 }
 
 export function applyThemeClass(theme: Theme) {

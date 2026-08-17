@@ -1,19 +1,13 @@
 ﻿import Link from "next/link";
 import {
   ShieldCheck,
-  Radar,
-  Activity,
-  MapPinned,
-  ClipboardCheck,
   Megaphone,
   ArrowRight,
-  Building2,
-  Landmark,
-  Scale,
   PhoneCall,
-  Mic,
-  Sparkles,
+  ClipboardCheck,
   UserCheck,
+  CheckCircle2,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getLang, tr } from "@/lib/lang";
@@ -21,20 +15,13 @@ import { LocaleProvider } from "@/components/locale-provider";
 import { NewsPreview } from "@/components/news/news-preview";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import { NearbyRestaurants } from "@/components/nearby-restaurants";
 
-const FEATURES = [
-  { icon: Radar, k: "home.f1" },
-  { icon: MapPinned, k: "home.f2" },
-  { icon: Activity, k: "home.f3" },
-  { icon: ClipboardCheck, k: "home.f4" },
-  { icon: Megaphone, k: "home.f5" },
-  { icon: Scale, k: "home.f6" },
-];
-
-const ROLES = [
-  { icon: Landmark, k: "role.officer", href: "/login", demo: "officer@demo.in" },
-  { icon: Megaphone, k: "role.citizen", href: "/login", demo: "citizen@demo.in" },
-  { icon: Building2, k: "role.owner", href: "/login", demo: "owner@demo.in" },
+const STEPS = [
+  { icon: Megaphone, step: "01", k: "home.h1" },
+  { icon: ClipboardCheck, step: "02", k: "home.h2" },
+  { icon: UserCheck, step: "03", k: "home.h3" },
+  { icon: CheckCircle2, step: "04", k: "home.h4" },
 ];
 
 export const dynamic = "force-dynamic";
@@ -64,8 +51,9 @@ export default async function LandingPage() {
             <p className="mt-4 max-w-2xl text-lg text-emerald-50/90">{t("home.sub")}</p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="bg-white text-emerald-900 hover:bg-emerald-50">
-                <Link href="/login">
-                  {t("home.ctaCommand")} <ArrowRight className="ml-2 h-4 w-4" />
+                <Link href="#nearby">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  {t("home.heroNearby")}
                 </Link>
               </Button>
               <Button
@@ -74,15 +62,17 @@ export default async function LandingPage() {
                 variant="outline"
                 className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
               >
-                <Link href="/login">{t("home.ctaReport")}</Link>
+                <Link href="/login">
+                  <Megaphone className="mr-2 h-4 w-4" />
+                  {t("home.heroReport")}
+                </Link>
               </Button>
-              <span className="ml-1 inline-flex items-center gap-1.5 text-xs text-emerald-50/70">
-                {t("home.demoCreds")}
-                <code className="rounded bg-white/10 px-1.5 py-0.5">demo1234</code>
-              </span>
             </div>
           </div>
         </section>
+
+        {/* Nearby restaurants */}
+        <NearbyRestaurants />
 
         {/* Tagline strip */}
         <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
@@ -103,39 +93,13 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Features */}
-        <section className="border-t bg-muted/30 py-16">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="text-center text-2xl font-bold sm:text-3xl">{t("home.featsTitle")}</h2>
-            <p className="mx-auto mt-2 max-w-2xl text-center text-muted-foreground">{t("home.featsSub")}</p>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {FEATURES.map((f) => (
-                <div
-                  key={f.k}
-                  className="rounded-xl border bg-card p-6 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                    <f.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 font-semibold">{t(`${f.k}t`)}</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">{t(`${f.k}b`)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* How it works */}
-        <section className="border-t bg-background py-16">
+        <section className="border-t bg-muted/30 py-16">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <h2 className="text-center text-2xl font-bold sm:text-3xl">{t("home.howTitle")}</h2>
             <p className="mx-auto mt-2 max-w-2xl text-center text-muted-foreground">{t("home.howSub")}</p>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {[
-                { icon: Mic, step: "01", k: "home.h1" },
-                { icon: Sparkles, step: "02", k: "home.h2" },
-                { icon: UserCheck, step: "03", k: "home.h3" },
-              ].map((s) => (
+            <div className="mt-10 grid gap-6 md:grid-cols-4">
+              {STEPS.map((s) => (
                 <div key={s.step} className="relative rounded-xl border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-md">
                   <span className="absolute right-4 top-4 font-mono text-3xl font-bold text-muted-foreground/15">{s.step}</span>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -143,32 +107,6 @@ export default async function LandingPage() {
                   </div>
                   <h3 className="mt-4 font-semibold">{t(`${s.k}t`)}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{t(`${s.k}b`)}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Roles */}
-        <section id="roles" className="border-t bg-muted/30 py-16">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="text-center text-2xl font-bold sm:text-3xl">{t("home.rolesTitle")}</h2>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {ROLES.map((r) => (
-                <div
-                  key={r.k}
-                  className="flex flex-col rounded-xl border bg-card p-6 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <r.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 font-semibold">{t(r.k)}</h3>
-                  <p className="mt-2 flex-1 text-sm text-muted-foreground">{t(`${r.k}D`)}</p>
-                  <Button asChild variant="outline" size="sm" className="mt-4">
-                    <Link href={r.href}>
-                      {t("common.tryDemo")} <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                    </Link>
-                  </Button>
                 </div>
               ))}
             </div>

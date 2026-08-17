@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "AI-assisted food safety inspection management for FSSAI and Maharashtra FDA. Predictive risk scoring, district heat maps, and outbreak detection.",
 };
 
-const THEME_SCRIPT = `(function(){try{var c=document.cookie.match(/(?:^|;\\s*)safebite_theme=([^;]*)/);var t=c?c[1]:"";if(t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches)){document.documentElement.classList.add("dark")}}catch(e){}})();`;
+const THEME_SCRIPT = `(function(){try{var c=document.cookie.match(/(?:^|;\\s*)safebite_theme=([^;]*)/);var t=c?c[1]:"";if(t!=="light"){document.documentElement.classList.add("dark")}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
