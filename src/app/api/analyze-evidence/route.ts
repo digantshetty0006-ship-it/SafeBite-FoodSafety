@@ -14,11 +14,12 @@ Guidance:
 - If no food-handling scene is visible, say so in the rationale and use LOW/LOW.
 
 Respond ONLY with JSON of this exact shape:
-{"contamination":"HIGH|MEDIUM|LOW","hygiene":"HIGH|MEDIUM|LOW","evidenceQuality":<integer 0-100>,"indicators":["..."],"rationale":"one short sentence"}
+{"contamination":"HIGH|MEDIUM|LOW","hygiene":"HIGH|MEDIUM|LOW","evidenceQuality":<integer 0-100>,"indicators":["..."],"findings":["..."],"rationale":"one short sentence"}
 - "contamination": visible contamination in the frame (spoilage, pests, foreign matter, stains, dirt on food).
 - "hygiene": overall sanitation of the visible area and food-handling practice.
 - "evidenceQuality": usefulness as evidence (sharpness, focus, lighting, framing, legibility).
 - "indicators": ONLY from these exact strings: ${ALLOWED_INDICATORS.join(", ")}. List only what is actually visible or clearly inferable; empty array is valid. A HIGH or MEDIUM level must correspond to at least one listed indicator.
+- "findings": 1 to 5 short plain-language sentences describing EXACTLY what is wrong and where, e.g. "Green mold growing on the bread surface", "Rodent droppings near the counter", "Open garbage bin next to the food prep area", "Bare-hand handling of ready-to-eat food". Be specific and concrete, never generic. Empty array if nothing is wrong is valid.
 - If the photo does not show a food-handling scene, use LOW/LOW and say so in the rationale. Do not speculate.`;
 
 interface VisionResult {
@@ -27,6 +28,7 @@ interface VisionResult {
   contamination: AnalysisLevel;
   hygiene: AnalysisLevel;
   indicators: string[];
+  findings: string[];
   rationale: string;
   confidence: number;
   model: string;
@@ -48,12 +50,20 @@ function sanitize(raw: unknown): VisionResult | null {
         .slice(0, 6)
     : [];
   const rationale = typeof o.rationale === "string" ? o.rationale.slice(0, 220) : "";
+  const findings = Array.isArray(o.findings)
+    ? o.findings
+        .filter((f): f is string => typeof f === "string")
+        .map((f) => f.trim())
+        .filter((f) => f.length > 0)
+        .slice(0, 6)
+    : [];
   return {
     engine: "vision",
     contamination,
     hygiene,
     evidenceQuality: quality,
     indicators,
+    findings,
     rationale,
     confidence: 0.92,
     model: o.model && typeof o.model === "string" ? o.model.slice(0, 40) : "",
@@ -81,40 +91,41 @@ function extractJson(text: string): unknown {
 async function callGemini(images: string[], model: string, signal?: AbortSignal): Promise<VisionResult | null> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) return null;
-  const input = [
-    { type: "text", text: PROMPT },
+  const parts = [
+    { text: PROMPT },
     ...images.slice(0, 4).map((dataUrl) => {
       const mime = dataUrl.slice(5, dataUrl.indexOf(";"));
       const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
-      return { type: "image", data: base64, mime_type: mime || "image/jpeg" };
+      return { inline_data: { mime_type: mime || "image/jpeg", data: base64 } };
     }),
   ];
-  // Interactions API (v1beta) — generateContent + gemini-2.5 models are
-  // deprecated for new API keys.
-  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({
-      model,
-      input,
-      generation_config: { temperature: 0.1 },
-    }),
-    signal,
-  });
+  // generateContent is synchronous and fast (flash-lite answers in ~1-2s),
+  // unlike the async interactions API which can take 10s+.
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts }],
+        generationConfig: { temperature: 0.1 },
+      }),
+      signal,
+    }
+  );
   if (!res.ok) {
     lastGeminiError = { status: res.status, model, detail: (await res.text()).slice(0, 300) };
     return null;
   }
   const body = await res.json();
-  const modelOutput = Array.isArray(body?.steps) ? body.steps.find((s: { type?: string }) => s?.type === "model_output") : null;
-  const text = Array.isArray(modelOutput?.content)
-    ? modelOutput.content
-        .filter((p: { type?: string; text?: string }) => p?.type === "text" && typeof p.text === "string")
-        .map((p: { text: string }) => p.text)
+  const text = Array.isArray(body?.candidates)
+    ? body.candidates
+        .flatMap((c: { content?: { parts?: { text?: string }[] } }) => c?.content?.parts ?? [])
+        .map((p: { text?: string }) => (typeof p.text === "string" ? p.text : ""))
         .join("")
     : null;
   if (typeof text !== "string") {
-    lastGeminiError = { status: res.status, model, detail: "no model_output text in response" };
+    lastGeminiError = { status: res.status, model, detail: "no candidates text in response" };
     return null;
   }
   const parsed = extractJson(text);
@@ -172,11 +183,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Best available first, cheaper/faster as fallback. All configurable via env.
-    // Hard time budget so the citizen never waits more than ~5s for analysis.
+    // Best available first, cheapest/fastest flash as the fast path.
+    // Hard time budget so the citizen never waits too long.
     const geminiChain = [
       process.env.GEMINI_MODEL || "gemini-3.6-flash",
-      "gemini-3.1-pro-preview",
+      "gemini-flash-lite-latest",
       "gemini-3.5-flash",
     ];
     const deadline = Date.now() + VISION_BUDGET_MS;

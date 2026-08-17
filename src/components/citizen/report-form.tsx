@@ -111,7 +111,6 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
         if (token !== analysisToken.current) return;
         const local = aggregateEvidence(valid);
         applyAnalysis({ ...local });
-        setAnalyzing(false);
         try {
           const ctrl = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 8000);
@@ -237,7 +236,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
     setSubmitting(true);
     if (pendingAnalysis.current) {
       try {
-        await Promise.race([pendingAnalysis.current, new Promise((r) => setTimeout(r, 2500))]);
+        await Promise.race([pendingAnalysis.current, new Promise((r) => setTimeout(r, 4000))]);
       } catch {
         // analysis failed — submit without it
       }
@@ -391,7 +390,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
               {t("cit.analyseHint")}
             </p>
 
-            {analysis && !analyzing && (
+            {analysis && (
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
                 <div className="flex items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-sm font-semibold">
@@ -429,6 +428,22 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
                     </div>
                   </div>
                 </div>
+
+                {analysis.findings && analysis.findings.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("cit.findings")}
+                    </p>
+                    <ul className="space-y-1">
+                      {analysis.findings.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-sm font-medium">
+                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 <div className="mt-3 space-y-1">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">

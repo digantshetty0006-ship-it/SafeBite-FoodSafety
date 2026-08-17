@@ -6,6 +6,7 @@ export interface EvidenceAnalysis {
   contamination: AnalysisLevel;
   hygiene: AnalysisLevel;
   indicators: string[];
+  findings?: string[];
   confidence: number;
   rationale?: string;
   model?: string;

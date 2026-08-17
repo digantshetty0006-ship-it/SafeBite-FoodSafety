@@ -14,6 +14,7 @@ import {
   FileSearch,
   Gauge,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
@@ -240,6 +241,21 @@ export default async function OfficerComplaintPage({
           ) : (
             <>
               {aiAnalysis.rationale && <p className="mt-1 text-xs italic text-muted-foreground">{aiAnalysis.rationale}</p>}
+              {aiAnalysis.findings && aiAnalysis.findings.length > 0 && (
+                <div className="mt-3 space-y-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t("cit.findings")}
+                  </p>
+                  <ul className="space-y-1">
+                    {aiAnalysis.findings.map((f, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm font-medium">
+                        <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">{t("cit.possibleContamination")}</span>

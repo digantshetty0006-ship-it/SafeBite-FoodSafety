@@ -432,6 +432,9 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
       } else {
         const innerW = fieldWidth - 100;
         const rationaleLines = ai.rationale ? wrapLines(ctx(), `"${ai.rationale}"`, innerW) : [];
+        const findingLines = (ai.findings ?? []).length
+          ? (ai.findings ?? []).flatMap((f) => wrapLines(ctx(), `• ${f}`, innerW))
+          : [];
         const indicatorLines = ai.indicators.length
           ? ai.indicators.flatMap((ind) => wrapLines(ctx(), `• ${ind}`, innerW))
           : [];
@@ -443,6 +446,7 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
         const boxH =
           46 + 46 + 64 +
           rationaleLines.length * 42 +
+          ((ai.findings ?? []).length ? 30 + findingLines.length * 42 : 0) +
           (ai.indicators.length ? 30 + indicatorLines.length * 42 : 0) +
           engineLines.length * 36 +
           advisoryLines.length * 36 + 70;
@@ -487,6 +491,18 @@ export function ComplaintPdf({ data, label, lang }: { data: ComplaintPdfData; la
           ctx().font = `400 26px ${FONT}`;
           ctx().fillStyle = "#4b5563";
           rationaleLines.forEach((ln) => {
+            ctx().fillText(ln, PAD + 50, ty);
+            ty += 42;
+          });
+        }
+        if ((ai.findings ?? []).length) {
+          ctx().font = `600 24px ${FONT}`;
+          ctx().fillStyle = "#111827";
+          ctx().fillText(dlT("pdf.aiFindings").toUpperCase(), PAD + 50, ty);
+          ty += 30;
+          ctx().font = `400 26px ${FONT}`;
+          ctx().fillStyle = "#b45309";
+          findingLines.forEach((ln) => {
             ctx().fillText(ln, PAD + 50, ty);
             ty += 42;
           });
