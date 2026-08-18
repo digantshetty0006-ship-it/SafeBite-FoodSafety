@@ -3,14 +3,16 @@
     "placeId": "ChIJwWOPJdnR5zsRcgxEPKsyPsI",
     "address": "Capital Cinema Building, 126, Dr Dadabhai Naoroji Rd, opp. Aram Hotel CSMT, Azad Maidan, Fort, Mumbai, Maharashtra 400001, India",
     "rating": 4.3,
-    "userRatingCount": 5097
+    "userRatingCount": 5097,
+    "imageUrl": "/images/businesses/aaram-vada-pav.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Bademiya|Mumbai": {
     "placeId": "ChIJcWY5IsHR5zsR8eiB31_ePFo",
     "address": "Bademiya, Tulloch Rd, Apollo Bandar, Colaba, Mumbai, Maharashtra 400001, India",
     "rating": 3.7,
     "userRatingCount": 25107,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Bademiya_restaurant%2C_Mumbai.jpg/960px-Bademiya_restaurant%2C_Mumbai.jpg",
+    "imageUrl": "/images/businesses/bademiya.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Barbeque Nation - Nerul|Navi Mumbai": {
@@ -18,7 +20,7 @@
     "address": "First Floor, Plot # 20, Beverley Park, Sector 6, Palm Beach Rd, above HDFC Bank, Sector 6, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.3,
     "userRatingCount": 7056,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Barbeque_Nation_Park_Street.jpg/960px-Barbeque_Nation_Park_Street.jpg",
+    "imageUrl": "/images/businesses/barbeque-nation-nerul.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Britannia & Co.|Mumbai": {
@@ -26,7 +28,7 @@
     "address": "Wakefield House, 11 16, SS Ram Gulam Marg, opp. New Indian Customs House, Ballard Estate, Fort, Mumbai, Maharashtra 400001, India",
     "rating": 4.1,
     "userRatingCount": 1617,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Britannia_and_Co.jpg/960px-Britannia_and_Co.jpg",
+    "imageUrl": "/images/businesses/britannia-co.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Cafe Goodluck|Pune": {
@@ -34,227 +36,287 @@
     "address": "Ferguson College Rd, near Goodluck Chowk, Deccan Gymkhana, Pune, Maharashtra 411004, India",
     "rating": 4.2,
     "userRatingCount": 52006,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Coffee_Good_Luck_in_Pune_%282025%29.jpg/960px-Coffee_Good_Luck_in_Pune_%282025%29.jpg",
+    "imageUrl": "/images/businesses/cafe-goodluck.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Cafe Mysore|Mumbai": {
     "placeId": "ChIJlZ9TdinP5zsRYZhPCv5wMEo",
     "address": "1/461, Durlabh Niwas, Dr Babasaheb Ambedkar Rd, Opp B.N. Maheshwari Udyan, Matunga East, Mumbai, Maharashtra 400019, India",
     "rating": 4.3,
-    "userRatingCount": 6059
+    "userRatingCount": 6059,
+    "imageUrl": "/images/businesses/cafe-mysore.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Candies|Mumbai": {
     "placeId": "ChIJi1NRO2vJ5zsR_sA0_utO260",
     "address": "5AA, Pali Hill, next to Learners Academy School, Bandra (W, Mumbai, Maharashtra 400050, India",
     "rating": 4.3,
-    "userRatingCount": 18133
+    "userRatingCount": 18133,
+    "imageUrl": "/images/businesses/candies.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Copper Chimney - Seawoods|Navi Mumbai": {
     "placeId": "ChIJTy30xhnD5zsRXpsrm3zdwyY",
     "address": "2nd, Mahavir Vihar, Railway Station, Grand Central Mall, Seawoods West, Nerul East, Sector 28, Seawoods, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.6,
-    "userRatingCount": 3864
+    "userRatingCount": 3864,
+    "imageUrl": "/images/businesses/copper-chimney-seawoods.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Courtyard Pavilion|Navi Mumbai": {
     "placeId": "ChIJw0k9qVrD5zsR0GM5H000Cus",
     "address": "COURTYARD BY MARRIOTT, D.Y. Patil Stadium, next to Gate No- 5, Sector 7, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.6,
-    "userRatingCount": 566
+    "userRatingCount": 566,
+    "imageUrl": "/images/businesses/courtyard-pavilion.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Courtyard by Marriott Navi Mumbai|Navi Mumbai": {
     "placeId": "ChIJgYQ3FdzD5zsRSyKdIOVLHZU",
     "address": "Sector 7, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.4,
-    "userRatingCount": 1761
+    "userRatingCount": 1761,
+    "imageUrl": "/images/businesses/courtyard-by-marriott-navi-mumbai.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Foodway Inn Family Restaurant|Navi Mumbai": {
     "placeId": "ChIJiUxFcA3D5zsRdA4My9GXa-0",
     "address": "Shop No 12, platinum tower, 13,14, near nerul depo, Nerul East, Sector 29, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.1,
-    "userRatingCount": 3274
+    "userRatingCount": 3274,
+    "imageUrl": "/images/businesses/foodway-inn-family-restaurant.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Fusion Dine In|Navi Mumbai": {
     "placeId": "ChIJD0izqiHD5zsR15lQQs0X3F0",
     "address": "Shop No: 14, Sector No: 01, Nerul Plaza Building, near L.P Bus Stop, Sector 1, Shiravane, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.8,
-    "userRatingCount": 92
+    "userRatingCount": 92,
+    "imageUrl": "/images/businesses/fusion-dine-in.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Gajalee|Mumbai": {
     "placeId": "ChIJwR2qzErI5zsRS6q1-CdWwVQ",
     "address": "Kadamgiri Complex, Hanuman Rd, next to Icici Bank, Vishnu Prasad Society, Navpada, Vile Parle East, Vile Parle, Mumbai, Maharashtra 400057, India",
     "rating": 4.3,
-    "userRatingCount": 10376
+    "userRatingCount": 10376,
+    "imageUrl": "/images/businesses/gajalee.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Grace Restaurant|Navi Mumbai": {
     "placeId": "ChIJldo1y9zD5zsRSa6WQE6mB8I",
     "address": "Shop No 13, Type Building, F-2, opp. Bank Of Maharastra, Nerul East, Sector 3, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4,
-    "userRatingCount": 3399
+    "userRatingCount": 3399,
+    "imageUrl": "/images/businesses/grace-restaurant.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Gulshan-e-Iran|Mumbai": {
     "placeId": "ChIJ_____9rR5zsREZgQGZeCdlg",
     "address": "M.R.A. Marg Corner of, Crawford Market, Musafir Khana Rd, Near Crawford Market, Chhatrapati Shivaji Terminus Area, Fort, Mumbai, Maharashtra 400001, India",
     "rating": 4.1,
-    "userRatingCount": 23095
+    "userRatingCount": 23095,
+    "imageUrl": "/images/businesses/gulshan-e-iran.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Guru Kripa|Mumbai": {
     "placeId": "ChIJk1BdY_bP5zsREV3b1vNeQ98",
     "address": "Shop No. 7, Ground Floor, Ranchod Bhuvan, 55, Jagannath Shankar Seth Rd, Charni Road East, Opera House, Girgaon, Mumbai, Maharashtra 400004, India",
     "rating": 4.1,
-    "userRatingCount": 163
+    "userRatingCount": 163,
+    "imageUrl": "/images/businesses/guru-kripa.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Haldiram's|Nagpur": {
     "placeId": "ChIJ0bj4EcDA1DsRl0jIGmi_iy4",
     "address": "Unit No.60, Ground Floor, Anjuman Complex, Mangalwari Bazar Rd, near Anjuman Polytechnic, Sadar, Nagpur, Maharashtra 440001, India",
     "rating": 4.3,
     "userRatingCount": 15498,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Haldiram%27s_outlet_at_the_exit_from_platform_no._6_of_Pune_Junction_railway_station.jpg/960px-Haldiram%27s_outlet_at_the_exit_from_platform_no._6_of_Pune_Junction_railway_station.jpg",
+    "imageUrl": "/images/businesses/haldirams.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "K. Rustom Ice Cream|Mumbai": {
     "placeId": "ChIJv8KFrOfR5zsRR5eF2XL1ueQ",
     "address": "Stadium House, 87 A, Veer Nariman Rd, opposite Ambassador Hotel, Churchgate, Mumbai, Maharashtra 400020, India",
     "rating": 4.4,
-    "userRatingCount": 15958
+    "userRatingCount": 15958,
+    "imageUrl": "/images/businesses/k-rustom-ice-cream.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Kyani & Co.|Mumbai": {
     "placeId": "ChIJKQZB3mzO5zsRPQXFAff0kh8",
     "address": "Jer Mahal Building, 657, Jagannath Shankar Seth Rd, opp. Metro Inox Theatre, Marine Lines East, Dhobi Talao, Estate, Marine Lines, Mumbai, Maharashtra 400002, India",
     "rating": 4.1,
-    "userRatingCount": 13765
+    "userRatingCount": 13765,
+    "imageUrl": "/images/businesses/kyani-and-co.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Legends Cafe|Navi Mumbai": {
     "placeId": "ChIJgeVtSNvD5zsRT2t0imM_VcY",
     "address": "Dr D Y Patil Vidyanagar, Sector 5, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.1,
-    "userRatingCount": 1348
+    "userRatingCount": 1348,
+    "imageUrl": "/images/businesses/legends-cafe.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Leopold Cafe|Mumbai": {
     "placeId": "ChIJqSNr-8DR5zsRosXwmBExzRw",
     "address": "Shahid Bhagat Singh Road, Police Station, Colaba Causeway, near Colaba, Apollo Bandar, Colaba, Mumbai, Maharashtra 400001, India",
     "rating": 4.2,
     "userRatingCount": 32764,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/LeopoldCafe_gobeirne.jpg/960px-LeopoldCafe_gobeirne.jpg",
+    "imageUrl": "/images/businesses/leopold-cafe.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "MAISON DE CAFÉ|Navi Mumbai": {
     "placeId": "ChIJb63Nok7D5zsRtu6q8RdR_q0",
     "address": "COURTYARD BY MARRIOTT, D. Y. Patil Stadium, next to Gate No-5, Sector 7, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.2,
-    "userRatingCount": 33
+    "userRatingCount": 33,
+    "imageUrl": "/images/businesses/maison-de-caf.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "MALANG|Navi Mumbai": {
     "placeId": "ChIJG39PgFPD5zsRsPI-UkpiTOg",
     "address": "COURTYARD BY MARRIOTT, D. Y. Patil Stadium, next to Gate No-5, Sector 7, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.5,
-    "userRatingCount": 165
+    "userRatingCount": 165,
+    "imageUrl": "/images/businesses/malang.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Maharashtra Lunch Home - Nerul|Navi Mumbai": {
     "placeId": "ChIJ5_PPvNzD5zsRnOeLLAijIMQ",
     "address": "Shop No. 2, Paradise Apartment, Opp. S.I.E.S. college, Sector -3 , Nerul East, Nerul East, Sector 3, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.2,
-    "userRatingCount": 6241
+    "userRatingCount": 6241,
+    "imageUrl": "/images/businesses/maharashtra-lunch-home-nerul.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Mahesh Lunch Home|Mumbai": {
     "placeId": "ChIJ481uEG3I5zsRarQ3oNsgzyg",
     "address": "Andheri - Kurla Rd, Sag Baug, Sakinaka, Andheri East, Mumbai, Maharashtra 400059, India",
     "rating": 4.2,
-    "userRatingCount": 4305
+    "userRatingCount": 4305,
+    "imageUrl": "/images/businesses/mahesh-lunch-home.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Marz-O-Rin|Pune": {
     "placeId": "ChIJoaM9Ek_AwjsRIOymQ4Ig9Mk",
     "address": "Bakthiar Plaza, 6, MG Road, Opposite Bombay Store, Camp, Pune, Maharashtra 411001, India",
     "rating": 4.2,
     "userRatingCount": 25269,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/be/Marz-o-_Rin.JPG",
+    "imageUrl": "/images/businesses/marz-o-rin.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Masala Central|Navi Mumbai": {
     "placeId": "ChIJnW_adabD5zsR8ldc-jCjFLU",
     "address": "Shop No. 4, WING-A, Sector 6 Nerul Rd, Sector 6, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4,
-    "userRatingCount": 1557
+    "userRatingCount": 1557,
+    "imageUrl": "/images/businesses/masala-central.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "NERUL BITES|Navi Mumbai": {
     "placeId": "ChIJz1QlJx_D5zsRTAHGGudlFoQ",
     "address": "Shop No 05, PLOT NO.- 88, 11 Sector, Dr D Y Patil Vidyanagar, Sector 5, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.9,
-    "userRatingCount": 17
+    "userRatingCount": 17,
+    "imageUrl": "/images/businesses/nerul-bites.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Prithvish Restro Bar|Navi Mumbai": {
     "placeId": "ChIJM3Jyl9zD5zsRGkK2KUPo0eI",
     "address": "Nerul East, Sector 3, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.3,
-    "userRatingCount": 1435
+    "userRatingCount": 1435,
+    "imageUrl": "/images/businesses/prithvish-restro-bar.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Rangoli Family Restaurant & Bar|Navi Mumbai": {
     "placeId": "ChIJFWDQpNzD5zsRnLiKyMzHhlc",
     "address": "Nerul East, Sector 3, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4,
-    "userRatingCount": 6281
+    "userRatingCount": 6281,
+    "imageUrl": "/images/businesses/rangoli-family-restaurant-bar.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Rasoi Restaurant & Bar|Navi Mumbai": {
     "placeId": "ChIJa4ujijjD5zsR32K8MNXPoUc",
     "address": "RT-2, Neighborhood Shopping Complex, Sector 4, behind SBI Bank, Sarsola Village, Sector 4, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.3,
-    "userRatingCount": 999
+    "userRatingCount": 999,
+    "imageUrl": "/images/businesses/rasoi-restaurant-bar.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Sadhana Misal|Nashik": {
     "placeId": "ChIJdX5z9z7s3TsRui6qhrzTWGE",
     "address": "Hardev Baug, Gangapur - Satpur Link Rd, near Someshwar, Bardan Phata, Gangapur, Nashik, Maharashtra 422222, India",
     "rating": 4.3,
-    "userRatingCount": 27307
+    "userRatingCount": 27307,
+    "imageUrl": "/images/businesses/sadhana-misal.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Sardar Pav Bhaji|Mumbai": {
     "placeId": "ChIJN0r5HnLO5zsRN3sF2SB1htw",
     "address": "166-A, Junction, Tardeo Rd, Janata Nagar, Tardeo, Mumbai, Maharashtra 400034, India",
     "rating": 3.8,
     "userRatingCount": 31824,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/AmulButterPaavbhaji_SardaarPavBhaji_Mumbai.jpg/960px-AmulButterPaavbhaji_SardaarPavBhaji_Mumbai.jpg",
+    "imageUrl": "/images/businesses/sardar-pav-bhaji.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Shree Nerul Cafe|Navi Mumbai": {
     "placeId": "ChIJV31ZptvD5zsRwjnUrRe7kT4",
     "address": "Shop Number 2-3, Sandeep Apartment, Plot Number A-197, near Balaji Mandir, Sector 20, Nerul, W, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.3,
-    "userRatingCount": 399
+    "userRatingCount": 399,
+    "imageUrl": "/images/businesses/shree-nerul-cafe.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "The Golden Grill|Pune": {
     "placeId": "ChIJCx9d677rwjsRKcq3iU_IAig",
     "address": "Shop no 5, Green city, Handewadi Rd, Autadwadi Handewadi, Satav Nagar, Hadapsar, Pune, Maharashtra 411028, India",
     "rating": 5,
-    "userRatingCount": 3
+    "userRatingCount": 3,
+    "imageUrl": "/images/businesses/the-golden-grill.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "The Stone Age Cafe|Navi Mumbai": {
     "placeId": "ChIJR64GZ2bD5zsRUbE2eXKqM1M",
     "address": "Shop 5, Ashirwad Apts, Nerul East, Sector 3, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.5,
-    "userRatingCount": 300
+    "userRatingCount": 300,
+    "imageUrl": "/images/businesses/the-stone-age-cafe.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Trishna|Mumbai": {
     "placeId": "ChIJjV68GjzR5zsRu3LYDz5vMDU",
     "address": "Sai Baba Mandir Marg, next to Commerce House, opp. Kalaghoda Cafe, Kala Ghoda, Fort, Mumbai, Maharashtra 400001, India",
     "rating": 4.6,
-    "userRatingCount": 3405
+    "userRatingCount": 3405,
+    "imageUrl": "/images/businesses/trishna.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Vaishali|Pune": {
     "placeId": "ChIJdx_8LQ-_wjsRIGCB4HCQVpE",
     "address": "1218/1, Ferguson College Rd, Ganeshwadi, Shivajinagar, Pune, Maharashtra 411004, India",
     "rating": 4.3,
     "userRatingCount": 18491,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Vaishali_Restaurant%2C_FC_Road.JPG/960px-Vaishali_Restaurant%2C_FC_Road.JPG",
+    "imageUrl": "/images/businesses/vaishali.jpg",
     "imageCredit": "Wikimedia Commons"
   },
   "Vintage Coffee Cafe|Navi Mumbai": {
     "placeId": "ChIJNUNmCwDD5zsRXRYuqJEF0FM",
     "address": "Shop No. 2/3, Beverly Park, Plot No.20, near Palm Beach Road, Sector No.6, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.7,
-    "userRatingCount": 730
+    "userRatingCount": 730,
+    "imageUrl": "/images/businesses/vintage-coffee-cafe.jpg",
+    "imageCredit": "Wikimedia Commons"
   },
   "Zaitoon The Restaurant|Navi Mumbai": {
     "placeId": "ChIJ-Z6iOZrD5zsRAa6YskCG3II",
     "address": "Shop No 3 / 4, Krishna Kamal Co-op Hsg Society, PL - 111-E/1 & 111-F, Nerul East, Sector 21, Nerul, Navi Mumbai, Maharashtra 400706, India",
     "rating": 4.1,
-    "userRatingCount": 1215
+    "userRatingCount": 1215,
+    "imageUrl": "/images/businesses/zaitoon-the-restaurant.jpg",
+    "imageCredit": "Wikimedia Commons"
   }
 }
