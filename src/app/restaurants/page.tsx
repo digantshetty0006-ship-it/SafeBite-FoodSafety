@@ -6,7 +6,7 @@ import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { RestaurantSearch } from "@/components/restaurant-search";
-import { getBusinessImage } from "@/lib/business-images";
+import { getBusinessInfo } from "@/lib/business-info";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 
@@ -43,11 +43,17 @@ export default async function RestaurantsPage({
     .sort((a, b) => a.riskScore - b.riskScore);
 
   const items = await Promise.all(
-    matched.map(async (b) => ({
-      ...b,
-      safetyScore: Math.max(0, Math.min(100, Math.round(100 - b.riskScore))),
-      imageUrl: await getBusinessImage(b.name, b.district),
-    }))
+    matched.map(async (b) => {
+      const info = await getBusinessInfo(b.name, b.district);
+      return {
+        ...b,
+        safetyScore: Math.max(0, Math.min(100, Math.round(100 - b.riskScore))),
+        imageUrl: info.imageUrl,
+        placeId: info.placeId,
+        googleAddress: info.googleAddress,
+        googleRating: info.googleRating,
+      };
+    })
   );
 
   return (
@@ -92,15 +98,21 @@ export default async function RestaurantsPage({
                   category={b.category}
                   district={b.district}
                   address={b.address}
+                  googleAddress={b.googleAddress}
+                  googleRating={b.googleRating}
                   safetyScore={b.safetyScore}
                   riskTier={b.riskTier}
                   imageUrl={b.imageUrl}
+                  placeId={b.placeId}
                   href={`/citizen/report?business=${encodeURIComponent(b.id)}`}
                   actionLabel={t("rest.report")}
                   scoreLabel={t("home.safetyScore")}
                   tierA={t("home.tierA")}
                   tierB={t("home.tierB")}
                   tierC={t("home.tierC")}
+                  directionsLabel={t("rest.directions")}
+                  mapsLabel={t("rest.viewOnMaps")}
+                  ratingLabel={t("rest.googleRating")}
                 />
               ))}
             </div>

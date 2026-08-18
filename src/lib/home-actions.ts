@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { getBusinessImage } from "@/lib/business-images";
+import { getBusinessInfo } from "@/lib/business-info";
 
 export interface NearbyBusiness {
   id: string;
@@ -13,6 +13,9 @@ export interface NearbyBusiness {
   safetyScore: number;
   riskTier: string;
   imageUrl: string;
+  placeId?: string;
+  googleAddress?: string;
+  googleRating?: number | null;
 }
 
 function distanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -45,16 +48,22 @@ export async function findNearbyBusinesses(lat: number, lng: number, limit = 8):
       .map((b) => ({ ...b, distanceKm: distanceKm(lat, lng, b.lat, b.lng) }))
       .sort((a, b) => a.distanceKm - b.distanceKm)
       .slice(0, limit)
-      .map(async (b) => ({
-        id: b.id,
-        name: b.name,
-        category: b.category,
-        district: b.district,
-        address: b.address,
-        distanceKm: Math.round(b.distanceKm * 10) / 10,
-        safetyScore: Math.max(0, Math.min(100, Math.round(100 - b.riskScore))),
-        riskTier: b.riskTier,
-        imageUrl: await getBusinessImage(b.name, b.district),
-      }))
+      .map(async (b) => {
+        const info = await getBusinessInfo(b.name, b.district);
+        return {
+          id: b.id,
+          name: b.name,
+          category: b.category,
+          district: b.district,
+          address: b.address,
+          distanceKm: Math.round(b.distanceKm * 10) / 10,
+          safetyScore: Math.max(0, Math.min(100, Math.round(100 - b.riskScore))),
+          riskTier: b.riskTier,
+          imageUrl: info.imageUrl,
+          placeId: info.placeId,
+          googleAddress: info.googleAddress,
+          googleRating: info.googleRating,
+        };
+      })
   );
 }

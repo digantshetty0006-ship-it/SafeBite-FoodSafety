@@ -100,10 +100,13 @@ export function NearbyRestaurants() {
                   category={b.category}
                   district={b.district}
                   address={b.address}
+                  googleAddress={b.googleAddress}
+                  googleRating={b.googleRating}
                   distanceKm={b.distanceKm}
                   safetyScore={b.safetyScore}
                   riskTier={b.riskTier}
                   imageUrl={b.imageUrl}
+                  placeId={b.placeId}
                   href={`/restaurants?q=${encodeURIComponent(b.name)}`}
                   actionLabel={t("home.viewRestaurant")}
                   distLabel={t("home.distKm", { n: String(b.distanceKm) })}
@@ -111,6 +114,9 @@ export function NearbyRestaurants() {
                   tierA={t("home.tierA")}
                   tierB={t("home.tierB")}
                   tierC={t("home.tierC")}
+                  directionsLabel={t("rest.directions")}
+                  mapsLabel={t("rest.viewOnMaps")}
+                  ratingLabel={t("rest.googleRating")}
                 />
               ))}
             </div>

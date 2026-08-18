@@ -101,6 +101,9 @@ const dict: Record<string, [string, string, string]> = {
   "rest.empty": ["No restaurants match your search.", "आपकी खोज से कोई रेस्तरां मेल नहीं खाता।", "तुमच्या शोधाशी जुळणारे रेस्टॉरंट नाही."],
   "rest.clear": ["Clear search", "खोज साफ़ करें", "शोध साफ करा"],
   "rest.report": ["Report issue", "समस्या दर्ज करें", "समस्या नोंदवा"],
+  "rest.directions": ["Get Directions", "दिशा-निर्देश पाएँ", "मार्गदर्शन मिळवा"],
+  "rest.viewOnMaps": ["View on Google Maps", "Google Maps पर देखें", "Google Maps वर पहा"],
+  "rest.googleRating": ["Google rating", "Google रेटिंग", "Google रेटिंग"],
   "rest.footnote": ["Scores are derived from inspections, complaint outcomes and compliance documents.", "स्कोर निरीक्षण, शिकायत परिणामों और अनुपालन दस्तावेज़ों से प्राप्त होते हैं।", "स्कोर तपासणी, तक्रार निकाल आणि अनुपालन दस्तऐवजांवरून मिळतात."],
   "home.ctaRoles": ["Explore roles", "भूमिकाएँ देखें", "भूमिका पहा"],
   "home.demoCreds": [
