@@ -103,20 +103,25 @@ export function NearbyRestaurants() {
                   googleAddress={b.googleAddress}
                   googleRating={b.googleRating}
                   distanceKm={b.distanceKm}
-                  safetyScore={b.safetyScore}
-                  riskTier={b.riskTier}
+                  rating={b.rating}
+                  riskScore={b.riskScore}
                   imageUrl={b.imageUrl}
                   placeId={b.placeId}
                   href={`/restaurants?q=${encodeURIComponent(b.name)}`}
                   actionLabel={t("home.viewRestaurant")}
                   distLabel={t("home.distKm", { n: String(b.distanceKm) })}
-                  scoreLabel={t("home.safetyScore")}
-                  tierA={t("home.tierA")}
-                  tierB={t("home.tierB")}
-                  tierC={t("home.tierC")}
+                  ratingLabel={t("home.safeBiteRating")}
+                  notRatedLabel={t("home.notRated")}
+                  basedOnLabel={t("home.ratingBasedOn")}
+                  riskLabels={{
+                    low: t("home.lowRisk"),
+                    moderate: t("home.moderateRisk"),
+                    high: t("home.highRisk"),
+                    critical: t("home.criticalRisk"),
+                  }}
                   directionsLabel={t("rest.directions")}
                   mapsLabel={t("rest.viewOnMaps")}
-                  ratingLabel={t("rest.googleRating")}
+                  googleRatingLabel={t("rest.googleRating")}
                 />
               ))}
             </div>

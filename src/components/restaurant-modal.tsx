@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapPin, Navigation, Star, Utensils, X, ExternalLink } from "lucide-react";
+import { MapPin, Navigation, Utensils, X, ExternalLink, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StarRating } from "@/components/star-rating";
+import { bandOfRating, riskBand } from "@/lib/rating";
 import { directionsUrl, mapsUrl } from "@/lib/business-info";
 
 export interface RestaurantModalData {
@@ -13,8 +15,8 @@ export interface RestaurantModalData {
   googleAddress?: string;
   googleRating?: number | null;
   googleRatingCount?: number | null;
-  safetyScore: number;
-  riskTier: string;
+  rating: number | null;
+  riskScore: number | null;
   imageUrl: string;
   placeId?: string;
 }
@@ -22,23 +24,34 @@ export interface RestaurantModalData {
 interface Props {
   data: RestaurantModalData;
   onClose: () => void;
-  scoreLabel: string;
-  tierA: string;
-  tierB: string;
-  tierC: string;
+  ratingLabel: string;
+  notRatedLabel: string;
+  basedOnLabel: string;
+  riskLabels: Record<string, string>;
   directionsLabel: string;
   mapsLabel: string;
-  ratingLabel: string;
+  googleRatingLabel: string;
 }
 
-function tierOf(tier: string, tierA: string, tierB: string, tierC: string) {
-  if (tier === "A") return { text: tierA, cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" };
-  if (tier === "C") return { text: tierC, cls: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400" };
-  return { text: tierB, cls: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400" };
-}
+const BAND_CHIP_STYLES: Record<string, string> = {
+  low: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+  moderate: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
+  high: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300",
+  critical: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+};
 
-export function RestaurantModal({ data, onClose, scoreLabel, tierA, tierB, tierC, directionsLabel, mapsLabel, ratingLabel }: Props) {
-  const tier = tierOf(data.riskTier, tierA, tierB, tierC);
+export function RestaurantModal({
+  data,
+  onClose,
+  ratingLabel,
+  notRatedLabel,
+  basedOnLabel,
+  riskLabels,
+  directionsLabel,
+  mapsLabel,
+  googleRatingLabel,
+}: Props) {
+  const band = data.rating !== null ? bandOfRating(data.rating) : riskBand(data.riskScore);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -66,9 +79,13 @@ export function RestaurantModal({ data, onClose, scoreLabel, tierA, tierB, tierC
         <div className="relative">
           <img src={data.imageUrl} alt={data.name} className="h-64 w-full object-cover sm:h-80" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-          <span className={`absolute left-3 top-3 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${tier.cls}`}>
-            {tier.text}
-          </span>
+          {band && (
+            <span
+              className={`absolute left-3 top-3 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${BAND_CHIP_STYLES[band]}`}
+            >
+              {riskLabels[band]}
+            </span>
+          )}
           <button
             onClick={onClose}
             aria-label="Close"
@@ -85,20 +102,16 @@ export function RestaurantModal({ data, onClose, scoreLabel, tierA, tierB, tierC
         </div>
 
         <div className="max-h-[45vh] overflow-y-auto p-5">
-          <div className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-            <Star className="h-4 w-4 shrink-0 text-primary" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{scoreLabel}</span>
-                <span className="font-bold">{data.safetyScore}/100</span>
-              </div>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
-                  style={{ width: `${data.safetyScore}%` }}
-                />
-              </div>
+          <div className="rounded-lg bg-muted/50 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <StarRating rating={data.rating} showValue size={22} gap={3} valueClassName="text-xl" />
             </div>
+            <p className="mt-1.5 text-xs font-medium text-foreground">
+              {data.rating === null ? notRatedLabel : ratingLabel}
+            </p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> {basedOnLabel}
+            </p>
           </div>
 
           {(data.address || data.googleAddress) && (
@@ -110,7 +123,7 @@ export function RestaurantModal({ data, onClose, scoreLabel, tierA, tierB, tierC
 
           {typeof data.googleRating === "number" && (
             <p className="mt-2 text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{ratingLabel}:</span>{" "}
+              <span className="font-semibold text-foreground">{googleRatingLabel}:</span>{" "}
               {"★".repeat(Math.round(data.googleRating))}
               <span className="mx-1">{data.googleRating.toFixed(1)}</span>
               {typeof data.googleRatingCount === "number" && data.googleRatingCount > 0 && (

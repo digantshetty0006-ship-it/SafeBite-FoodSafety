@@ -20,11 +20,18 @@ import { PublicFooter } from "@/components/public-footer";
 import { LocaleProvider } from "@/components/locale-provider";
 
 const TIER_COLORS: Record<string, string> = {
-  A: "#10b981",
-  B: "#f59e0b",
-  C: "#f97316",
-  D: "#ef4444",
+  low: "#10b981",
+  moderate: "#f59e0b",
+  high: "#f97316",
+  critical: "#ef4444",
 };
+
+const RISK_LEVELS = [
+  { key: "low", name: "Low risk", range: "≤ 25 — compliant", rating: "≥ 3.8 ★" },
+  { key: "moderate", name: "Moderate risk", range: "26–50 — watch", rating: "2.5–3.7 ★" },
+  { key: "high", name: "High risk", range: "51–75 — act", rating: "1.3–2.4 ★" },
+  { key: "critical", name: "Critical risk", range: "76–100 — urgent", rating: "< 1.3 ★" },
+] as const;
 
 interface ChartEntry {
   icon: React.ElementType;
@@ -62,11 +69,11 @@ const CHARTS: ChartEntry[] = [
   },
   {
     icon: PieChart,
-    name: "Risk tier distribution",
+    name: "Risk level distribution",
     where: "Officer → Analytics, fourth card",
-    what: "A donut chart of how many businesses fall into each risk tier — A (green, ≤25), B (amber, ≤50), C (orange, ≤75), D (red, >75).",
-    how: "Each slice is a share of the entire registered population. D is the dangerous tail.",
-    why: "Justifies targeted enforcement: a regulator can say 'only 8% of businesses are Tier D — we audit those first' instead of inspecting everything equally.",
+    what: "A donut chart of how many businesses fall into each risk level — Low (green, ≤25), Moderate (amber, ≤50), High (orange, ≤75), Critical (red, >75).",
+    how: "Each slice is a share of the entire registered population. Critical is the dangerous tail.",
+    why: "Justifies targeted enforcement: a regulator can say 'only 8% of businesses are Critical — we audit those first' instead of inspecting everything equally.",
   },
   {
     icon: Layers,
@@ -89,7 +96,7 @@ const CHARTS: ChartEntry[] = [
     name: "District heat map",
     where: "Officer → Map (also linked from the dashboard)",
     what: "A live map of Maharashtra with every registered business as a marker, coloured green → red by risk score, plus district averages.",
-    how: "Use the search box to find a business or district; click a marker for its risk score, tier and last inspection.",
+    how: "Use the search box to find a business or district; click a marker for its risk score, level and last inspection.",
     why: "Spatial pattern finding: risk clusters near market areas, ports or borders are visible immediately, and officers can plan field routes from the map.",
   },
   {
@@ -105,7 +112,7 @@ const CHARTS: ChartEntry[] = [
     name: "Risk score — the number behind everything",
     where: "Everywhere — dashboard, map, business file",
     what: "A deterministic 0–100 score per business (higher = riskier) built from five weighted factors: violations 40%, complaints 25%, inspection timeliness 15%, document compliance 10%, category baseline 10%.",
-    how: "Open any business file — the score includes 'why' explainers for every factor, so a D-tier score is never a black box.",
+    how: "Open any business file — the score includes 'why' explainers for every factor, so a Critical-level score is never a black box.",
     why: "Explainable scoring is the core of the pitch: regulators can justify every action in front of a court, auditor, or the public, because each point of the score is traced to evidence.",
   },
 ];
@@ -114,12 +121,12 @@ const DEMO_SCRIPT = [
   {
     step: "1",
     title: "Open the dashboard (officer@demo.in / demo1234)",
-    body: "Point at the KPIs and the risk tiers — 'one glance at the whole state'. Then open the district heat map and search a business.",
+    body: "Point at the KPIs and the risk levels — 'one glance at the whole state'. Then open the district heat map and search a business.",
   },
   {
     step: "2",
     title: "Show the analytics page",
-    body: "Walk through the four charts left to right: activity vs violations, complaints by category, average risk by district, tier distribution — ending on outbreak networks.",
+    body: "Walk through the four charts left to right: activity vs violations, complaints by category, average risk by district, risk level distribution — ending on outbreak networks.",
   },
   {
     step: "3",
@@ -168,22 +175,22 @@ export default async function JudgesGuidePage() {
                 Everything in the demo hangs off one explainable number. A 0–100 risk score for every registered business,
                 where higher = riskier. It is weighted: violations 40%, complaints 25%, inspection timeliness 15%,
                 document compliance 10%, category baseline 10% — and every point is traced to evidence in the business
-                file.
+                file. Citizens see the same number as a 0.0–5.0 SafeBite Rating (every 20-point drop in risk adds 1.0);
+                officers keep the full score and breakdown.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap items-center gap-3">
-                {["A", "B", "C", "D"].map((t) => (
-                  <div key={t} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
-                    <span className="h-3.5 w-3.5 rounded-full" style={{ background: TIER_COLORS[t] }} />
-                    <span className="text-sm font-semibold">Tier {t}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {t === "A" ? "≤ 25 — compliant" : t === "B" ? "26–50 — watch" : t === "C" ? "51–75 — act" : "76–100 — urgent"}
-                    </span>
+                {RISK_LEVELS.map((l) => (
+                  <div key={l.key} className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2">
+                    <span className="h-3.5 w-3.5 rounded-full" style={{ background: TIER_COLORS[l.key] }} />
+                    <span className="text-sm font-semibold">{l.name}</span>
+                    <span className="text-xs text-muted-foreground">{l.range}</span>
+                    <span className="text-xs font-medium text-foreground/70">{l.rating}</span>
                   </div>
                 ))}
                 <Badge variant="outline" className="ml-auto">
-                  C & D tiers are the enforcement priority
+                  High & Critical levels are the enforcement priority
                 </Badge>
               </div>
             </CardContent>

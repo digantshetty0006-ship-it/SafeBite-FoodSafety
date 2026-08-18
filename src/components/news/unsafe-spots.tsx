@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { useLocale } from "@/components/locale-provider";
+import { formatRating, riskToRating } from "@/lib/rating";
 
 export interface UnsafeBusiness {
   id: string;
@@ -72,7 +73,7 @@ export function UnsafeSpots({ businesses, limit = 5 }: { businesses: UnsafeBusin
             </p>
           </div>
           <span className="shrink-0 rounded-full bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white">
-            {Math.round(b.riskScore)}
+            {formatRating(riskToRating(b.riskScore))}★
           </span>
         </div>
       ))}

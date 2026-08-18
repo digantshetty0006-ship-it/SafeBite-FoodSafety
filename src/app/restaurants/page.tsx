@@ -7,6 +7,7 @@ import { PublicFooter } from "@/components/public-footer";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { RestaurantSearch } from "@/components/restaurant-search";
 import { getBusinessInfo } from "@/lib/business-info";
+import { riskToRating } from "@/lib/rating";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 
@@ -47,7 +48,7 @@ export default async function RestaurantsPage({
       const info = await getBusinessInfo(b.name, b.district);
       return {
         ...b,
-        safetyScore: Math.max(0, Math.min(100, Math.round(100 - b.riskScore))),
+        rating: riskToRating(b.riskScore),
         imageUrl: info.imageUrl,
         placeId: info.placeId,
         googleAddress: info.googleAddress,
@@ -100,19 +101,24 @@ export default async function RestaurantsPage({
                   address={b.address}
                   googleAddress={b.googleAddress}
                   googleRating={b.googleRating}
-                  safetyScore={b.safetyScore}
-                  riskTier={b.riskTier}
+                  rating={b.rating}
+                  riskScore={b.riskScore}
                   imageUrl={b.imageUrl}
                   placeId={b.placeId}
                   href={`/citizen/report?business=${encodeURIComponent(b.id)}`}
                   actionLabel={t("rest.report")}
-                  scoreLabel={t("home.safetyScore")}
-                  tierA={t("home.tierA")}
-                  tierB={t("home.tierB")}
-                  tierC={t("home.tierC")}
+                  ratingLabel={t("home.safeBiteRating")}
+                  notRatedLabel={t("home.notRated")}
+                  basedOnLabel={t("home.ratingBasedOn")}
+                  riskLabels={{
+                    low: t("home.lowRisk"),
+                    moderate: t("home.moderateRisk"),
+                    high: t("home.highRisk"),
+                    critical: t("home.criticalRisk"),
+                  }}
                   directionsLabel={t("rest.directions")}
                   mapsLabel={t("rest.viewOnMaps")}
-                  ratingLabel={t("rest.googleRating")}
+                  googleRatingLabel={t("rest.googleRating")}
                 />
               ))}
             </div>

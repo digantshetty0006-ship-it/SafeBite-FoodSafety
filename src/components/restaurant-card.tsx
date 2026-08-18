@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MapPin, Star, Utensils } from "lucide-react";
+import { MapPin, Utensils } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { StarRating } from "@/components/star-rating";
 import { RestaurantModal, type RestaurantModalData } from "@/components/restaurant-modal";
 
 export interface RestaurantCardProps {
@@ -14,26 +15,20 @@ export interface RestaurantCardProps {
   googleAddress?: string;
   googleRating?: number | null;
   distanceKm?: number;
-  safetyScore: number;
-  riskTier: string;
+  rating: number | null;
+  riskScore: number | null;
   imageUrl: string;
   placeId?: string;
   href?: string;
   actionLabel: string;
   distLabel?: string;
-  scoreLabel: string;
-  tierA: string;
-  tierB: string;
-  tierC: string;
+  ratingLabel: string;
+  notRatedLabel: string;
+  basedOnLabel: string;
+  riskLabels: Record<string, string>;
   directionsLabel: string;
   mapsLabel: string;
-  ratingLabel: string;
-}
-
-function tierOf(tier: string, tierA: string, tierB: string, tierC: string) {
-  if (tier === "A") return { text: tierA, cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" };
-  if (tier === "C") return { text: tierC, cls: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400" };
-  return { text: tierB, cls: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400" };
+  googleRatingLabel: string;
 }
 
 export function RestaurantCard({
@@ -44,22 +39,21 @@ export function RestaurantCard({
   googleAddress,
   googleRating,
   distanceKm,
-  safetyScore,
-  riskTier,
+  rating,
+  riskScore,
   imageUrl,
   placeId,
   href,
   actionLabel,
   distLabel,
-  scoreLabel,
-  tierA,
-  tierB,
-  tierC,
+  ratingLabel,
+  notRatedLabel,
+  basedOnLabel,
+  riskLabels,
   directionsLabel,
   mapsLabel,
-  ratingLabel,
+  googleRatingLabel,
 }: RestaurantCardProps) {
-  const tier = tierOf(riskTier, tierA, tierB, tierC);
   const [open, setOpen] = useState(false);
 
   const modalData: RestaurantModalData = {
@@ -69,8 +63,8 @@ export function RestaurantCard({
     address,
     googleAddress,
     googleRating,
-    safetyScore,
-    riskTier,
+    rating,
+    riskScore,
     imageUrl,
     placeId,
   };
@@ -83,9 +77,6 @@ export function RestaurantCard({
       >
         <div className="relative h-36">
           <img src={imageUrl} alt={name} className="h-full w-full object-cover" loading="lazy" />
-          <span className={`absolute right-2 top-2 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${tier.cls}`}>
-            {tier.text}
-          </span>
         </div>
         <div className="flex flex-1 flex-col p-4">
           <div className="flex items-start justify-between gap-2">
@@ -104,20 +95,11 @@ export function RestaurantCard({
           {(address || googleAddress) && (
             <p className="mt-0.5 truncate text-xs text-muted-foreground">{googleAddress ?? address}</p>
           )}
-          <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-            <Star className="h-4 w-4 shrink-0 text-primary" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{scoreLabel}</span>
-                <span className="font-bold">{safetyScore}/100</span>
-              </div>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
-                  style={{ width: `${safetyScore}%` }}
-                />
-              </div>
-            </div>
+          <div className="mt-3 rounded-lg bg-muted/50 px-3 py-2">
+            <StarRating rating={rating} showValue size={16} gap={2} valueClassName="text-base" />
+            <p className="mt-1 text-[11px] leading-tight text-muted-foreground">
+              {rating === null ? notRatedLabel : ratingLabel}
+            </p>
           </div>
           <div className="mt-3 flex gap-2">
             {href && (
@@ -132,13 +114,13 @@ export function RestaurantCard({
         <RestaurantModal
           data={modalData}
           onClose={() => setOpen(false)}
-          scoreLabel={scoreLabel}
-          tierA={tierA}
-          tierB={tierB}
-          tierC={tierC}
+          ratingLabel={ratingLabel}
+          notRatedLabel={notRatedLabel}
+          basedOnLabel={basedOnLabel}
+          riskLabels={riskLabels}
           directionsLabel={directionsLabel}
           mapsLabel={mapsLabel}
-          ratingLabel={ratingLabel}
+          googleRatingLabel={googleRatingLabel}
         />
       )}
     </>

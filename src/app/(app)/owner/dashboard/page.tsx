@@ -2,7 +2,9 @@
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
-import { RiskBadge, RiskScore, RiskScoreBar, TierBadge } from "@/components/risk-badge";
+import { RiskScore, RiskScoreBar } from "@/components/risk-badge";
+import { StarRating } from "@/components/star-rating";
+import { riskToRating, riskBand } from "@/lib/rating";
 import { formatDate } from "@/lib/format";
 import { KpiCard } from "@/components/kpi-card";
 import { calculateRiskScore } from "@/lib/risk";
@@ -68,6 +70,8 @@ export default async function OwnerDashboardPage() {
 
       {businesses.map((b) => {
         const breakdown = calculateRiskScore(b);
+        const rating = riskToRating(breakdown.score);
+        const band = riskBand(breakdown.score);
         const nextInspection = b.inspections.find((i) => i.status === "scheduled" && i.scheduledAt >= new Date());
         return (
           <Card key={b.id}>
@@ -76,7 +80,10 @@ export default async function OwnerDashboardPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-bold">{b.name}</h2>
-                    <TierBadge tier={b.riskTier} />
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                      {t("home.safeBiteRating")}: {rating === null ? t("home.notRated") : rating.toFixed(1)}★
+                      {band ? ` · ${t(`home.${band}Risk`)}` : ""}
+                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {b.district} · Lic. {b.licenseNumber}
@@ -93,13 +100,11 @@ export default async function OwnerDashboardPage() {
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-lg border p-3">
-                  <p className="text-xs text-muted-foreground">{t("own.grade")}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="text-3xl font-bold">{b.riskTier}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {t(b.riskTier === "A" ? "own.gradeA" : b.riskTier === "B" ? "own.gradeB" : b.riskTier === "C" ? "own.gradeC" : "own.gradeD")}
-                    </span>
+                  <p className="text-xs text-muted-foreground">{t("home.safeBiteRating")}</p>
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <StarRating rating={rating} showValue size={18} gap={2} valueClassName="text-xl" />
                   </div>
+                  {band && <p className="mt-1 text-xs text-muted-foreground">{t(`home.${band}Risk`)}</p>}
                 </div>
                 <div className="rounded-lg border p-3">
                   <p className="text-xs text-muted-foreground">{t("own.nextInspection")}</p>

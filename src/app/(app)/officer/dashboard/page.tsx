@@ -171,7 +171,6 @@ export default async function OfficerDashboardPage() {
           category: b.category,
           district: b.district,
           riskScore: b.riskScore,
-          riskTier: b.riskTier,
           licenseNumber: b.licenseNumber,
           lastInspection: b.inspections[0]?.completedAt ?? b.inspections[0]?.scheduledAt ?? null,
           openComplaints: b.complaints.filter((c) => c.status !== "resolved").length,

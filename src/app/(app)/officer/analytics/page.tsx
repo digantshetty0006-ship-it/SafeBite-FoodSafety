@@ -4,6 +4,7 @@ import { AnalyticsDashboard } from "@/components/officer/analytics-dashboard";
 import { AnalyticsGuide } from "@/components/officer/analytics-guide";
 import { detectNetworks } from "@/lib/network";
 import { categoryLabel } from "@/lib/format";
+import { riskBand, RISK_BAND_ORDER } from "@/lib/rating";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { getLang, tr } from "@/lib/lang";
@@ -71,11 +72,11 @@ export default async function OfficerAnalyticsPage() {
     count: d.count,
   }));
 
-  // Tier distribution
-  const tiers = ["A", "B", "C", "D"];
-  const tierDistribution = tiers
-    .map((tier) => ({ name: t("biz.tier", { t: tier }), value: businesses.filter((b) => b.riskTier === tier).length }))
-    .filter((t) => t.value > 0);
+  // Risk level distribution
+  const riskLevelDistribution = RISK_BAND_ORDER.map((band) => ({
+    name: t(`home.${band}Risk`),
+    value: businesses.filter((b) => riskBand(b.riskScore) === band).length,
+  })).filter((d) => d.value > 0);
 
   // Severity by district (stacked)
   const sevByDistrict = new Map<string, { low: number; medium: number; high: number; critical: number }>();
@@ -126,7 +127,7 @@ export default async function OfficerAnalyticsPage() {
           monthlyActivity: months.map(({ month, inspections, violations }) => ({ month, inspections, violations })),
           complaintsByCategory,
           riskByDistrict,
-          tierDistribution,
+          riskLevelDistribution,
           severityByDistrict,
           networks,
           businessNames,

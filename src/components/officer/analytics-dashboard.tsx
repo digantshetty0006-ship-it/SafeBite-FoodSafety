@@ -53,7 +53,7 @@ export interface AnalyticsData {
   monthlyActivity: { month: string; inspections: number; violations: number }[];
   complaintsByCategory: { category: string; count: number }[];
   riskByDistrict: { district: string; avg: number; count: number }[];
-  tierDistribution: { name: string; value: number }[];
+  riskLevelDistribution: { name: string; value: number }[];
   severityByDistrict: { district: string; low: number; medium: number; high: number; critical: number }[];
   networks: OutbreakCluster[];
   businessNames: Record<string, string>;
@@ -145,7 +145,7 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
 
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-base">{t("an.riskTierDist")}</CardTitle>
+            <CardTitle className="text-base">{t("an.riskLevelDist")}</CardTitle>
             <p className="text-xs text-muted-foreground">
               {t("an.tierHint")}
             </p>
@@ -153,8 +153,8 @@ export function AnalyticsDashboard({ data, lang }: { data: AnalyticsData; lang: 
           <CardContent>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
-                <Pie data={data.tierDistribution} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
-                  {data.tierDistribution.map((entry) => (
+                <Pie data={data.riskLevelDistribution} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
+                  {data.riskLevelDistribution.map((entry) => (
                     <Cell key={entry.name} fill={TIER_COLORS[entry.name]} />
                   ))}
                 </Pie>

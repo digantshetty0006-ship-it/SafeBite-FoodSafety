@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { getBusinessInfo } from "@/lib/business-info";
+import { riskToRating } from "@/lib/rating";
 
 export interface NearbyBusiness {
   id: string;
@@ -10,8 +11,8 @@ export interface NearbyBusiness {
   district: string;
   address: string;
   distanceKm: number;
-  safetyScore: number;
-  riskTier: string;
+  rating: number | null;
+  riskScore: number;
   imageUrl: string;
   placeId?: string;
   googleAddress?: string;
@@ -57,8 +58,8 @@ export async function findNearbyBusinesses(lat: number, lng: number, limit = 8):
           district: b.district,
           address: b.address,
           distanceKm: Math.round(b.distanceKm * 10) / 10,
-          safetyScore: Math.max(0, Math.min(100, Math.round(100 - b.riskScore))),
-          riskTier: b.riskTier,
+          rating: riskToRating(b.riskScore),
+          riskScore: b.riskScore,
           imageUrl: info.imageUrl,
           placeId: info.placeId,
           googleAddress: info.googleAddress,

@@ -181,8 +181,8 @@ export function generateOwnerSuggestions(opts: {
   if (suggestions.length === 0) {
     suggestions.push({
       title: `Keep up the good work, ${businessName}`,
-      body: "No repeated violations were detected in your history. Maintain current practices and keep documents renewed to protect your grade.",
-      impact: `Current tier: ${currentTier}.`,
+      body: "No repeated violations were detected in your history. Maintain current practices and keep documents renewed to protect your rating.",
+      impact: `Current risk level: ${currentTier}.`,
       priority: "low",
     });
   }

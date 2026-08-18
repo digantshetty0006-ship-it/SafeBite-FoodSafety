@@ -10,7 +10,7 @@ export function AnalyticsGuide({ lang }: { lang: Lang }) {
     { icon: Activity, title: t("an.inspectionActivity"), one: t("an.activityHint") },
     { icon: BarChart3, title: t("an.complaintsByCategory"), one: t("an.g2") },
     { icon: Gauge, title: t("an.avgRiskByDistrict"), one: t("an.g3") },
-    { icon: PieChart, title: t("an.riskTierDist"), one: t("an.g4") },
+    { icon: PieChart, title: t("an.riskLevelDist"), one: t("an.g4") },
     { icon: Layers, title: t("an.severityByDistrict"), one: t("an.g5") },
     { icon: Link2, title: t("an.networksTitle"), one: t("an.g6") },
     { icon: Map, title: t("an.g7t"), one: t("an.g7") },

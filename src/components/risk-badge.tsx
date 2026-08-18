@@ -1,11 +1,26 @@
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { riskBand, type RiskBand } from "@/lib/rating";
 
 const TIER_STYLES: Record<string, string> = {
   A: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
   B: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
   C: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800",
   D: "bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
+};
+
+export const BAND_TIER: Record<RiskBand, string> = {
+  low: "A",
+  moderate: "B",
+  high: "C",
+  critical: "D",
+};
+
+export const BAND_LABELS: Record<RiskBand, string> = {
+  low: "Low risk",
+  moderate: "Moderate risk",
+  high: "High risk",
+  critical: "Critical risk",
 };
 
 export const SCORE_COLORS: Record<string, string> = {
@@ -32,16 +47,8 @@ export function tierForScore(score: number): string {
 export function RiskBadge({ score, className }: { score: number; className?: string }) {
   const tier = tierForScore(score);
   return (
-    <Badge variant="outline" className={cn("font-mono text-xs", TIER_STYLES[tier], className)}>
-      Tier {tier}
-    </Badge>
-  );
-}
-
-export function TierBadge({ tier, className }: { tier: string; className?: string }) {
-  return (
-    <Badge variant="outline" className={cn("font-mono text-xs", TIER_STYLES[tier] ?? TIER_STYLES.B, className)}>
-      Grade {tier}
+    <Badge variant="outline" className={cn("text-xs", TIER_STYLES[tier], className)}>
+      {BAND_LABELS[riskBand(score) ?? "low"]}
     </Badge>
   );
 }

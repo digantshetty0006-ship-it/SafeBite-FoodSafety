@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { RiskScoreBar, RiskBadge } from "@/components/risk-badge";
 import { categoryLabel, formatDate } from "@/lib/format";
+import { riskBand, type RiskBand } from "@/lib/rating";
 import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,6 @@ export interface BusinessRow {
   category: string;
   district: string;
   riskScore: number;
-  riskTier: string;
   licenseNumber: string;
   lastInspection: Date | string | null;
   openComplaints: number;
@@ -42,6 +42,8 @@ export interface BusinessRow {
 }
 
 type SortKey = "riskScore" | "name" | "district" | "category" | "lastInspection" | "openComplaints";
+
+const RISK_LEVELS: RiskBand[] = ["low", "moderate", "high", "critical"];
 
 export function BusinessTable({
   businesses,
@@ -57,7 +59,7 @@ export function BusinessTable({
   const [q, setQ] = useState("");
   const [district, setDistrict] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
-  const [tier, setTier] = useState<string>("all");
+  const [risk, setRisk] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("riskScore");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const router = useRouter();
@@ -68,7 +70,7 @@ export function BusinessTable({
     const rows = businesses.filter((b) => {
       if (district !== "all" && b.district !== district) return false;
       if (category !== "all" && b.category !== category) return false;
-      if (tier !== "all" && b.riskTier !== tier) return false;
+      if (risk !== "all" && riskBand(b.riskScore) !== risk) return false;
       if (term && !b.name.toLowerCase().includes(term) && !b.licenseNumber.toLowerCase().includes(term)) return false;
       return true;
     });
@@ -87,7 +89,7 @@ export function BusinessTable({
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [businesses, q, district, category, tier, sortKey, sortDir]);
+  }, [businesses, q, district, category, risk, sortKey, sortDir]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -152,15 +154,15 @@ export function BusinessTable({
               ))}
             </SelectContent>
           </Select>
-          <Select value={tier} onValueChange={setTier}>
-            <SelectTrigger className="w-28">
-              <SelectValue placeholder={t("biz.riskTier")} />
+          <Select value={risk} onValueChange={setRisk}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder={t("biz.riskLevels")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("biz.allTiers")}</SelectItem>
-              {["A", "B", "C", "D"].map((tier) => (
-                <SelectItem key={tier} value={tier}>
-                  {t("biz.tier", { t: tier })}
+              <SelectItem value="all">{t("biz.allRiskLevels")}</SelectItem>
+              {RISK_LEVELS.map((level) => (
+                <SelectItem key={level} value={level}>
+                  {t(`home.${level}Risk`)}
                 </SelectItem>
               ))}
             </SelectContent>
