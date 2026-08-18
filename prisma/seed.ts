@@ -93,6 +93,22 @@ const SUPPLIERS = [
   "Godavari Poultry",
 ];
 
+// Shared supplier pool used to seed the Supplier Network. Multiple
+// businesses reference the same supplier so the inspector view can show
+// "Used by N restaurants".
+const SUPPLIER_DEFS: { name: string; category: string; products: string; location: string; licence: string }[] = [
+  { name: "FreshWater Co.", category: "Water", products: "Packaged drinking water, cooler refills", location: "Bhiwandi, Thane", licence: "12724002000012" },
+  { name: "GreenValley Vegetables", category: "Vegetables", products: "Seasonal vegetables, leafy greens", location: "APMC Vashi Market, Navi Mumbai", licence: "12724002000023" },
+  { name: "Maharashtra Dairy Co-op", category: "Dairy", products: "Milk, paneer, butter, curd", location: "Dadar, Mumbai", licence: "12724002000034" },
+  { name: "Western Meat Packers", category: "Meat", products: "Chicken, mutton, processed cuts", location: "Deonar Abattoir, Mumbai", licence: "12724002000045" },
+  { name: "Coastal Seafood Exports", category: "Seafood", products: "Fresh fish, prawns, frozen seafood", location: "Sassoon Dock, Mumbai", licence: "12724002000056" },
+  { name: "Krishna Flour Mills", category: "Grains", products: "Wheat flour, rice, pulses, besan", location: "Sangli, Maharashtra", licence: "12724002000067" },
+  { name: "SpiceLink Wholesalers", category: "Spices", products: "Whole & ground spices, masala mixes", location: "Crawford Market, Mumbai", licence: "12724002000078" },
+  { name: "Beverage Distributors Hub", category: "Beverages", products: "Soft drinks, juices, syrups", location: "Kandivali, Mumbai", licence: "12724002000089" },
+  { name: "PackFresh Foods", category: "Packaged Food", products: "Packaged snacks, sauces, edible oils", location: "MIDC, Thane", licence: "12724002000090" },
+  { name: "Riverside Bakery Supply", category: "Packaged Food", products: "Bread, buns, bakery premixes", location: "Grant Road, Mumbai", licence: "12724002000101" },
+];
+
 // Real, operating food businesses (name, category, district, address, lat, lng)
 // so the demo map and lookup show actual places citizens would recognise.
 const REAL_RESTAURANTS: { name: string; category: string; district: string; address: string; lat: number; lng: number }[] = [
@@ -189,6 +205,7 @@ function severityRoll(r: number): string {
 
 async function main() {
   console.log("Resetting database...");
+  await prisma.supplier.deleteMany();
   await prisma.violation.deleteMany();
   await prisma.inspection.deleteMany();
   await prisma.complaint.deleteMany();
@@ -296,6 +313,32 @@ async function main() {
   }
 
   console.log(`Created ${businesses.length} businesses.`);
+
+  // ---- Suppliers ----
+  let supplierCount = 0;
+  for (const { biz } of businesses) {
+    const n = range(2, 5);
+    const chosen = new Map<string, typeof SUPPLIER_DEFS[number]>();
+    for (let s = 0; s < n && chosen.size < SUPPLIER_DEFS.length; s++) {
+      const def = pick(SUPPLIER_DEFS);
+      chosen.set(def.name, def);
+    }
+    for (const def of chosen.values()) {
+      await prisma.supplier.create({
+        data: {
+          businessId: biz.id,
+          name: def.name,
+          category: def.category,
+          products: def.products,
+          location: def.location,
+          licenceNumber: def.licence,
+          lastDeliveryAt: daysAgo(range(0, 30)),
+        },
+      });
+      supplierCount++;
+    }
+  }
+  console.log(`Created ${supplierCount} suppliers.`);
 
   // ---- Documents ----
   for (const { biz, riskProfile } of businesses) {

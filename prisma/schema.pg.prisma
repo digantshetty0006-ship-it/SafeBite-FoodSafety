@@ -24,6 +24,20 @@ model Business {
   inspections   Inspection[]
   complaints    Complaint[]
   documents     Document[]
+  suppliers     Supplier[]
+}
+
+model Supplier {
+  id             String    @id @default(cuid())
+  businessId     String
+  name           String
+  category       String
+  products       String
+  location       String
+  licenceNumber  String?
+  lastDeliveryAt DateTime?
+  createdAt      DateTime  @default(now())
+  business       Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 model Inspection {

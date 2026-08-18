@@ -285,6 +285,8 @@ const dict: Record<string, [string, string, string]> = {
   "nav.myBusiness": ["My Business", "मेरा व्यवसाय", "माझा व्यवसाय"],
   "nav.documents": ["Compliance Documents", "अनुपालन दस्तावेज़", "अनुपालन कागदपत्रे"],
   "nav.tips": ["Improvement Tips", "सुधार सुझाव", "सुधारणा सूचना"],
+  "nav.suppliers": ["My Suppliers", "मेरे आपूर्तिकर्ता", "माझे पुरवठादार"],
+  "nav.supplierNetwork": ["Supplier Network", "आपूर्तिकर्ता नेटवर्क", "पुरवठादार नेटवर्क"],
 
   // ---- news page ----
   "news.title": ["Food Safety News", "खाद्य सुरक्षा समाचार", "अन्न सुरक्षा बातम्या"],
@@ -813,6 +815,75 @@ const dict: Record<string, [string, string, string]> = {
   "own.expired": ["Expired", "समाप्त", "कालबाह्य"],
   "own.valid": ["Valid", "मान्य", "वैध"],
   "own.onFile": ["On file", "फ़ाइल पर", "फाइलवर"],
+
+  // ---- supplier categories ----
+  "scat.Water": ["Water", "पानी", "पाणी"],
+  "scat.Vegetables": ["Vegetables", "सब्जियाँ", "भाज्या"],
+  "scat.Meat": ["Meat", "मांस", "मांस"],
+  "scat.Dairy": ["Dairy", "डेयरी", "दुग्धजन्य"],
+  "scat.Seafood": ["Seafood", "समुद्री भोजन", "सीफूड"],
+  "scat.Grains": ["Grains", "अनाज", "धान्य"],
+  "scat.Packaged Food": ["Packaged Food", "पैकेज्ड भोजन", "पॅकेज्ड अन्न"],
+  "scat.Beverages": ["Beverages", "पेय", "पेय"],
+  "scat.Spices": ["Spices", "मसाले", "मसाले"],
+  "scat.Other": ["Other", "अन्य", "इतर"],
+
+  // ---- owner: my suppliers ----
+  "supp.title": ["My Suppliers", "मेरे आपूर्तिकर्ता", "माझे पुरवठादार"],
+  "supp.sub": [
+    "The businesses that supply your ingredients — keep this list current so inspectors can trace your supply chain.",
+    "आपकी सामग्री की आपूर्ति करने वाले व्यवसाय — इस सूची को अद्यतन रखें ताकि निरीक्षक आपकी आपूर्ति श्रृंखला का पता लगा सकें।",
+    "तुमच्या साहित्याचा पुरवठा करणारे व्यवसाय — ही यादी अद्ययावत ठेवा जेणेकरून निरीक्षक तुमची पुरवठा साखळी शोधू शकतील.",
+  ],
+  "supp.add": ["Add supplier", "आपूर्तिकर्ता जोड़ें", "पुरवठादार जोडा"],
+  "supp.addTitle": ["Add supplier", "आपूर्तिकर्ता जोड़ें", "पुरवठादार जोडा"],
+  "supp.editTitle": ["Edit supplier", "आपूर्तिकर्ता संपादित करें", "पुरवठादार संपादित करा"],
+  "supp.save": ["Save supplier", "आपूर्तिकर्ता सहेजें", "पुरवठादार जतन करा"],
+  "supp.cancel": ["Cancel", "रद्द करें", "रद्द करा"],
+  "supp.name": ["Supplier name", "आपूर्तिकर्ता का नाम", "पुरवठादाराचे नाव"],
+  "supp.namePlaceholder": ["e.g. FreshWater Co.", "जैसे फ्रेशवॉटर कंपनी", "उदा. फ्रेशवॉटर कंपनी"],
+  "supp.category": ["Category", "श्रेणी", "श्रेणी"],
+  "supp.selectCategory": ["Select category", "श्रेणी चुनें", "श्रेणी निवडा"],
+  "supp.products": ["Products supplied", "आपूर्ति किए गए उत्पाद", "पुरवठा केलेली उत्पादने"],
+  "supp.productsPlaceholder": ["e.g. Milk, paneer, butter", "जैसे दूध, पनीर, मक्खन", "उदा. दूध, पनीर, लोणी"],
+  "supp.location": ["Location / contact", "स्थान / संपर्क", "ठिकाण / संपर्क"],
+  "supp.locationPlaceholder": ["e.g. Dadar, Mumbai · 98xxxxxx", "जैसे दादर, मुंबई · 98xxxxxx", "उदा. दादर, मुंबई · 98xxxxxx"],
+  "supp.licence": ["Licence number", "लाइसेंस नंबर", "परवाना क्रमांक"],
+  "supp.lastDelivery": ["Last delivery", "अंतिम डिलीवरी", "शेवटची डिलिव्हरी"],
+  "supp.productsLbl": ["Products", "उत्पाद", "उत्पादने"],
+  "supp.deliveryNone": ["Never", "कभी नहीं", "कधीही नाही"],
+  "supp.licenceNone": ["Not provided", "उपलब्ध नहीं", "उपलब्ध नाही"],
+  "supp.edit": ["Edit", "संपादित करें", "संपादित करा"],
+  "supp.delete": ["Remove", "हटाएं", "काढून टाका"],
+  "supp.count": ["{n} supplier(s)", "{n} आपूर्तिकर्ता", "{n} पुरवठादार"],
+  "supp.deleteConfirm": ["Remove this supplier?", "इस आपूर्तिकर्ता को हटाएं?", "हा पुरवठादार काढून टाकायचा?"],
+  "supp.empty": ["No suppliers added yet", "अभी कोई आपूर्तिकर्ता नहीं जोड़ा गया", "अजून कोणताही पुरवठादार जोडलेला नाही"],
+  "supp.emptyHint": [
+    "Add your ingredient suppliers so inspectors can trace food safety across your supply chain.",
+    "अपने सामग्री आपूर्तिकर्ताओं को जोड़ें ताकि निरीक्षक आपकी आपूर्ति श्रृंखला में खाद्य सुरक्षा का पता लगा सकें।",
+    "तुमचे साहित्य पुरवठादार जोडा जेणेकरून निरीक्षक तुमच्या पुरवठा साखळीत अन्न सुरक्षा शोधू शकतील.",
+  ],
+  "supp.business": ["Business", "व्यवसाय", "व्यवसाय"],
+
+  // ---- inspector: supplier network ----
+  "sn.title": ["Supplier Network", "आपूर्तिकर्ता नेटवर्क", "पुरवठादार नेटवर्क"],
+  "sn.sub": [
+    "Suppliers declared by restaurants across all districts — spot the ones used by many outlets at once.",
+    "सभी जिलों के रेस्तराँ द्वारा घोषित आपूर्तिकर्ता — कई दुकानों द्वारा उपयोग किए जाने वाले आपूर्तिकर्ताओं को एक साथ पहचानें।",
+    "सर्व जिल्ह्यांतील रेस्टॉरंट्सनी घोषित केलेले पुरवठादार — अनेक दुकानांनी वापरलेले पुरवठादार एकाच वेळी ओळखा.",
+  ],
+  "sn.searchPlaceholder": ["Search supplier name…", "आपूर्तिकर्ता का नाम खोजें…", "पुरवठादाराचे नाव शोधा…"],
+  "sn.allCategories": ["All categories", "सभी श्रेणियाँ", "सर्व श्रेणी"],
+  "sn.usedBy": ["Used by {n} restaurant(s)", "{n} रेस्तराँ द्वारा उपयोग", "{n} रेस्टॉरंट्सद्वारे वापर"],
+  "sn.count": ["{n} supplier(s)", "{n} आपूर्तिकर्ता", "{n} पुरवठादार"],
+  "sn.empty": ["No suppliers match your search.", "आपकी खोज से कोई आपूर्तिकर्ता मेल नहीं खाता।", "तुमच्या शोधाशी जुळणारे पुरवठादार नाहीत."],
+  "sn.restaurants": ["Restaurants using this supplier", "इस आपूर्तिकर्ता का उपयोग करने वाले रेस्तराँ", "हा पुरवठादार वापरणारे रेस्टॉरंट्स"],
+  "sn.details": ["Supplier details", "आपूर्तिकर्ता विवरण", "पुरवठादार तपशील"],
+  "sn.notice": [
+    "Tap a supplier to see the restaurants that buy from it.",
+    "किसी आपूर्तिकर्ता पर टैप करें ताकि उससे खरीदने वाले रेस्तराँ दिखें।",
+    "पुरवठादारावर टॅप करा जेणेकरून त्याच्याकडून खरेदी करणारे रेस्टॉरंट्स दिसतील.",
+  ],
 };
 
 export function tr(lang: Lang, key: string, vars?: Record<string, string>): string {

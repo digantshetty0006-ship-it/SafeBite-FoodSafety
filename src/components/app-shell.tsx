@@ -16,6 +16,8 @@ import {
   LogOut,
   Menu,
   X,
+  Truck,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/auth";
@@ -35,6 +37,7 @@ const NAV: Record<string, { href: string; labelKey: string; icon: React.ReactNod
     { href: "/officer/history", labelKey: "nav.history", icon: <History className="h-4 w-4" /> },
     { href: "/officer/map", labelKey: "nav.map", icon: <Map className="h-4 w-4" /> },
     { href: "/officer/schedule", labelKey: "nav.schedule", icon: <CalendarDays className="h-4 w-4" /> },
+    { href: "/officer/suppliers", labelKey: "nav.supplierNetwork", icon: <Network className="h-4 w-4" /> },
     { href: "/officer/analytics", labelKey: "nav.analytics", icon: <BarChart3 className="h-4 w-4" /> },
   ],
   citizen: [
@@ -45,6 +48,7 @@ const NAV: Record<string, { href: string; labelKey: string; icon: React.ReactNod
   business_owner: [
     { href: "/owner/dashboard", labelKey: "nav.myBusiness", icon: <Building2 className="h-4 w-4" /> },
     { href: "/owner/documents", labelKey: "nav.documents", icon: <FolderOpen className="h-4 w-4" /> },
+    { href: "/owner/suppliers", labelKey: "nav.suppliers", icon: <Truck className="h-4 w-4" /> },
     { href: "/owner/suggestions", labelKey: "nav.tips", icon: <Lightbulb className="h-4 w-4" /> },
   ],
 };
