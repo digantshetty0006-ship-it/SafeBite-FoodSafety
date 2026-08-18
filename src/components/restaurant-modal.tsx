@@ -153,7 +153,11 @@ export function RestaurantModal({
               </a>
             </Button>
             <Button asChild variant="outline" className="w-full gap-2">
-              <a href={mapsUrl(data.placeId, data.name, data.district)} target="_blank" rel="noopener noreferrer">
+              <a
+                href={mapsUrl(data.placeId, data.name, data.district, data.googleAddress ?? data.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <ExternalLink className="h-4 w-4" /> {mapsLabel}
               </a>
             </Button>

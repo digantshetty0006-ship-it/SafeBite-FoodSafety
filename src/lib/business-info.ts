@@ -47,8 +47,13 @@ export function directionsUrl(
   return `${base}&${params.join("&")}`;
 }
 
-export function mapsUrl(placeId: string | undefined, name: string, district: string): string {
-  const base = "https://www.google.com/maps/search/?api=1";
-  if (placeId) return `${base}&query=${encodeURIComponent(placeId)}`;
-  return `${base}&query=${encodeURIComponent(`${name}, ${district}`)}`;
+export function mapsUrl(
+  placeId: string | undefined,
+  name: string,
+  district: string,
+  address?: string
+): string {
+  if (placeId) return `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(placeId)}`;
+  const query = (address && address.trim() ? address : `${name}, ${district}`).trim();
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
