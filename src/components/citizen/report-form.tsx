@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { uploadComplaintPhotoAction, submitComplaintAction } from "@/app/(app)/citizen/actions";
 import { categoryLabel } from "@/lib/format";
@@ -33,6 +34,16 @@ import { tr, type Lang } from "@/lib/i18n";
 import { draftComplaint } from "@/lib/ai-report";
 import { analyzeEvidenceImage, aggregateEvidence, type AnalysisLevel, type EvidenceAnalysis } from "@/lib/food-image-analysis";
 import type { PickedPlace } from "@/components/citizen/map-picker";
+
+const COMPLAINT_TYPES = [
+  "Suspected food poisoning / illness",
+  "Expired or stale food",
+  "Adulteration / foreign object",
+  "Poor hygiene / sanitation",
+  "Misbranding / licensing issue",
+  "Pricing / quantity issue",
+  "General food safety concern",
+];
 
 const MapPicker = dynamic(() => import("@/components/citizen/map-picker").then((m) => m.MapPicker), {
   ssr: false,
@@ -76,6 +87,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [draft, setDraft] = useState<{ type: string; severity: string } | null>(null);
+  const [complaintType, setComplaintType] = useState("");
   const [analysis, setAnalysis] = useState<AnalysisState | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [listening, setListening] = useState(false);
@@ -189,6 +201,7 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
     const d = draftComplaint(description, selected?.name);
     setDescription(d.body);
     setDraft({ type: d.type, severity: d.severity });
+    setComplaintType(d.type);
     toast.success(t("cit.structured"));
   };
 
@@ -242,7 +255,11 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
       }
     }
     if (analysisRef.current) fd.set("aiAnalysis", JSON.stringify(analysisRef.current));
-    await submitComplaintAction(fd);
+    const res = await submitComplaintAction(fd);
+    if (res && !res.ok && res.code === "cooldown") {
+      setSubmitting(false);
+      toast.error(t("cit.cooldown"));
+    }
   };
 
   return (
@@ -298,6 +315,23 @@ export function ReportForm({ businesses, initialBusiness = "", lang }: { busines
                 </button>
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="complaint-type">{t("cit.category")}</Label>
+            <Select value={complaintType} onValueChange={(v) => { setComplaintType(v); setDraft(null); }}>
+              <SelectTrigger id="complaint-type" className="w-full">
+                <SelectValue placeholder={t("cit.categoryPlaceholder")} />
+              </SelectTrigger>
+              <SelectContent>
+                {COMPLAINT_TYPES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <input type="hidden" name="type" value={complaintType} />
           </div>
 
           <div className="space-y-2">

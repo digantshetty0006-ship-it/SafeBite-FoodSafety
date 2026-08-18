@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { LocateFixed, MapPin, Navigation, RefreshCcw, Utensils, Star } from "lucide-react";
+import { LocateFixed, Navigation, RefreshCcw, Utensils } from "lucide-react";
 import { useLocale } from "@/components/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RestaurantCard } from "@/components/restaurant-card";
 import { findNearbyBusinesses, type NearbyBusiness } from "@/lib/home-actions";
 
 const DEFAULT_LOCATION = { lat: 19.076, lng: 72.8777 };
@@ -52,12 +53,6 @@ export function NearbyRestaurants() {
     locate();
   }, [locate]);
 
-  const tierLabel = (tier: string) => {
-    if (tier === "A") return { text: t("home.tierA"), cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400" };
-    if (tier === "C") return { text: t("home.tierC"), cls: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400" };
-    return { text: t("home.tierB"), cls: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400" };
-  };
-
   return (
     <section id="nearby" className="border-t bg-background py-16">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -70,7 +65,7 @@ export function NearbyRestaurants() {
             <p className="mt-2 max-w-xl text-muted-foreground">{t("home.nearbySub")}</p>
           </div>
           <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link href="/lookup">
+            <Link href="/restaurants">
               {t("home.viewAll")} <Navigation className="h-3.5 w-3.5" />
             </Link>
           </Button>
@@ -98,48 +93,26 @@ export function NearbyRestaurants() {
               </div>
             )}
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {businesses.map((b) => {
-                const tier = tierLabel(b.riskTier);
-                return (
-                  <div
-                    key={b.id}
-                    className="flex flex-col rounded-xl border bg-card p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold leading-snug">{b.name}</h3>
-                      <span className={`shrink-0 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${tier.cls}`}>
-                        {tier.text}
-                      </span>
-                    </div>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                      <Utensils className="h-3 w-3" /> {b.category}
-                      <span className="mx-0.5">·</span>
-                      {b.district}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" /> {t("home.distKm", { n: String(b.distanceKm) })}
-                    </p>
-                    <div className="mt-4 flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-                      <Star className="h-4 w-4 shrink-0 text-primary" />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">{t("home.safetyScore")}</span>
-                          <span className="font-bold">{b.safetyScore}/100</span>
-                        </div>
-                        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
-                            style={{ width: `${b.safetyScore}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <Button asChild variant="outline" size="sm" className="mt-4 w-full">
-                      <Link href="/lookup">{t("home.viewRestaurant")}</Link>
-                    </Button>
-                  </div>
-                );
-              })}
+              {businesses.map((b) => (
+                <RestaurantCard
+                  key={b.id}
+                  name={b.name}
+                  category={b.category}
+                  district={b.district}
+                  address={b.address}
+                  distanceKm={b.distanceKm}
+                  safetyScore={b.safetyScore}
+                  riskTier={b.riskTier}
+                  imageUrl={b.imageUrl}
+                  href={`/restaurants?q=${encodeURIComponent(b.name)}`}
+                  actionLabel={t("home.viewRestaurant")}
+                  distLabel={t("home.distKm", { n: String(b.distanceKm) })}
+                  scoreLabel={t("home.safetyScore")}
+                  tierA={t("home.tierA")}
+                  tierB={t("home.tierB")}
+                  tierC={t("home.tierC")}
+                />
+              ))}
             </div>
           </>
         )}

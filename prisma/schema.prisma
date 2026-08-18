@@ -59,6 +59,7 @@ model Complaint {
   assignedOfficerId   String?
   anonymous           Boolean   @default(false)
   description         String
+  type                String?
   photos              String    @default("[]")
   status              String    @default("submitted")
   createdAt           DateTime  @default(now())

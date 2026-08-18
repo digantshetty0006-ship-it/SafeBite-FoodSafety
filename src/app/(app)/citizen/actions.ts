@@ -18,6 +18,7 @@ export async function submitComplaintAction(formData: FormData) {
   const citizen = await requireRole("citizen");
   const description = String(formData.get("description") ?? "").trim();
   const businessId = String(formData.get("businessId") ?? "") || null;
+  const type = String(formData.get("type") ?? "").trim() || null;
   const anonymous = formData.get("anonymous") === "on";
   const photos = JSON.parse(String(formData.get("photos") ?? "[]"));
   const lat = String(formData.get("lat") ?? "");
@@ -37,9 +38,26 @@ export async function submitComplaintAction(formData: FormData) {
   if (!description) return;
   if (!Array.isArray(photos) || photos.length === 0) return;
 
+  if (!anonymous) {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const duplicate = await db.complaint.findFirst({
+      where: {
+        citizenId: citizen.id,
+        type: type ?? null,
+        businessId: businessId ?? null,
+        createdAt: { gte: sevenDaysAgo },
+      },
+      select: { id: true },
+    });
+    if (duplicate) {
+      return { ok: false, code: "cooldown" };
+    }
+  }
+
   const complaint = await db.complaint.create({
     data: {
       description,
+      type,
       businessId,
       citizenId: anonymous ? null : citizen.id,
       anonymous,
