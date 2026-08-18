@@ -31,10 +31,18 @@ export async function getBusinessInfo(name: string, district: string): Promise<B
   };
 }
 
-export function directionsUrl(placeId: string | undefined, name: string, district: string, address?: string): string {
+export function directionsUrl(
+  placeId: string | undefined,
+  name: string,
+  district: string,
+  address?: string,
+  origin?: { lat: number; lng: number }
+): string {
   const base = "https://www.google.com/maps/dir/?api=1&travelmode=driving";
   const dest = (address && address.trim() ? address : `${name}, ${district}`).trim();
-  const params = [`destination=${encodeURIComponent(dest)}`];
+  const params: string[] = [];
+  if (origin) params.push(`origin=${origin.lat.toFixed(6)},${origin.lng.toFixed(6)}`);
+  params.push(`destination=${encodeURIComponent(dest)}`);
   if (placeId) params.push(`destination_place_id=${encodeURIComponent(placeId)}`);
   return `${base}&${params.join("&")}`;
 }

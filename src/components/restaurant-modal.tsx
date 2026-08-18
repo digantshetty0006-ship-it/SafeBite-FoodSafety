@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { MapPin, Navigation, Utensils, X, ExternalLink, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/star-rating";
@@ -52,6 +52,16 @@ export function RestaurantModal({
   googleRatingLabel,
 }: Props) {
   const band = data.rating !== null ? bandOfRating(data.rating) : riskBand(data.riskScore);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (p) => setCoords({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => {},
+      { timeout: 6000, maximumAge: 300000 }
+    );
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -135,7 +145,7 @@ export function RestaurantModal({
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <Button asChild className="w-full gap-2">
               <a
-                href={directionsUrl(data.placeId, data.name, data.district, data.googleAddress ?? data.address)}
+                href={directionsUrl(data.placeId, data.name, data.district, data.googleAddress ?? data.address, coords ?? undefined)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
