@@ -134,7 +134,11 @@ export function RestaurantModal({
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             <Button asChild className="w-full gap-2">
-              <a href={directionsUrl(data.placeId, data.name, data.district)} target="_blank" rel="noopener noreferrer">
+              <a
+                href={directionsUrl(data.placeId, data.name, data.district, data.googleAddress ?? data.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Navigation className="h-4 w-4" /> {directionsLabel}
               </a>
             </Button>

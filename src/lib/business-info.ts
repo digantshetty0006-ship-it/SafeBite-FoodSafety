@@ -31,10 +31,12 @@ export async function getBusinessInfo(name: string, district: string): Promise<B
   };
 }
 
-export function directionsUrl(placeId: string | undefined, name: string, district: string): string {
-  const base = "https://www.google.com/maps/dir/?api=1";
-  if (placeId) return `${base}&destination=${encodeURIComponent(placeId)}`;
-  return `${base}&destination=${encodeURIComponent(`${name}, ${district}`)}`;
+export function directionsUrl(placeId: string | undefined, name: string, district: string, address?: string): string {
+  const base = "https://www.google.com/maps/dir/?api=1&travelmode=driving";
+  const dest = (address && address.trim() ? address : `${name}, ${district}`).trim();
+  const params = [`destination=${encodeURIComponent(dest)}`];
+  if (placeId) params.push(`destination_place_id=${encodeURIComponent(placeId)}`);
+  return `${base}&${params.join("&")}`;
 }
 
 export function mapsUrl(placeId: string | undefined, name: string, district: string): string {
