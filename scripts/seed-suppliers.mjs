@@ -34,6 +34,11 @@ const SUPPLIER_DEFS = [
   { name: "Riverside Bakery Supply", category: "Packaged Food", products: "Bread, buns, bakery premixes", location: "Grant Road, Mumbai", licence: "12724002000101" },
 ];
 
+// Suppliers flagged with compliance issues so the inspector alerts panel
+// has real examples: missing FSSAI licence / stale deliveries.
+const MISSING_LICENCE = new Set(["Western Meat Packers", "SpiceLink Wholesalers"]);
+const STALE_DELIVERY = new Set(["GreenValley Vegetables", "Riverside Bakery Supply"]);
+
 function dbUrl() {
   const url = process.env.DATABASE_URL ?? "file:./dev.db";
   if (!url.startsWith("file:")) return url;
@@ -82,6 +87,8 @@ async function main() {
       chosen.set(def.name, def);
     }
     for (const def of chosen.values()) {
+      const missingLicence = MISSING_LICENCE.has(def.name);
+      const stale = STALE_DELIVERY.has(def.name);
       await prisma.supplier.create({
         data: {
           businessId: biz.id,
@@ -89,8 +96,8 @@ async function main() {
           category: def.category,
           products: def.products,
           location: def.location,
-          licenceNumber: def.licence,
-          lastDeliveryAt: daysAgo(range(0, 30)),
+          licenceNumber: missingLicence ? null : def.licence,
+          lastDeliveryAt: stale ? daysAgo(range(45, 150)) : daysAgo(range(0, 30)),
         },
       });
       created++;
